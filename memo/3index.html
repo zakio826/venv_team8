@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ラベリング</title>
+
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <!-- 画像とキャンバス要素を配置 -->
+    <canvas id="canvas"></canvas>
+
+    <hr>
+    
+    <ol>
+        <label for="class0">
+            <li><input type="radio" id="class0" name="class" value="0"> モンキーレンチ</li>
+        </label>
+        <label for="class1">
+            <li><input type="radio" id="class1" name="class" value="1"> ペンチ</li>
+        </label>
+        <label for="class2">
+            <li><input type="radio" id="class2" name="class" value="2"> ラジオペンチ</li>
+        </label>
+        <label for="class3">
+            <li><input type="radio" id="class3" name="class" value="3"> ドライバー</li>
+        </label>
+    </ol>
+    
+    <button id="set">選択</button>
+    <button id="end">終了</button>
+
+    <p id="box"></p>
+    <img id="image" src="./photo/0151_photo.jpg" alt="Image" style="visibility: hidden"/>
+
+    <script>
+        // キャンバスとコンテキストを取得
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const image = document.getElementById("image");
+
+        const func = () => {
+            const check = document.getElementsByName("class");
+        }
+        const box = document.getElementById("box");
+
+        // 描画状態を管理するフラグと座標を初期化
+        let isDrawing = false;
+        let startX, startY, width, height;
+
+        // キャンバスのサイズを画像のサイズに設定
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        // 画像の読み込みが完了したらキャンバスに描画
+        image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+        };
+
+        // マウスダウンイベントのリスナーを追加
+        canvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+            startX = e.clientX - canvas.getBoundingClientRect().left;
+            startY = e.clientY - canvas.getBoundingClientRect().top;
+        });
+
+        // マウスムーブイベントのリスナーを追加
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isDrawing) return;
+
+            const x = e.clientX - canvas.getBoundingClientRect().left;
+            const y = e.clientY - canvas.getBoundingClientRect().top;
+
+            width = x - startX;
+            height = y - startY;
+
+            // キャンバスをクリアして画像を再描画
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+
+            // 矩形を赤い線で描画
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, startY, width, height);
+        });
+
+        // マウスアップとマウスアウトイベントのリスナーを追加
+        canvas.addEventListener("mouseup", () => {
+            isDrawing = false;
+
+            var x_min = startX;
+            var x_max = startX + width;
+            if (width < 0) {
+                x_min += width;
+                x_max -= width;
+            }
+            var y_min = startY;
+            var y_max = startY + height;
+            if (height < 0) {
+                y_min += height;
+                y_max -= height;
+            }
+            box.innerHTML = "x_min = " + x_min + "px, "
+                          + "x_max = " + x_max + "px, "
+                          + "y_min = " + y_min + "px, "
+                          + "y_max = " + y_max + "px";
+        });
+
+        canvas.addEventListener("mouseout", () => {
+            isDrawing = false;
+        });
+    </script>
+</body>
+</html>
