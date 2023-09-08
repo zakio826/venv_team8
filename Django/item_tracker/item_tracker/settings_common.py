@@ -38,6 +38,11 @@ INSTALLED_APPS = [
 
     'tracker.apps.TrackerConfig',
     'accounts.apps.AccountsConfig',
+    
+	'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'django_bootstrap5',
 ]
 
 MIDDLEWARE = [
