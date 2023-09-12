@@ -1,3 +1,6 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Group, Asset, Item, Image, History, Result
+
+
+admin.site.register(Group, Asset, Item, Image, History, Result)

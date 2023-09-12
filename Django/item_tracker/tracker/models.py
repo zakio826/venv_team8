@@ -1,9 +1,20 @@
-from accounts.models import CustomUser, Group
+from accounts.models import CustomUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from datetime import datetime
 
+
+class Group(models.Model):
+    """グループモデル"""
+    
+    user = models.ForeignKey(CustomUser, verbose_name='ホストユーザ', on_delete=models.PROTECT)
+    group_name = models.CharField(verbose_name='グループ名', max_length=40)
+    
+    class Meta: verbose_name_plural = 'Group'
+    
+    def __str__(self):
+        return self.group_name
 
 class Asset(models.Model):
     """管理項目モデル"""

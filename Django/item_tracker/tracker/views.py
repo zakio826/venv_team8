@@ -1,9 +1,12 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 import logging
 
 from django.urls import reverse_lazy
 from django.views import generic
 
 from .forms import InquiryForm
+from .models import Group, Asset, Item, Image, History, Result
 
 logger = logging.getLogger(__name__)
 from django.contrib import messages
@@ -22,3 +25,11 @@ class InquiryView(generic.FormView):
         messages.success(self.request, 'メッセージを送信しました。')
         logger.info('Inquiry sent by {}'.format(form.cleaned_data['name']))
         return super().form_valid(form)
+    
+class AssetListView(LoginRequiredMixin, generic.ListView):
+    model = Asset
+    template_name = 'asset_list.html'
+
+    def get_queryset(self):
+        assets = Asset.objects.filter(group=self.request.group)
+        return assets
