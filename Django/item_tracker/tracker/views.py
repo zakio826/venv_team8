@@ -26,7 +26,11 @@ class InquiryView(generic.FormView):
         logger.info('Inquiry sent by {}'.format(form.cleaned_data['name']))
         return super().form_valid(form)
     
-class AssetListView(LoginRequiredMixin, generic.ListView):
+class AssetListView(generic.TemplateView):
+    template_name = 'asset_list.html'
+
+
+class AssetListsView(LoginRequiredMixin, generic.ListView):
     model = Asset
     template_name = 'asset_list.html'
 
