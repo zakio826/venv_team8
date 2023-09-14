@@ -6,11 +6,12 @@ from django.urls import reverse_lazy
 from django.views import generic
 
 from .forms import InquiryForm
-from .models import Group, Asset, Item, Image, History, Result
+# from accounts.models import CustomUser
+from django.db import models
+from .models import Group, GroupMember, Asset, Item, Image, History, Result
 
 logger = logging.getLogger(__name__)
 from django.contrib import messages
-
 
 class IndexView(generic.TemplateView):
     template_name = "index.html"
@@ -26,14 +27,17 @@ class InquiryView(generic.FormView):
         logger.info('Inquiry sent by {}'.format(form.cleaned_data['name']))
         return super().form_valid(form)
     
-class AssetListView(generic.TemplateView):
+class AssetListsView(generic.TemplateView):
     template_name = 'asset_list.html'
 
 
-class AssetListsView(LoginRequiredMixin, generic.ListView):
-    model = Asset
+class AssetListView(LoginRequiredMixin, generic.ListView):
+    model = GroupMember, Asset, Image, Group
     template_name = 'asset_list.html'
 
     def get_queryset(self):
-        assets = Asset.objects.filter(group=self.request.group)
+        belong = GroupMember.objects.prefetch_related('group').filter(member=self.request.user)
+        assets = Asset.objects.all()
+        for i in belong:
+            assets = assets.filter(group=i.group)
         return assets

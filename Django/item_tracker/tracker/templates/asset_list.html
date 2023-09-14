@@ -18,15 +18,19 @@
             <a class="btn btn-primary float-right" href="#">新規作成</a>
         </div>
         <div class="row gx-4 gx-lg-5 row-cols-1 justify-content-center">
-            <div class="col-sm-6 mb-5">
+            {% for asset in asset_list %}
+                <p>{{ asset.asset_name }} - {{ asset.group }}</p>
+                <p>{{ asset }}</p>
+            {% endfor %}
+            <div class="col mb-5">
                 <div class="card h-50">
                     <!-- Product image-->
-                    <!-- <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." /> -->
+                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
                     <!-- Product details-->
                     <div class="card-body p-4">
                         <div class="text-center">
                             <!-- Product name-->
-                            <h5 class="fw-bolder">Fancy Product</h5>
+                            <h5 class="fw-bolder">{{ object.asset_name }}</h5>
                             <!-- Product price-->
                             $40.00 - $80.00
                         </div>
