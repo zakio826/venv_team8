@@ -18,10 +18,13 @@
             <a class="btn btn-primary float-right" href="#">新規作成</a>
         </div>
         <div class="row gx-4 gx-lg-5 row-cols-1 justify-content-center">
-            {% for asset in asset_list %}
-                <p>{{ asset.asset_name }} - {{ asset.group }}</p>
-                <p>{{ asset }}</p>
+            {% for image in image_list %}
+                <a href="{% url 'tracker:asset_detail' image.id %}"><p>{{ image.asset }} - {{ image.group }}</p></a>
+                {% if image.image %}
+                    <img src="{{ image.image.url }}" width="400" height="300"/>
+                {% endif %}
             {% endfor %}
+            <p>{{ image_list }}</p>
             <div class="col mb-5">
                 <div class="card h-50">
                     <!-- Product image-->
