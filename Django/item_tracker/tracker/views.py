@@ -56,23 +56,10 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
-            self.object,
-            Item.objects.prefetch_related('asset').filter(asset=self.object.asset),
+            "object": self.object,
+            "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.asset),
         }
         # コンテキスト情報のキーを追加
-        context.update()
-        # print(extra)
-        print()
-        print("ss", self.object)
-        print()
-        print("aaa", extra)
-        print()
-        for i in self.get_queryset(context):
-            print()
-            print(i)
-            # print(i.object)
-            # print(i.item_list)
+        context.update(extra)
         return context
     
-    def get_queryset(self, context):
-        return Item.objects.prefetch_related('asset').filter(asset=context)
