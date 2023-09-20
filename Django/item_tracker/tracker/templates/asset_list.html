@@ -18,12 +18,13 @@
             <a class="btn btn-primary float-right" href="#">新規作成</a>
         </div>
         {% for image in image_list %}
-            <a href="{% url 'tracker:asset_detail' image.id %}">
+            <a href="{% url 'tracker:asset_detail' image.asset.asset_name %}">
                 <p>{{ image.asset }} - {{ image.group }}</p>
                 {% if image.image %}
                     <img src="{{ image.image.url }}" width="400" height="300"/>
                 {% endif %}
             </a>
+            <p>{{ image.asset.asset_name }}</p>
         {% endfor %}
         <p>{{ image_list }}</p>
         <div class="row gx-4 gx-lg-5 row-cols-1 justify-content-center">

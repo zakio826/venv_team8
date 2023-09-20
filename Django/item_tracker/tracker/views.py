@@ -29,7 +29,7 @@ class InquiryView(generic.FormView):
         return super().form_valid(form)
 
 class AssetListView(LoginRequiredMixin, generic.ListView):
-    model = Image
+    model = Asset
     template_name = 'asset_list.html'
 
     def get_queryset(self):
@@ -44,11 +44,10 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
         return images
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
-    model = Image
+    model = Asset
     template_name = 'asset_detail.html'
-    pk_url_kwarg = 'id'
-    # slug_field = "asset" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset" # urls.pyでのキーワードの名前
+    slug_field = "asset_name" # モデルのフィールドの名前
+    slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -57,7 +56,8 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
             "object": self.object,
-            "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.asset),
+            "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
+            "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.id),
         }
         # コンテキスト情報のキーを追加
         context.update(extra)

@@ -12,7 +12,7 @@
             <strong>管理名</strong>
         </div>
         <div class="col-9">
-            {{ object.asset }}
+            {{ object.asset_name }}
         </div>
     </div>
     
@@ -36,9 +36,11 @@
             <strong>写真</strong>
         </div>
         <div class="col-3">
-            {% if object.image %}
-                <img src="{{ object.image.url }}" width="600" height="400"/>
-            {% endif %}
+            {% for image in image_list %}
+                {% if image.image %}
+                    <img src="{{ image.image.url }}" width="600" height="400"/>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 
