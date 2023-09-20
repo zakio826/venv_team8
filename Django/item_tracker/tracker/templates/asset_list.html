@@ -25,6 +25,9 @@
                 {% endif %}
             </a>
             <p>{{ image.asset.asset_name }}</p>
+
+            {% empty %}
+            <p>管理項目がありません。</p>
         {% endfor %}
         <p>{{ image_list }}</p>
         <div class="row gx-4 gx-lg-5 row-cols-1 justify-content-center">
