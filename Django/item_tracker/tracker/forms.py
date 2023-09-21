@@ -1,8 +1,12 @@
 import os
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django import forms
 from django.core.mail import EmailMessage
+
+from accounts.models import CustomUser
+from .models import Group, GroupMember, Asset, Item, Image, History, Result
 
 
 class InquiryForm(forms.Form):
@@ -46,3 +50,29 @@ class InquiryForm(forms.Form):
 
         message = EmailMessage(subject=subject, body=message, from_email=from_email, to=to_list, cc=cc_list)
         message.send()
+
+from django import http
+
+class AssetCreateForm(forms.ModelForm, http.HttpRequest):
+
+    class Meta:
+        model = Asset
+        fields = ['asset_name', 'group']
+        
+    def __init__(self, *args, **kwargs):
+        # self.current_user = user
+        super().__init__(*args, **kwargs)
+        # print("fff", kwargs['instance'])
+        # print("ooo", user)
+        # print("uuu", self)
+        # print("rrr", Group.objects.filter(user=user))
+        # print("aaa", self.fields['group'].queryset)
+        # self.fields['group'].queryset = Group.objects.filter(user=user)
+        # print("uuu", self.fields['group'].queryset)
+
+        self.fields['group'].widget.attrs['class'] = 'form-control'
+        self.fields['asset_name'].widget.attrs['class'] = 'form-control'
+
+    # def method(self):
+    #     model = Asset
+    #     model.objects.filter(user=self.current_user)
