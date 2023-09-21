@@ -18,7 +18,7 @@
             <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
         </div>
         {% for image in image_list %}
-            <a href="{% url 'tracker:asset_detail' image.asset.asset_name %}">
+            <a href="{% url 'tracker:asset_detail' image.asset.id %}">
                 <p>{{ image.asset }} - {{ image.group }}</p>
                 {% if image.image %}
                     <img src="{{ image.image.url }}" width="400" height="300"/>

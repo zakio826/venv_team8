@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'django_bootstrap5',
+    'betterforms',
 ]
 
 MIDDLEWARE = [
@@ -160,8 +161,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 
 # ログイン/ログアウト後の遷移先を設定
-LOGIN_REDIRECT_URL = 'tracker:index'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'account_login'
+LOGIN_REDIRECT_URL = 'tracker:asset_list'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'tracker:index'
 
 # ログアウトリンクのクリック一発でログアウトする設定
 ACCOUNT_LOGOUT_ON_GET = True

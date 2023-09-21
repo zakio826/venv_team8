@@ -1,6 +1,6 @@
 import os
 
-from django.contrib.auth.mixins import LoginRequiredMixin
+from betterforms.multiform import MultiModelForm
 
 from django import forms
 from django.core.mail import EmailMessage
@@ -51,28 +51,65 @@ class InquiryForm(forms.Form):
         message = EmailMessage(subject=subject, body=message, from_email=from_email, to=to_list, cc=cc_list)
         message.send()
 
-from django import http
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-class AssetCreateForm(forms.ModelForm, http.HttpRequest):
-
+class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
         fields = ['asset_name', 'group']
-        
-    def __init__(self, *args, **kwargs):
-        # self.current_user = user
-        super().__init__(*args, **kwargs)
-        # print("fff", kwargs['instance'])
-        # print("ooo", user)
-        # print("uuu", self)
-        # print("rrr", Group.objects.filter(user=user))
-        # print("aaa", self.fields['group'].queryset)
-        # self.fields['group'].queryset = Group.objects.filter(user=user)
-        # print("uuu", self.fields['group'].queryset)
 
+    def __init__(self, *args, **kwargs):
+        # kwargs={'instance': self.request.user}
+        super().__init__(*args, **kwargs)
         self.fields['group'].widget.attrs['class'] = 'form-control'
         self.fields['asset_name'].widget.attrs['class'] = 'form-control'
 
-    # def method(self):
-    #     model = Asset
-    #     model.objects.filter(user=self.current_user)
+class ImageAddForm(forms.ModelForm):
+    class Meta:
+        model = Image
+        fields = ['group', 'asset', 'user', 'image', 'taken_at', 'front']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['asset'].widget = forms.HiddenInput()
+        self.fields['front'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+class ItemAddForm(forms.ModelForm):
+    finish = forms.BooleanField(label='終了する', initial=False, required=False)
+    class Meta:
+        model = Item
+        fields = ['group', 'asset', 'item_name']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['asset'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+        self.fields['finish'].widget.attrs['class'] = 'form-check'
+
+class ItemMultiAddForm(MultiModelForm):
+
+    form_classes = {
+        "image_add_form": ImageAddForm,
+        "item_add_form": ItemAddForm,
+    }
+
+class GroupJoinForm(forms.ModelForm):
+
+    class Meta:
+        model = GroupMember
+        fields = ['group']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['group'].widget.attrs['class'] = 'form-control'
