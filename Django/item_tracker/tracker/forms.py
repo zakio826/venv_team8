@@ -79,8 +79,25 @@ class ImageAddForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
+def wrap_boolean_check(v):
+    return not (v is False or v is None or v == '' or v == 0)
+
 class ItemAddForm(forms.ModelForm):
-    finish = forms.BooleanField(label='終了する', initial=False, required=False)
+    # finish = forms.BooleanField(label='終了する', initial=0, required=False)
+    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.CheckboxInput(check_test=wrap_boolean_check))
+    # finish = forms.BooleanField(label='終了する', initial=0, widget=forms.CheckboxInput(check_test=wrap_boolean_check))
+    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.ChoiceWidget(checked_attribute = {"checked": True}))
+    # finish = forms.BooleanField(label='終了する', initial=0, widget=forms.ChoiceWidget(checked_attribute = {"checked": False}))
+    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.ChoiceWidget(checked_attribute = {"checked": True}))
+    finish = forms.ChoiceField(
+        label='続ける',
+        required=False,
+        # disabled=False,
+        initial=[0],
+        choices=[(0, 'はい、続けます。'), (1, 'いいえ、終了します。')],
+        widget=forms.RadioSelect()
+    )
+    
     class Meta:
         model = Item
         fields = ['group', 'asset', 'item_name']
@@ -94,7 +111,10 @@ class ItemAddForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
-        self.fields['finish'].widget.attrs['class'] = 'form-check'
+        # self.fields['finish'].widget = forms.CheckboxInput(check_test=wrap_boolean_check)
+        # self.fields['repeat'].widget.attrs['class'] = 'form-check'
+        self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+
 
 class ItemMultiAddForm(MultiModelForm):
 

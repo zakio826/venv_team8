@@ -39,14 +39,22 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         belong = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
-        images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
-        for i in belong:
-            print("fff", i.group)
-            images = images.filter(group=i.group)
+        images = None
+        if len(belong) >= 1:
+            images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
+            image_list  =[]
+            for b in belong:
+                print("fff", b.group)
+                image_list.append(images.filter(group=b.group))
+            print(image_list)
+            if len(image_list) <= 0:
+                images = None
+                pass
+            else:
+                images = image_list[0]
+                for i in image_list:
+                    images = images|i
         print(images)
-        for i in images:
-            print(i.asset)
-            print(i.group)
         return images
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
@@ -85,7 +93,20 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
         # print(context['form'])
-        context['form'].fields['group'].queryset = Group.objects.filter(user=self.request.user)
+        belongs = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
+        group_list = []
+        print("ddd", belongs)
+        print("ddd", belongs[0])
+        for b in belongs:
+            print("fff", b.group.id)
+            group_list.append(Group.objects.filter(id=b.group.id))
+        print(group_list)
+        groups = group_list[0]
+        if len(group_list) >= 2:
+            for g in group_list[1:]:
+                groups = groups|g
+        print(groups)
+        context['form'].fields['group'].queryset = groups
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
             "object": self.object,
@@ -160,6 +181,9 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
     def form_invalid(self, form):
         messages.error(self.request, "写真の登録に失敗しました。")
         return super().form_invalid(form)
+    
+def wrap_boolean_check(v):
+        return not (v is False or v is None or v == '' or v == 0)
 
 class ItemAddView(LoginRequiredMixin, generic.CreateView):
     model = Asset
@@ -183,17 +207,42 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         context['form'].fields['asset'].initial = assets
         return context
 
+    
+
     def form_valid(self, form):
         asset = form.save(commit=False)
         asset.user = self.request.user
         asset.save()
-        # print("aaa")
         # print("asd", form.fields)
         # print("asdfsda", form.fields['finish'].initial)
-        if form.fields['finish'].initial == "True":
+        # print("mmm", form.fields['item_name'])
+        # print("add", form.fields['repeat'].initial)
+        # print("fff", form)
+        # print("sss", self.get_form_kwargs())
+        form_kwargs = self.get_form_kwargs()
+        # print("rrr", form_kwargs)
+        finish = form_kwargs['data']['finish']
+        # print("qqq", finish)
+        # print("ttt", form.fields['finish'])
+        # print("aaa", form.fields['finish'].initial)
+        # print("ppp", form.fields['finish'].choices)
+        # print("ddd", type(form.fields['finish'].initial))
+        # print("aff", form.fields['finish'].widget.check_test)
+        # print("affff", wrap_boolean_check(form.fields['finish'].widget.check_test))
+        # print("a", form.fields['finish'].widget.attrs['value'])
+        # print("d", type(form.fields['finish'].widget.attrs['value']))
+        if finish == '0':
+            print("true")
             ttt = re.findall(r'\d+', self.request.path)
             self.id = int(ttt[0])
             self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+        else:
+            print("false")
+            self.success_url = reverse_lazy('tracker:asset_list')
+            # ttt = re.findall(r'\d+', self.request.path)
+            # self.id = int(ttt[0])
+            # self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+            
         # ttt = re.findall(r'\d+', self.request.path)
         # self.id = int(ttt[0])
         # self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
@@ -201,6 +250,9 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
     
     def form_invalid(self, form):
+        print("rrr", form.fields['finish'])
+        print("aaa", form.fields['finish'].initial)
+        print("aaa", form.fields['finish'].choices)
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
 

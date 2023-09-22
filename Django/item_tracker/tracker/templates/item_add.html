@@ -15,6 +15,27 @@
             </table>
             <button class="btn btn-primary" type="submit">作成</button>
         </form>
+        <!-- <p id="result">fff</p> -->
     </div>
 </div>
 {% endblock %}
+
+<!-- 
+{% block js %}
+<script>
+    const finish = document.getElementById("id_finish");
+    finish.value = false;
+    finish.addEventListener("click", function(){
+        if(finish.checked){
+            finish.value = true;
+            console.log(finish.value);
+            document.getElementById("result").innerHTML="True";
+        }else{
+            finish.value = false;
+            console.log(finish.value);
+            document.getElementById("result").innerHTML="False";
+        }
+    });
+</script>
+{% endblock %}
+-->
