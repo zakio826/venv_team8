@@ -38,8 +38,8 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
         },
-        # diaryアプリケーションが利用するロガー
-        'diary': {
+        # trackerアプリケーションが利用するロガー
+        'tracker': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
@@ -70,3 +70,5 @@ LOGGING = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 	'django.contrib.sites',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'django_bootstrap5',
     'betterforms',
 ]
@@ -64,6 +65,9 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'), # 追加
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -172,5 +177,18 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 
 # デフォルトのメール送信元を設定
 DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
+
+#allauth formの割り込み
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm',
+    'login': 'accounts.forms.CustomLoginForm',
+    'reset_password': 'accounts.forms.CustomResetPasswordForm',
+    'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
+    'change_password': 'accounts.forms.CustomChangePasswordForm',
+    'add_email': 'accounts.forms.CustomAddEmailForm',
+    'set_password': 'accounts.forms.CustomSetPasswordForm',
+}
+
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 
 MEDIA_URL = '/media/'
