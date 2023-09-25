@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from betterforms.multiform import MultiModelForm
 
@@ -79,16 +80,7 @@ class ImageAddForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
-def wrap_boolean_check(v):
-    return not (v is False or v is None or v == '' or v == 0)
-
 class ItemAddForm(forms.ModelForm):
-    # finish = forms.BooleanField(label='終了する', initial=0, required=False)
-    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.CheckboxInput(check_test=wrap_boolean_check))
-    # finish = forms.BooleanField(label='終了する', initial=0, widget=forms.CheckboxInput(check_test=wrap_boolean_check))
-    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.ChoiceWidget(checked_attribute = {"checked": True}))
-    # finish = forms.BooleanField(label='終了する', initial=0, widget=forms.ChoiceWidget(checked_attribute = {"checked": False}))
-    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.ChoiceWidget(checked_attribute = {"checked": True}))
     finish = forms.ChoiceField(
         label='続ける',
         required=False,
@@ -111,9 +103,50 @@ class ItemAddForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
-        # self.fields['finish'].widget = forms.CheckboxInput(check_test=wrap_boolean_check)
-        # self.fields['repeat'].widget.attrs['class'] = 'form-check'
         self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+
+
+
+
+class ItemAddDummyForm(forms.ModelForm):
+    name = forms.CharField(label='アイテム名', max_length=30)
+
+class ItemAddEXForm(forms.ModelForm):
+    
+    class Meta:
+        model = Item
+        fields = ['group', 'asset', 'item_name']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['asset'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+    
+    # def save(self, group, asset, item_list):
+    #     obj = super.save(commit=False)
+    #     for name in item_list:
+    #         obj.item_name = name
+    #         obj.save()
+    #     return obj
+
+
+
+
+
+
+
+
+class AssetMultiCreateForm(MultiModelForm):
+
+    form_classes = {
+        "asset_create_form": AssetCreateForm,
+        "image_add_form": ImageAddForm,
+        "item_add_form": ItemAddEXForm,
+    }
 
 
 class ItemMultiAddForm(MultiModelForm):
@@ -122,6 +155,13 @@ class ItemMultiAddForm(MultiModelForm):
         "image_add_form": ImageAddForm,
         "item_add_form": ItemAddForm,
     }
+
+
+
+
+
+
+
 
 class GroupJoinForm(forms.ModelForm):
 
