@@ -38,6 +38,7 @@
         <div class="col-3">
             {% for image in image_list %}
                 {% if image.image %}
+                    {{ image.id }}
                     <img src="{{ image.image.url }}" width="600" height="400"/>
                 {% endif %}
             {% endfor %}

@@ -12,6 +12,9 @@
             {% csrf_token %}
             <table class="table">
                 {{ form.as_table }}
+                {{ asset_create_form }}
+                {{ image_add_form }}
+                {{ item_add_form }}
             </table>
             <button class="btn btn-primary" type="submit">作成</button>
         </form>

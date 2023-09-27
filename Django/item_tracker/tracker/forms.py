@@ -79,6 +79,14 @@ class ImageAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+        
+    # def save(self, group=None, asset=None):
+    #     obj = super.save(commit=False)
+    #     if group and asset:
+    #         obj.group = group
+    #         obj.asset = asset
+    #     obj.save()
+    #     return obj
 
 class ItemAddForm(forms.ModelForm):
     finish = forms.ChoiceField(
@@ -105,6 +113,56 @@ class ItemAddForm(forms.ModelForm):
 
         self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
 
+class HistoryAddForm(forms.ModelForm):
+
+    class Meta:
+        model = History
+        fields = ['group', 'asset', 'user', 'image']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # self.fields['update_at'].widget = forms.HiddenInput()
+        # self.fields['group'].widget = forms.HiddenInput()
+        # self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['user'].widget = forms.HiddenInput()
+        # self.fields['image'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+            field.widget = forms.HiddenInput()
+
+class ResultAddForm(forms.ModelForm):
+
+    class Meta:
+        model = Result
+        fields = ['group', 'asset', 'item', 'image', 'result_class', 'box_x_min', 'box_y_min', 'box_x_max', 'box_y_max']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['asset'].widget = forms.HiddenInput()
+        self.fields['item'].widget = forms.HiddenInput()
+        self.fields['image'].widget = forms.HiddenInput()
+        self.fields['result_class'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+            # field.widget = forms.HiddenInput()
+
+# class HistoryMultiAddForm(MultiModelForm):
+
+#     form_classes = {
+#         "history_add_form": HistoryAddForm,
+#         "result_add_form": forms.formset_factory(
+#             form = 
+#         ),
+#     }
+
+
+
+
 
 
 
@@ -112,6 +170,11 @@ class ItemAddDummyForm(forms.ModelForm):
     name = forms.CharField(label='アイテム名', max_length=30)
 
 class ItemAddEXForm(forms.ModelForm):
+    # item_list = forms.MultipleChoiceField(
+    #     label="アイテムリスト",
+    #     required=True,
+    #     disabled=False,
+    #     widget=forms. SelectMultiple(attrs={'id': 'item_list',}))
     
     class Meta:
         model = Item
@@ -122,9 +185,25 @@ class ItemAddEXForm(forms.ModelForm):
 
         self.fields['group'].widget = forms.HiddenInput()
         self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['item_list'].widget = forms.HiddenInput()
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+    
+    # def save(self, group=None, asset=None, item_list=None):
+    #     obj = super.save(commit=False)
+    #     if group and asset and item_list:
+    #         obj.item_list = item_list
+    #         obj.group = group
+    #         obj.asset = asset
+    #         for name in obj.item_list:
+    #             obj.item_name = name
+    #             obj.save()
+    #     else:
+    #         for name in obj.item_list:
+    #             obj.item_name = name
+    #             obj.save()
+    #     return obj
     
     # def save(self, group, asset, item_list):
     #     obj = super.save(commit=False)
@@ -139,6 +218,7 @@ class ItemAddEXForm(forms.ModelForm):
 
 
 
+from collections import OrderedDict
 
 class AssetMultiCreateForm(MultiModelForm):
 
@@ -147,6 +227,24 @@ class AssetMultiCreateForm(MultiModelForm):
         "image_add_form": ImageAddForm,
         "item_add_form": ItemAddEXForm,
     }
+
+    # def save(self, group=None, asset=None, item_list=None):
+    #     obj = super.save(commit=False)
+    #     print("ttt", obj)
+
+    #     objects = OrderedDict(
+    #         (key, form.save())
+    #         for key, form in self.forms.items()
+    #     )
+
+    #     if any(hasattr(form, 'save_m2m') for form in self.forms.values()):
+    #         def save_m2m():
+    #             for form in self.forms.values():
+    #                 if hasattr(form, 'save_m2m'):
+    #                     form.save_m2m()
+    #         self.save_m2m = save_m2m
+
+    #     return objects
 
 
 class ItemMultiAddForm(MultiModelForm):

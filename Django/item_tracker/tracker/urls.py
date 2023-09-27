@@ -14,5 +14,6 @@ urlpatterns = [
     path('asset-create/', views.AssetCreateView.as_view(), name="asset_create"),
     path('asset-create/image-add/<int:id>/', views.ImageAddView.as_view(), name="image_add"),
     path('asset-create/item-add/<int:id>/', views.ItemAddView.as_view(), name="item_add"),
+    path('asset-create/history-add/<int:id>/', views.HistoryAddView.as_view(), name="history_add"),
     path('group-join/', views.GroupJoinView.as_view(), name="group_join"),
 ]

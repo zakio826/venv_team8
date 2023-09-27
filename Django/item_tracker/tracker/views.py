@@ -9,7 +9,8 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django import forms
 
-from .forms import InquiryForm, AssetCreateForm, ItemAddForm, ImageAddForm, AssetMultiCreateForm, ItemMultiAddForm, GroupJoinForm, ItemAddEXForm
+# from .forms import InquiryForm, AssetCreateForm, ItemAddForm, ImageAddForm, AssetMultiCreateForm, ItemMultiAddForm, GroupJoinForm, ItemAddEXForm, .
+from .forms import *
 from accounts.models import CustomUser
 from django.db import models
 from .models import Group, GroupMember, Asset, Item, Image, History, Result
@@ -106,6 +107,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
             for g in group_list[1:]:
                 groups = groups|g
         print(groups)
+        print("eee", context['form'].initial)
         context['form'].fields['group'].queryset = groups
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
@@ -120,7 +122,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
         asset = form.save(commit=False)
         asset.user = self.request.user
         asset.save()
-        print("ddd", asset.id)
+        # print("ddd", asset.id)
         self.success_url = reverse_lazy(f'tracker:image_add', kwargs={'id': asset.id})
         messages.success(self.request, '管理項目を作成しました。')
         return super().form_valid(form)
@@ -169,11 +171,11 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         return context
 
     def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
+        image = form.save(commit=False)
+        image.user = self.request.user
+        image.save()
+        # ttt = re.findall(r'\d+', self.request.path)
+        self.id = image.id
         self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
         messages.success(self.request, '写真を登録しました。')
         return super().form_valid(form)
@@ -184,7 +186,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
 
 
 class ItemAddView(LoginRequiredMixin, generic.CreateView):
-    model = Asset
+    model = Image
     template_name = 'item_add.html'
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
@@ -200,12 +202,17 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         self.id = int(ttt[0])
         # print(self.id)
         # print(Asset.objects.get(id=self.id))
-        assets = Asset.objects.prefetch_related('group').get(id=self.id)
-        context['form'].fields['group'].initial = assets.group
-        context['form'].fields['asset'].initial = assets
+        images = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+        context['form'].fields['group'].initial = images.group
+        context['form'].fields['asset'].initial = images.asset
+        extra = {
+            "object": self.object,
+            "image": images.image,
+        }
+        # print(self.success_url)
+        # コンテキスト情報のキーを追加
+        context.update(extra)
         return context
-
-    
 
     def form_valid(self, form):
         asset = form.save(commit=False)
@@ -231,6 +238,104 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         # print("aaa", form.fields['finish'].choices)
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
+
+class HistoryAddView(LoginRequiredMixin, generic.CreateView):
+    model = Image
+    template_name = 'history_add.html'
+    pk_url_kwarg = 'id'
+    # slug_field = "asset_name" # モデルのフィールドの名前
+    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
+    # form_class = forms.inlineformset_factory(Image, History, fields=('user',))
+    # form_class = ResultAddForm
+    fields = ()
+    success_url = reverse_lazy('tracker:asset_list')
+
+    # get_context_dataをオーバーライド
+    def get_context_data(self, **kwargs):
+        # 既存のget_context_dataをコール
+        context = super().get_context_data(**kwargs)
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        # print(self.id)
+        # print(Asset.objects.get(id=self.id))
+        images = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+        # context['form'].fields['group'].initial = images.group
+        # context['form'].fields['asset'].initial = images.asset
+
+        items = Item.objects.filter(asset=images.asset)
+        result_add_form = forms.formset_factory(
+            form = ResultAddForm,
+            # formset = ResultAddForm(**self.get_form_kwargs()),
+            extra = items.__len__(),
+            max_num = items.__len__(),
+        )
+        # print("dsfsdf", Item.objects.filter(asset=images.asset).__len__())
+        # print("dsfsdf", result_add_form)
+        # self.form_class = result_add_form
+        # print("mm", result_add_form())
+        print("mm", items.__len__())
+
+        result_add_form(
+            initial = [
+                {
+                    'group': images.group,
+                    'asset': images.asset,
+                    'item': x,
+                    'image': images,
+                    'result_class': 1,
+                }
+                for x in items
+            ],
+            data = [
+
+            ],
+        )
+        # print("f s", result_add_form().__getitem__(0).fields)
+        # for index in range(items.__len__()):
+        #     result_add_form().__getitem__(index).fields['box_x_min'].name = f'box_{index}'
+        # print("fs", result_add_form())
+        
+        extra = {
+            "object": self.object,
+            "image": images.image,
+            "items": items,
+            "result_add_form": result_add_form,
+        }
+        # print(self.success_url)
+        # コンテキスト情報のキーを追加
+        context.update(extra)
+        return context
+
+    def form_valid(self, form):
+        asset = form.save(commit=False)
+        asset.user = self.request.user
+        asset.save()
+        form_kwargs = self.get_form_kwargs()
+        # print("rrr", form_kwargs)
+        finish = form_kwargs['data']['finish']
+        if finish == '0':
+            print("true")
+            ttt = re.findall(r'\d+', self.request.path)
+            self.id = int(ttt[0])
+            self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+        else:
+            print("false")
+            self.success_url = reverse_lazy('tracker:asset_list')
+        messages.success(self.request, 'アイテムを追加しました。')
+        return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        # print("rrr", form.fields['finish'])
+        # print("aaa", form.fields['finish'].initial)
+        # print("aaa", form.fields['finish'].choices)
+        messages.error(self.request, "アイテムの追加に失敗しました。")
+        return super().form_invalid(form)
+
+
+
+
+
+
 
 
 
@@ -269,12 +374,18 @@ class AssetMultiCreateView(LoginRequiredMixin, generic.CreateView):
 
         # context['form'].__getitem__('image_add_form').fields['group'].initial = Group.objects.get(id=1)
         # context['form'].__getitem__('image_add_form').fields['asset'].initial = Asset.objects.prefetch_related('group').get(id=44)
+        context['form'].__getitem__('image_add_form').fields['group'].required = False
+        context['form'].__getitem__('image_add_form').fields['asset'].required = False
         context['form'].__getitem__('image_add_form').fields['user'].initial = self.request.user
         context['form'].__getitem__('image_add_form').fields['user'].widget = forms.HiddenInput()
+        context['form'].__getitem__('image_add_form').fields['front'].initial = True
 
         # context['form'].__getitem__('item_add_form').fields['group'].initial = Group.objects.get(id=1)
         # context['form'].__getitem__('item_add_form').fields['asset'].initial = Asset.objects.prefetch_related('group').get(id=44)
-        context['form'].__getitem__('item_add_form').fields['item_name'].initial = "ダミーアイテム"
+        context['form'].__getitem__('item_add_form').fields['group'].required = False
+        context['form'].__getitem__('item_add_form').fields['asset'].required = False
+        context['form'].__getitem__('item_add_form').fields['item_name'].required = False
+        # context['form'].__getitem__('item_add_form').fields['item_name'].initial = "ダミーアイテム"
         context['form'].__getitem__('item_add_form').fields['group'].widget = forms.HiddenInput()
         context['form'].__getitem__('item_add_form').fields['asset'].widget = forms.HiddenInput()
         context['form'].__getitem__('item_add_form').fields['item_name'].widget = forms.HiddenInput()
@@ -289,17 +400,42 @@ class AssetMultiCreateView(LoginRequiredMixin, generic.CreateView):
         return context
 
     def form_valid(self, form):
-        asset = form.__getitem__('asset_create_form').save(commit=False)
-        form.__getitem__('image_add_form').save(commit=False).group = asset.group
-        form.__getitem__('image_add_form').save(commit=False).asset = asset
+        id_asset = form.__getitem__('asset_create_form').save().id
+        asset = Asset.objects.prefetch_related('group').get(id=id_asset)
+        group = asset.group
 
-        for item_name in form.data['item_list']:
-            form.__getitem__('item_add_form').save(commit=False).group = asset.group
-            form.__getitem__('item_add_form').save(commit=False).asset = asset
-            form.__getitem__('item_add_form').save(commit=False).item_name = item_name
-            form.__getitem__('item_add_form').save()
+        # self.request.POST['image_add_form-group'] = group
+        # self.request.POST['image_add_form-asset'] = str(asset.id)
+        # form.__getitem__('image_add_form').save(group=group, asset=asset)
+        ImageAddForm.save(group=group, asset=asset)
 
-        form.save()
+        # self.request.POST['item_add_form-group'] = group
+        # self.request.POST['item_add_form-asset'] = asset
+        # for item_name in form.data.__reduce__()[1][2]['item_list']:
+        #     self.request.POST['item_add_form-item_name'] = item_name
+        #     form.__getitem__('item_add_form').save()
+        # form.__getitem__('item_add_form').save(group=group, asset=asset, item_list=form.data.__reduce__()[1][2]['item_list'])
+        ItemAddEXForm.save(group=group, asset=asset, item_list=form.data.__reduce__()[1][2]['item_list'])
+
+
+        # asset = form.__getitem__('asset_create_form').save(commit=False)
+        # image = form.__getitem__('image_add_form').save(commit=False)
+        # item = form.__getitem__('item_add_form').save(commit=False)
+        # # print("04", asset, end="\n\n")
+        
+        # image.group = asset.group
+        # image.asset = asset
+        # image()
+
+        # for item_name in form.data.__reduce__()[1][2]['item_list']:
+        #     item.group = asset.group
+        #     item.asset = asset
+        #     item.item_name = item_name
+        #     item()
+
+        # asset()
+        # form.__getitem__('asset_create_form').save()
+        # form.save()
         # asset = form.save(commit=False)
         # print("04", form, end="\n\n")
         # print("05", form.__getitem__('asset_create_form').fields, end="\n\n")
@@ -315,12 +451,82 @@ class AssetMultiCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
     
     def form_invalid(self, form):
-        # print("04", form, end="\n\n")
-        print("05", form.data.values(), end="\n\n")
-        print("06", form.data['item_list'], end="\n\n")
-        print("07", type(form.data['item_list']), end="\n\n")
-        print("08", form.data.__reduce__(), end="\n\n")
-        print("09", type(form.data.__reduce__()), end="\n\n")
+        # id_asset = form.__getitem__('asset_create_form').save().id
+        # asset = Asset.objects.prefetch_related('group').get(id=id_asset)
+        # group = asset.group
+
+        # self.request.POST['image_add_form-group'] = group
+        # self.request.POST['image_add_form-asset'] = str(asset.id)
+        # form.__getitem__('image_add_form').save(group=group, asset=asset)
+        # ImageAddForm.save(group=group, asset=asset)
+        # image = form.__getitem__('image_add_form').save(commit=False)
+        asset = form.__getitem__('asset_create_form')
+        print("ttt1", asset.data['asset_create_form-group'])
+        asset.data['asset_create_form-group'] = 0
+        print("ttt2", asset.data['asset_create_form-group'])
+
+
+        image = form.__getitem__('image_add_form')
+        print("ttt11", image.data['image_add_form-taken_at'])
+
+        # self.request.POST['item_add_form-group'] = group
+        # self.request.POST['item_add_form-asset'] = asset
+        # for item_name in form.data.__reduce__()[1][2]['item_list']:
+        #     self.request.POST['item_add_form-item_name'] = item_name
+        #     form.__getitem__('item_add_form').save()
+        # form.__getitem__('item_add_form').save(group=group, asset=asset, item_list=form.data.__reduce__()[1][2]['item_list'])
+        # ItemAddEXForm.save(group=group, asset=asset, item_list=form.data.__reduce__()[1][2]['item_list'])
+        item = form.__getitem__('item_add_form').save(commit=False)
+
+
+        # # print("08", form.data.get('item_list'), end="\n\n")
+        # form.data.__setitem__('image_add_form-group', self.request.POST['asset_create_form-group'])
+        # print("04sss", self.request.POST['image_add_form-group'], end="\n\n")
+
+        # print("04s", self.request.POST, end="\n\n")
+        # print("04s1", type(self.request.POST['image_add_form-group']), end="\n\n")
+        # print("04s2", type(self.request.POST['image_add_form-asset']), end="\n\n")
+        # print("04s3", type(self.request.POST['image_add_form-taken_at']), end="\n\n")
+
+        # group = self.request.POST['image_add_form-group']
+        # asset = form.__getitem__('asset_create_form').save().id
+        # print("040", asset, end="\n\n")
+        # # print("041", type(str(asset.id)), end="\n\n")
+        # print("042", group, end="\n\n")
+
+        # self.request.POST['image_add_form-group'] = group
+        # self.request.POST['image_add_form-asset'] = str(asset.id)
+        # form.__getitem__('image_add_form').save()
+
+        # # image = form.__getitem__('image_add_form').save(commit=False)
+        # # print("05", image, end="\n\n")
+        # # item = form.__getitem__('item_add_form').save(commit=False)
+        # # print("06", item, end="\n\n")
+
+        # # image.group = asset.group
+        # # image.asset = asset
+        # # image()
+
+        # self.request.POST['item_add_form-group'] = group
+        # self.request.POST['item_add_form-asset'] = asset
+        # for item_name in form.data.__reduce__()[1][2]['item_list']:
+        #     self.request.POST['item_add_form-item_name'] = item_name
+        #     form.__getitem__('item_add_form').save()
+        # #     item.item_name = item_name
+        # #     item()
+
+        # # asset()
+
+        # print("05", form.data.values(), end="\n\n")
+        # print("06", form.data['item_list'], end="\n\n")
+        # print("07", type(form.data['item_list']), end="\n\n")
+        # print("08", form.data.__reduce__(), end="\n\n")
+        # print("09", type(form.data.__reduce__()), end="\n\n")
+        # print("091", form.data.__reduce__()[1][2]['item_list'], end="\n\n")
+
+        # asset = form.__getitem__('asset_create_form').save(commit=False)
+        # print("10", asset, end="\n\n")
+        # print("11", asset.group, end="\n\n")
         # print("06", forms.formset_factory(self.request.POST), end="\n\n")
         # print("06", form.data['item_list'], end="\n\n")
         # for name in form.data['item_list']:
@@ -344,18 +550,21 @@ class AssetMultiCreateView(LoginRequiredMixin, generic.CreateView):
 
 
 class GroupJoinView(LoginRequiredMixin, generic.CreateView):
-    model = Group
+    model = Asset
     template_name = 'group_join.html'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = GroupJoinForm
+    # form = forms.inlineformset_factory(Image, History, fields=('user'))
+    # form_class = forms.inlineformset_factory(Image, History, fields=('user'))
+    fields = ()
     success_url = reverse_lazy('tracker:asset_list')
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
-        context['form'].fields['group'].queryset = Group.objects.filter(user=self.request.user)
+        # context['form'].fields['user'].queryset = self.request.user
+        # context['form'].fields['group'].queryset = Group.objects.filter(user=self.request.user)
         # print(context['form'])
         # print()
         # # print(AssetCreateForm)
@@ -370,12 +579,53 @@ class GroupJoinView(LoginRequiredMixin, generic.CreateView):
         # print()
         # print(context['form'].fields['group'])
         # context['form'].fields['group'].queryset = Group.objects.filter(user=self.request.user)
+
+        belongs = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
+        group_list = []
+        # print("ddd", belongs)
+        # print("ddd", belongs[0])
+        for b in belongs:
+            # print("fff", b.group.id)
+            group_list.append(Group.objects.filter(id=b.group.id))
+        # print(group_list)
+        groups = group_list[0]
+        if len(group_list) >= 2:
+            for g in group_list[1:]:
+                groups = groups|g
+
+        asset_create_form = AssetCreateForm(**self.get_form_kwargs())
+        asset_create_form.fields['group'].queryset = groups
+
+        image_add_form = ImageAddForm(**self.get_form_kwargs())
+        image_add_form.fields['group'].required = False
+        image_add_form.fields['asset'].required = False
+        image_add_form.fields['user'].initial = self.request.user
+        image_add_form.fields['user'].widget = forms.HiddenInput()
+        image_add_form.fields['front'].initial = True
+
+        # item_add_form = ItemAddEXForm(**self.get_form_kwargs())
+        item_add_form = forms.formset_factory(
+            form = ItemAddEXForm,
+        )
+        
+        context.update({
+            "asset_create_form": asset_create_form,
+            "image_add_form": image_add_form,
+            "item_add_form": item_add_form,
+        })
         return context
 
     def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
+        obj = form.save(commit=False)
+        print("ttt", form.data, end="\n\n")
+        print("ttte", self.object, end="\n\n")
+        # asset = AssetCreateForm(**self.get_form_kwargs()).save()
+        asset = AssetCreateForm(**self.get_form_kwargs()).data
+        print(asset)
+        asset = AssetCreateForm(**self.get_form_kwargs()).data
+        obj.asset = asset.id
+        # obj.asset = asset.id
+        obj.save()
         messages.success(self.request, '管理項目を作成しました。')
         return super().form_valid(form)
     

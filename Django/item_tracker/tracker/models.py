@@ -81,7 +81,7 @@ class History(models.Model):
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
 
     checked_at = models.DateTimeField(verbose_name='確認日時', default=datetime.now)
-    updated_at = models.DateTimeField(verbose_name='更新日時')
+    updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         auto_now = kwargs.pop('updated_at_auto_now', True)
