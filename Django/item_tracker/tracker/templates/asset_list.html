@@ -15,10 +15,10 @@
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
         <div class="d-flex justify-content-end mb-4">
-            <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
+            <a class="btn btn-primary float-right" href="#">新規作成</a>
         </div>
         {% for image in image_list %}
-            <a href="{% url 'tracker:asset_detail' image.asset.id %}">
+            <a href="{% url 'tracker:asset_detail' image.asset.asset_name %}">
                 <p>{{ image.asset }} - {{ image.group }}</p>
                 {% if image.image %}
                     <img src="{{ image.image.url }}" width="400" height="300"/>

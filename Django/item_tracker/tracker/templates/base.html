@@ -18,7 +18,30 @@
 
         <!-- My style -->
         <link rel="stylesheet" type="text/css" href="{% static 'css/mystyle.css' %}" />
+        
         {% block head %}{% endblock %}
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+
+        <script>
+            jQuery(document).ready(function() {
+            var offset = 0;
+            var duration = 100;
+            jQuery(window).scroll(function() {
+            if (jQuery(this).scrollTop() > offset) {
+            jQuery('.pagetop').fadeIn(duration);
+            } else {
+            jQuery('.pagetop').fadeOut(duration);
+            }
+            });
+
+            jQuery('.pagetop').click(function(event) {
+            event.preventDefault();
+            jQuery('html, body').animate({scrollTop: 0}, duration);
+            return false;
+            })
+            });
+        </script>
     </head>
 
     <body class="d-flex flex-column h-100">
@@ -36,6 +59,7 @@
                             
                             {% if user.is_authenticated %}
                                 <li class="nav-item"><a class="nav-link {% block active_asset_list %}{% endblock %}" href="{% url 'tracker:asset_list' %}">管理項目一覧</a></li>
+                                <li class="nav-item ms-lg-3"><a class="nav-link" href="{% url 'tracker:mypage' %}">グループ一覧</a></li>
                                 <li class="nav-item ms-lg-3"><a class="nav-link" href="{% url 'account_logout' %}">ログアウト</a></li>
                             {% else %}
                                 <li class="nav-item ms-lg-3"><a class="nav-link {% block active_signup %}{% endblock %}" href="{% url 'account_signup' %}">サインアップ</a></li>

@@ -1,23 +1,22 @@
 from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from django.http import HttpResponse
-
 import logging
 
 from django.urls import reverse_lazy
 from django.views import generic
-from django.forms import Form, ModelForm, HiddenInput
 
-from .forms import InquiryForm, AssetCreateForm, ItemAddForm, ImageAddForm, ItemMultiAddForm, GroupJoinForm
-from accounts.models import CustomUser
+from .forms import InquiryForm
+# from accounts.models import CustomUser
 from django.db import models
 from .models import Group, GroupMember, Asset, Item, Image, History, Result
 
 logger = logging.getLogger(__name__)
 from django.contrib import messages
 
-import re
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import GroupForm, JoinGroupForm
+from django.contrib.auth.decorators import login_required
 
 class IndexView(generic.TemplateView):
     template_name = "index.html"
@@ -39,30 +38,20 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         belong = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
-        images = None
-        if len(belong) >= 1:
-            images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
-            image_list  =[]
-            for b in belong:
-                print("fff", b.group)
-                image_list.append(images.filter(group=b.group))
-            print(image_list)
-            if len(image_list) <= 0:
-                images = None
-                pass
-            else:
-                images = image_list[0]
-                for i in image_list:
-                    images = images|i
+        images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
+        for i in belong:
+            images = images.filter(group=i.group)
         print(images)
+        for i in images:
+            print(i.asset)
+            print(i.group)
         return images
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
     model = Asset
     template_name = 'asset_detail.html'
-    pk_url_kwarg = 'id'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
+    slug_field = "asset_name" # モデルのフィールドの名前
+    slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -78,232 +67,60 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         context.update(extra)
         return context
     
-# from django import http
 
-class AssetCreateView(LoginRequiredMixin, generic.CreateView):
-    model = Asset
-    template_name = 'asset_create.html'
-    form_class = AssetCreateForm
-    success_url = reverse_lazy('tracker:asset_list')
-    # success_url = reverse_lazy('tracker:item_regist' )
-
-    # get_context_dataをオーバーライド
-    def get_context_data(self, **kwargs):
-        kwargs = {'instance': self.request.user}
-        # 既存のget_context_dataをコール
-        context = super().get_context_data(**kwargs)
-        # print(context['form'])
-        belongs = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
-        group_list = []
-        print("ddd", belongs)
-        print("ddd", belongs[0])
-        for b in belongs:
-            print("fff", b.group.id)
-            group_list.append(Group.objects.filter(id=b.group.id))
-        print(group_list)
-        groups = group_list[0]
-        if len(group_list) >= 2:
-            for g in group_list[1:]:
-                groups = groups|g
-        print(groups)
-        context['form'].fields['group'].queryset = groups
-        # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
-        extra = {
-            "object": self.object,
-        }
-        # print(self.success_url)
-        # コンテキスト情報のキーを追加
-        context.update(extra)
-        return context
-
-    def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        print("ddd", asset.id)
-        self.success_url = reverse_lazy(f'tracker:image_add', kwargs={'id': asset.id})
-        messages.success(self.request, '管理項目を作成しました。')
-        return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, "管理項目の作成に失敗しました。")
-        return super().form_invalid(form)
-    
-
-class ImageAddView(LoginRequiredMixin, generic.CreateView):
-    model = Asset
-    template_name = 'image_add.html'
-    pk_url_kwarg = 'id'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = ImageAddForm
-    success_url = reverse_lazy('tracker:asset_list')
-
-    # get_context_dataをオーバーライド
-    def get_context_data(self, **kwargs):
-        # 既存のget_context_dataをコール
-        context = super().get_context_data(**kwargs)
-        # print("aaa", self.get_success_url())
-        print(self.request.path)
-        print(re.findall(r'\d+', self.request.path))
-        # print(self.get_slug_field())
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        print(self.id)
-        print(Asset.objects.get(id=self.id))
-        assets = Asset.objects.prefetch_related('group').get(id=self.id)
-        print(assets.group)
-        context['form'].fields['group'].initial = assets.group
-        context['form'].fields['asset'].initial = assets
-        context['form'].fields['user'].initial = self.request.user
-        context['form'].fields['user'].widget = HiddenInput()
-        context['form'].fields['front'].initial = True
-
-        # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
-        extra = {
-            "object": self.object,
-        }
-        # print(self.success_url)
-        # コンテキスト情報のキーを追加
-        context.update(extra)
-        return context
-
-    def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        messages.success(self.request, '写真を登録しました。')
-        return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, "写真の登録に失敗しました。")
-        return super().form_invalid(form)
-    
-def wrap_boolean_check(v):
-        return not (v is False or v is None or v == '' or v == 0)
-
-class ItemAddView(LoginRequiredMixin, generic.CreateView):
-    model = Asset
-    template_name = 'item_add.html'
-    pk_url_kwarg = 'id'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = ItemAddForm
-    success_url = reverse_lazy('tracker:asset_list')
-
-    # get_context_dataをオーバーライド
-    def get_context_data(self, **kwargs):
-        # 既存のget_context_dataをコール
-        context = super().get_context_data(**kwargs)
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        print(self.id)
-        print(Asset.objects.get(id=self.id))
-        assets = Asset.objects.prefetch_related('group').get(id=self.id)
-        context['form'].fields['group'].initial = assets.group
-        context['form'].fields['asset'].initial = assets
-        return context
-
-    
-
-    def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        # print("asd", form.fields)
-        # print("asdfsda", form.fields['finish'].initial)
-        # print("mmm", form.fields['item_name'])
-        # print("add", form.fields['repeat'].initial)
-        # print("fff", form)
-        # print("sss", self.get_form_kwargs())
-        form_kwargs = self.get_form_kwargs()
-        # print("rrr", form_kwargs)
-        finish = form_kwargs['data']['finish']
-        # print("qqq", finish)
-        # print("ttt", form.fields['finish'])
-        # print("aaa", form.fields['finish'].initial)
-        # print("ppp", form.fields['finish'].choices)
-        # print("ddd", type(form.fields['finish'].initial))
-        # print("aff", form.fields['finish'].widget.check_test)
-        # print("affff", wrap_boolean_check(form.fields['finish'].widget.check_test))
-        # print("a", form.fields['finish'].widget.attrs['value'])
-        # print("d", type(form.fields['finish'].widget.attrs['value']))
-        if finish == '0':
-            print("true")
-            ttt = re.findall(r'\d+', self.request.path)
-            self.id = int(ttt[0])
-            self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        else:
-            print("false")
-            self.success_url = reverse_lazy('tracker:asset_list')
-            # ttt = re.findall(r'\d+', self.request.path)
-            # self.id = int(ttt[0])
-            # self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+@login_required
+def create_group(request):
+    if request.method == 'POST':
+        Group.private=False
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            group_name = form.cleaned_data['group_name']
             
-        # ttt = re.findall(r'\d+', self.request.path)
-        # self.id = int(ttt[0])
-        # self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        messages.success(self.request, 'アイテムを追加しました。')
-        return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        print("rrr", form.fields['finish'])
-        print("aaa", form.fields['finish'].initial)
-        print("aaa", form.fields['finish'].choices)
-        messages.error(self.request, "アイテムの追加に失敗しました。")
-        return super().form_invalid(form)
+            # 同じグループ名のレコードが存在しないかを確認
+            group_exists = Group.objects.filter(user=request.user, group_name=group_name).exists()
+            
+            if group_exists:
+                messages.error(request, 'あなたは同じ名前のグループをすでに作成しています。別の名前を選択してください。')
+            else:
+                group = form.save(commit=False)
+                group.user = request.user  # ユーザーを設定
+                group.save()
+
+                # グループを作成したユーザーをグループメンバーとして追加
+                GroupMember.objects.create(user=request.user, group=group)
+
+                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
+    else:
+        form = GroupForm()
+
+    return render(request, 'create_group.html', {'form': form})
 
 
+@login_required
+def join_group(request):
+    if request.method == 'POST':
+        form = JoinGroupForm(request.POST)
+        if form.is_valid():
+            group = form.cleaned_data['group']
+            user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
+            
+            if user_already_in_group:
+                messages.error(request, '既にこのグループに参加しています。')
+            else:
+                # グループメンバーとしてユーザーを追加
+                GroupMember.objects.create(user=request.user, group=group)
+                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
+    else:
+        form = JoinGroupForm()
+
+    return render(request, 'join_group.html', {'form': form})
 
 
+def group_detail(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+    return render(request, 'group_detail.html', {'group': group})
 
-
-
-
-
-
-
-
-
-class GroupJoinView(LoginRequiredMixin, generic.CreateView):
-    model = Group
-    template_name = 'group_join.html'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = GroupJoinForm
-    success_url = reverse_lazy('tracker:asset_list')
-
-    # get_context_dataをオーバーライド
-    def get_context_data(self, **kwargs):
-        # 既存のget_context_dataをコール
-        context = super().get_context_data(**kwargs)
-        context['form'].fields['group'].queryset = Group.objects.filter(user=self.request.user)
-        # print(context['form'])
-        # print()
-        # # print(AssetCreateForm)
-        # print()
-        # print(AssetMultiCreateForm.form_classes)
-        # print()
-        # print(AssetMultiCreateForm.form_classes['asset_create_form'])
-        # print()
-        # print(AssetMultiCreateForm.form_classes['asset_create_form'])
-        # print()
-        # print(context['form'].form_classes['asset_create_form'])
-        # print()
-        # print(context['form'].fields['group'])
-        # context['form'].fields['group'].queryset = Group.objects.filter(user=self.request.user)
-        return context
-
-    def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        messages.success(self.request, '管理項目を作成しました。')
-        return super().form_valid(form)
-    
-    def form_invalid(self, form):
-        messages.error(self.request, "管理項目の作成に失敗しました。")
-        return super().form_invalid(form)
+@login_required
+def mypage(request):
+    user_groups = GroupMember.objects.filter(user=request.user)
+    return render(request, 'mypage.html', {'user_groups': user_groups})

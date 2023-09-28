@@ -1,13 +1,9 @@
 import os
 
-from betterforms.multiform import MultiModelForm
 
 from django import forms
 from django.core.mail import EmailMessage
-
-from accounts.models import CustomUser
-from .models import Group, GroupMember, Asset, Item, Image, History, Result
-
+from .models import Group, GroupMember
 
 class InquiryForm(forms.Form):
     name = forms.CharField(label='お名前', max_length=30)
@@ -51,85 +47,21 @@ class InquiryForm(forms.Form):
         message = EmailMessage(subject=subject, body=message, from_email=from_email, to=to_list, cc=cc_list)
         message.send()
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 
-class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
+class GroupForm(forms.ModelForm):
     class Meta:
-        model = Asset
-        fields = ['asset_name', 'group']
+        model = Group
+        fields = ['group_name', 'private']
 
     def __init__(self, *args, **kwargs):
-        # kwargs={'instance': self.request.user}
+        user = kwargs.pop('user', None)  # デフォルト値をNoneに設定
         super().__init__(*args, **kwargs)
-        self.fields['group'].widget.attrs['class'] = 'form-control'
-        self.fields['asset_name'].widget.attrs['class'] = 'form-control'
+        self.fields['private'].initial = False
+        if user:
+            self.fields['user'].initial = user
 
-class ImageAddForm(forms.ModelForm):
-    class Meta:
-        model = Image
-        fields = ['group', 'asset', 'user', 'image', 'taken_at', 'front']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
-        self.fields['front'].widget = forms.HiddenInput()
-
-        for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-control'
-
-def wrap_boolean_check(v):
-    return not (v is False or v is None or v == '' or v == 0)
-
-class ItemAddForm(forms.ModelForm):
-    # finish = forms.BooleanField(label='終了する', initial=0, required=False)
-    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.CheckboxInput(check_test=wrap_boolean_check))
-    # finish = forms.BooleanField(label='終了する', initial=0, widget=forms.CheckboxInput(check_test=wrap_boolean_check))
-    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.ChoiceWidget(checked_attribute = {"checked": True}))
-    # finish = forms.BooleanField(label='終了する', initial=0, widget=forms.ChoiceWidget(checked_attribute = {"checked": False}))
-    # repeat = forms.BooleanField(label='続けて追加する', initial=1, widget=forms.ChoiceWidget(checked_attribute = {"checked": True}))
-    finish = forms.ChoiceField(
-        label='続ける',
-        required=False,
-        # disabled=False,
-        initial=[0],
-        choices=[(0, 'はい、続けます。'), (1, 'いいえ、終了します。')],
-        widget=forms.RadioSelect()
+class JoinGroupForm(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.filter(private=False),  # 個人利用でないグループを選択
+        label='グループ選択',
     )
-    
-    class Meta:
-        model = Item
-        fields = ['group', 'asset', 'item_name']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
-
-        for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-control'
-
-        # self.fields['finish'].widget = forms.CheckboxInput(check_test=wrap_boolean_check)
-        # self.fields['repeat'].widget.attrs['class'] = 'form-check'
-        self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
-
-
-class ItemMultiAddForm(MultiModelForm):
-
-    form_classes = {
-        "image_add_form": ImageAddForm,
-        "item_add_form": ItemAddForm,
-    }
-
-class GroupJoinForm(forms.ModelForm):
-
-    class Meta:
-        model = GroupMember
-        fields = ['group']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields['group'].widget.attrs['class'] = 'form-control'
