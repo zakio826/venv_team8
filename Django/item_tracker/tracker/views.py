@@ -221,14 +221,14 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         form_kwargs = self.get_form_kwargs()
         # print("rrr", form_kwargs)
         finish = form_kwargs['data']['finish']
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
         if finish == '0':
             print("true")
-            ttt = re.findall(r'\d+', self.request.path)
-            self.id = int(ttt[0])
             self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
         else:
             print("false")
-            self.success_url = reverse_lazy('tracker:asset_list')
+            self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
         messages.success(self.request, 'アイテムを追加しました。')
         return super().form_valid(form)
     

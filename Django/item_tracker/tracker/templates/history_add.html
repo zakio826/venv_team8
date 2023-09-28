@@ -12,7 +12,7 @@
         
     <div style="position: relative;">
         <canvas id="canvas"></canvas>
-        <img id="image" src="{{ image.url }}" style="position: absolute; top: 0; left: 0; visibility: hidden;"/>
+        <img id="image" src="{{ image.url }}" style="display: none;"/>
     </div>
 
     <hr>
@@ -39,7 +39,7 @@
             {% else %}
                 <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set">
             {% endif %}
-            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}">囲む</label>
+            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="draw_box('{{ forloop.counter0 }}');">囲む</label>
         </div>
         <div class="col-auto">
             <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
@@ -50,7 +50,7 @@
 
     <hr>
 
-    <input class="form-check-input" type="checkbox" id="finish" onclick="finish_check();">
+    <input class="form-check-input" type="checkbox" id="finish" required onclick="submit_check(finish.checked);">
     <form method="POST" enctype='multipart/form-data'>
         {% csrf_token %}
         <table class="table">
@@ -99,6 +99,10 @@
 
     // 選択済みのバウンディングボックスを描画
     function draw_box(order) {
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+        // console.log(order);
         ctx.strokeStyle = "blue"; // 青い線で描画
         
         for (let i = 0; i < set.length; i++) {
@@ -131,9 +135,6 @@
         width = x - startX;
         height = y - startY;
 
-        // キャンバスをクリアして画像を再描画
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0);
         draw_box(-1); // バウンディングボックスの描画
 
         // 矩形を赤い線で描画
@@ -142,14 +143,21 @@
         ctx.strokeRect(startX, startY, width, height);
     });
 
-    function finish_check() {
-        for (let i = 0; i < set.length; i++) {
-            if (!set[i].checked) return;
-        }
-        finish.checked = true;
-        submit.disabled = true;
+    function submit_check(fin) {
+        if (fin) submit.disabled = false;
+        else submit.disabled = true;
         // if (finish.checked) submit.disabled = true;
         // else submit.disabled = false;
+    }
+
+    function finish_check(index=-1) {
+        finish.checked = true;
+        for (let i = 0; i < set.length; i++) {
+            if (i != index && !check[i].checked) {
+                finish.checked = false;
+            }
+        }
+        submit_check(finish.checked);
     }
 
     // マウスアップイベントのリスナーを追加
@@ -172,9 +180,8 @@
         }
 
         // キャンバスをクリアして画像を再描画
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0);
-        ctx.strokeStyle = "blue";
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.drawImage(image, 0, 0);
         // isDrawing = true;
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) {
@@ -184,17 +191,21 @@
                     x_max.toFixed(),
                     y_max.toFixed()
                 ];
+
                 document.getElementById(`id_form-${i}-box_x_min`).value = x_min;
                 document.getElementById(`id_form-${i}-box_y_min`).value = y_min;
                 document.getElementById(`id_form-${i}-box_x_max`).value = x_max;
                 document.getElementById(`id_form-${i}-box_y_max`).value = y_max;
+
                 draw_box(i);
+
                 box_in[i].checked = true;
                 check[i].checked = true;
                 checked[i].innerText = "チェック済み";
             }
             console.log(box_li[i]);
         }
+        finish_check();
 
         
 
@@ -248,10 +259,14 @@
             document.getElementById(`id_form-${i}-box_y_min`).value = null;
             document.getElementById(`id_form-${i}-box_x_max`).value = null;
             document.getElementById(`id_form-${i}-box_y_max`).value = null;
+            finish.checked = false;
+            submit.disabled = true;
             out_box();
         } else {
             checked[i].innerText = "チェック済み";
+            finish_check(i);
         }
     };
+    
 </script>
 {% endblock %}
