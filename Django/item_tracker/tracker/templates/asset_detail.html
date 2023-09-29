@@ -38,7 +38,6 @@
         <div class="col-3">
             {% for image in image_list %}
                 {% if image.image %}
-                    {{ image.id }}
                     <img src="{{ image.image.url }}" width="600" height="400"/>
                 {% endif %}
             {% endfor %}
@@ -65,5 +64,6 @@
             {{ object.updated_at }}
         </div>
     </div> -->
+    <a class="btn btn-primary" href="{% url 'tracker:check_image_add' asset_id %}"> チェックする</a>
 </div>
 {% endblock %}

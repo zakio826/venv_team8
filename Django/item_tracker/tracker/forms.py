@@ -68,7 +68,7 @@ class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
 class ImageAddForm(forms.ModelForm):
     class Meta:
         model = Image
-        fields = ['group', 'asset', 'user', 'image', 'taken_at', 'front']
+        fields = ['image', 'group', 'asset', 'user', 'taken_at', 'front']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -141,11 +141,15 @@ class ResultAddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # self.fields['group'].widget = forms.HiddenInput()
-        # self.fields['asset'].widget = forms.HiddenInput()
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['asset'].widget = forms.HiddenInput()
         # self.fields['item'].widget = forms.HiddenInput()
-        # self.fields['image'].widget = forms.HiddenInput()
+        self.fields['image'].widget = forms.HiddenInput()
         # self.fields['result_class'].widget = forms.HiddenInput()
+        # self.fields['box_x_min'].widget = forms.HiddenInput()
+        # self.fields['box_y_min'].widget = forms.HiddenInput()
+        # self.fields['box_x_max'].widget = forms.HiddenInput()
+        # self.fields['box_y_max'].widget = forms.HiddenInput()
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'

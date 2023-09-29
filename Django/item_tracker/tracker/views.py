@@ -3,7 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import BaseModelForm
 from django.shortcuts import redirect
 
-from django.http import HttpResponse
+from django.http import HttpResponse, QueryDict
 
 import logging
 
@@ -72,10 +72,13 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
         extra = {
             "object": self.object,
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
             "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.id),
+            "asset_id": self.id,
         }
         # コンテキスト情報のキーを追加
         context.update(extra)
@@ -149,7 +152,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         context = super().get_context_data(**kwargs)
         # print("aaa", self.get_success_url())
         print(self.request.path)
-        print(re.findall(r'\d+', self.request.path))
+        # print(re.findall(r'\d+', self.request.path))
         # print(self.get_slug_field())
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
@@ -160,11 +163,31 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         context['form'].fields['group'].initial = assets.group
         context['form'].fields['asset'].initial = assets
         context['form'].fields['user'].initial = self.request.user
-        context['form'].fields['user'].widget = forms.HiddenInput()
-        context['form'].fields['front'].initial = True
+        
+        ttts = re.findall(r'[^0-9]+', self.request.path)
+        print("ff", ttts)
+        if ttts[0] == '/asset-create/image-add/':
+            context['form'].fields['user'].widget = forms.HiddenInput()
+            context['form'].fields['front'].initial = True
+            submit = "登録"
+        else:
+            members = GroupMember.objects.prefetch_related('group').prefetch_related('user')
+            # users = CustomUser.objects.prefetch_related('group').prefetch_related('user')
+            # context['form'].fields['user'].initial = users.get(user=self.request.user)
+            user_li = []
+            for m in members.filter(group=self.id):
+                user_li.append(CustomUser.objects.filter(id=m.user.id))
+            users = user_li[0]
+            if len(user_li) >= 2:
+                for u in user_li[1:]:
+                    users = users|u
+            print("uu", users)
+            context['form'].fields['user'].queryset = users
+            submit = "追加"
 
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
+            "submit": submit,
             "object": self.object,
         }
         # print(self.success_url)
@@ -178,8 +201,15 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         image.save()
         # ttt = re.findall(r'\d+', self.request.path)
         self.id = image.id
-        self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        messages.success(self.request, '写真を登録しました。')
+        ttt = re.findall(r'[^0-9]+', self.request.path)
+        print("f", ttt)
+        # self.id = int(ttt[0])
+        if ttt[0] == '/asset-create/image-add/':
+            self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+            messages.success(self.request, '写真を登録しました。')
+        else:
+            self.success_url = reverse_lazy(f'tracker:asset_check', kwargs={'id': self.id})
+            messages.success(self.request, '写真を追加しました。')
         return super().form_valid(form)
     
     def form_invalid(self, form):
@@ -323,8 +353,15 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         #     print()
         # print("fs", result_add_form().management_form)
         
+        ttts = re.findall(r'[^0-9]+', self.request.path)
+        print("f", ttts)
+        # self.id = int(ttt[0])
+        result_class = 0
+        if ttts[0] == '/asset-check/':
+            result_class = 1
+        
         extra = {
-            "object": self.object,
+            "create": result_class,
             "image": images.image,
             "items": items,
             "result_add_form": result_add_form(
@@ -334,7 +371,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                         'asset': images.asset,
                         'item': x,
                         'image': images,
-                        'result_class': 1,
+                        'result_class': result_class,
                     } for x in items
                 ],
             ),
@@ -369,8 +406,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         history = History(group=image.group, asset=image.asset, user=self.request.user, image=image)
         history.save()
         
-
-        print("eee", form)
+        print("eee", form.data)
         ctx = self.get_context_data()
         items = Item.objects.filter(asset=image.asset)
         ttttt = forms.formset_factory(
@@ -382,7 +418,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         )
         print("fdsf", history.id)
         # history_id = history.objects
-        formset = ttttt(self.request.POST, self.request.FILES)
+        print("fdsf", self.request.FILES)
+        formset = ttttt(self.request.POST)
         print("ttt0", formset.forms)
         if formset.is_valid():
             for form in formset.forms:
@@ -471,6 +508,185 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         # print("aaa", form.fields['finish'].choices)
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
+
+class AssetCheckView(LoginRequiredMixin, generic.CreateView):
+    # model = Result
+    model = Image
+    template_name = 'group_join.html'
+    pk_url_kwarg = 'id'
+    fields = ()
+    # form_class = ImageAddForm
+    success_url = reverse_lazy('tracker:asset_list')
+
+    # get_context_dataをオーバーライド
+    def get_context_data(self, **kwargs):
+        # 既存のget_context_dataをコール
+        context = super().get_context_data(**kwargs)
+
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+
+        # print("iii", context['form'])
+        assets = Asset.objects.prefetch_related('group').get(id=self.id)
+        users = GroupMember.objects.prefetch_related('group').prefetch_related('user')
+        image_add_form = ImageAddForm(**self.get_form_kwargs())
+        image_add_form.fields['group'].initial = assets.group
+        image_add_form.fields['asset'].initial = assets
+        image_add_form.fields['user'].initial = users.get(user=self.request.user)
+        image_add_form.fields['user'].queryset = users.filter(group=self.id)
+        
+        items = Item.objects.prefetch_related('group').prefetch_related('asset').filter(asset=self.id)
+        result_add_form = forms.formset_factory(
+            form = ResultAddForm,
+            # form = self.form_class,
+            # formset = ResultAddForm(**self.get_form_kwargs()),
+            extra = items.__len__(),
+            max_num = items.__len__(),
+        )
+        
+        extra = {
+            "object": self.object,
+            "items": items,
+            "image_add_form": image_add_form,
+            "result_add_form": result_add_form(
+                initial = [
+                    {
+                        'group': x.group,
+                        'asset': x.asset,
+                        'item': x,
+                        # 'image': images,
+                        'result_class': 0,
+                    } for x in items
+                ],
+            ),
+        }
+        # コンテキスト情報のキーを追加
+        context.update(extra)
+        return context
+    
+    def form_valid(self, form):
+        print("eeeff", form.data)
+        print()
+        print("eeeff", self.request.POST['group'])
+        print()
+        print("eeeff", self.request.FILES['image'])
+        print()
+        print("eeeff", form.__class__)
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+
+
+        # image = form.save(commit=False)
+        asset = Asset.objects.prefetch_related('group').get(id=self.id)
+        image = Image(
+            group = asset.group,
+            asset = asset,
+            user = CustomUser.objects.get(id=self.request.POST['user']),
+            image = self.request.FILES['image'],
+            taken_at = self.request.POST['taken_at'],
+            front = self.request.POST['front']
+        )
+        image.save()
+
+        history = History(group=image.group, asset=image.asset, user=self.request.user, image=image)
+        history.save()
+        
+        print("eee", form.data)
+        ctx = self.get_context_data()
+        items = Item.objects.filter(asset=image.asset)
+        ttttt = forms.formset_factory(
+            form = ResultAddForm,
+            extra = items.__len__(),
+            max_num = items.__len__(),
+        )
+        print("ttt", formset.forms)
+        
+        # for p in self.request.POST:
+        #     print("ttt", p)
+        print()
+        # print("fff", self.fields)
+        print("fdsf", ImageAddForm.Meta.fields)
+        # print("fdsf", self.request.POST.copy())
+        # p = self.request.POST.copy().dict()
+        # p = {key: p[key] for key in p.keys() if key not in ['group', 'asset', 'user', 'taken_at', 'initial-taken_at', 'front']} # dict(filter(lambda key: key not in ImageAddForm.Meta.fields, p.keys()))
+        # print("ppp", p)
+        # print("mmmmm", ImageAddForm.base_fields)
+        # print("formset", ttttt())
+        post = self.request.POST.copy()
+        for key in ['group', 'asset', 'user', 'taken_at', 'initial-taken_at', 'front']:
+            post.__delitem__(key)
+        print("post", post)
+        # print("fdsf", self.request.POST[:-6])
+        # history_id = history.objects
+        # formset = ttttt(QueryDict(filter(lambda key: key not in ImageAddForm.Meta.fields, self.request.POST.keys())))
+        # self.form_class = None
+        print()
+        print(self.request.POST.get('form-0-box_x_max'))
+
+        # formset = ttttt(self.request.POST)
+        formset = ttttt(post)
+
+        # for key in ['group', 'asset', 'user', 'taken_at', 'initial-taken_at', 'front']:
+        #     formset().__delitem__(key)
+
+        # formset = ttttt(self.request)
+        # print("ttt0f", QueryDict(filter(lambda key: key not in ImageAddForm.Meta.fields, self.request.POST.keys())))
+        print()
+        print("ttt", formset.get_context()['formset'].data)
+        print()
+        print("ttt", formset.is_valid())
+        print()
+        print("ttt0", formset.forms)
+        if form.is_valid():
+            for formm in formset.forms:
+                print()
+                print("f", formm.data)
+                # for key in ['group', 'asset', 'user', 'taken_at', 'initial-taken_at', 'front']:
+                #     formm.__delitem__(key)
+                formm.data = post
+                print()
+                print(formm.data)
+                result = formm.save(commit=False)
+                # print("eeet", form)
+                result.history = history
+                result.save()
+            # print("ttt1", self.object)
+            # self.object = formset.save(commit=False)
+            # self.object.history = history.save()
+            # self.object.save()
+            # print("ttt2", self.object)
+
+            # # FormSet の内容を保存
+            # print("ttt3", formset)
+            # formset.instance = self.object
+            # formset.save()
+            print("ttt4", formset)
+            messages.success(self.request, 'アイテムを追加しました。')
+            return super().form_valid(form)
+
+            # return redirect(self.get_redirect_url())
+        else:
+            ctx["form"] = formset
+            print()
+            print("tttd", form.data)
+            messages.error(self.request, "アイテムの追加に失敗しました。")
+            return super().form_invalid(form)
+    
+    def form_invalid(self, form):
+        print("eeef", form)
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        messages.error(self.request, "アイテムの追加に失敗しました。")
+        return super().form_invalid(form)
+
+
+
+
+
+
+
+
+
 
 
 
