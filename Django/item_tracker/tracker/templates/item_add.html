@@ -51,8 +51,8 @@
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
-        canvas.width = box_x_max-box_x_min;
-        canvas.height = box_y_max-box_y_min;
+        canvas.width = box_x_max - box_x_min;
+        canvas.height = box_y_max - box_y_min;
         ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
 
         console.log("box_x_min: " + box_x_min);

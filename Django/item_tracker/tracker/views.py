@@ -80,7 +80,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         extra = {
             "object": self.object,
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
-            "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.id),
+            "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.id, outer_edge=False),
             "asset_id": self.object.id,
         }
         # コンテキスト情報のキーを追加
@@ -245,7 +245,8 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             item_form.save()
             item = item_form.instance
         else:
-            item = Item.objects.prefetch_related('group').prefetch_related('asset').get(asset=asset)
+            # item = History.objects.prefetch_related('item').order_by('-updated_at').first()
+            item = Item.objects.filter(outer_edge=True).get(asset=asset)
 
         history = History(group=asset.group, asset=asset, user=self.request.user, image=image)
         history.save()
@@ -328,10 +329,10 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         extra = {
             "object": self.object,
             "image": history.image.image,
-            "box_x_min": int(result.box_x_min),
-            "box_y_min": int(result.box_y_min),
-            "box_x_max": int(result.box_x_max),
-            "box_y_max": int(result.box_y_max),
+            "box_x_min": round(result.box_x_min),
+            "box_y_min": round(result.box_y_min),
+            "box_x_max": round(result.box_x_max),
+            "box_y_max": round(result.box_y_max),
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
@@ -376,9 +377,15 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         context = super().get_context_data(**kwargs)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        images = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+        historys = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').order_by('-updated_at')
+        history = historys.get(id=self.id)
+        print(historys[0].id)
+        # last_history = historys.get(id)
+        results = Result.objects.filter(history=historys[0])
+        # results = Result.objects.prefetch_related('history').filter(asset=history.asset)
+        # result = results.filter(history=history)
 
-        items = Item.objects.filter(asset=images.asset)
+        items = Item.objects.filter(asset=history.asset, outer_edge=False)
         result_add_form = forms.formset_factory(
             form = ResultAddForm,
             extra = items.__len__(),
@@ -388,20 +395,28 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         ttts = re.findall(r'[^0-9]+', self.request.path)
         print("f", ttts)
         # self.id = int(ttt[0])
-        result_class = 0
         if ttts[0] == '/asset-check/':
             result_class = 1
+            results = Result.objects.filter(history=historys[1])
+        else:
+            result_class = 0
+            results = Result.objects.filter(history=historys[0])
         
         extra = {
             "create": result_class,
-            "image": images.image,
+            "image": history.image.image,
             "items": items,
+            "results": results,
+            # "box_x_min": round(result.box_x_min),
+            # "box_y_min": round(result.box_y_min),
+            # "box_x_max": round(result.box_x_max),
+            # "box_y_max": round(result.box_y_max),
             "result_add_form": result_add_form(
                 initial = [
                     {
-                        'asset': images.asset,
+                        'asset': history.asset,
                         'item': x,
-                        'image': images,
+                        'image': history.image,
                         'result_class': result_class,
                     } for x in items
                 ],
@@ -416,14 +431,12 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         print("eeeff", self.request.POST)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        image = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
-
-        history = History(group=image.group, asset=image.asset, user=self.request.user, image=image)
-        history.save()
+        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
+        # image = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
         
         print("eee", form.data)
         ctx = self.get_context_data()
-        items = Item.objects.filter(asset=image.asset)
+        items = Item.objects.filter(asset=history.asset, outer_edge=False)
         ttttt = forms.formset_factory(
             form = ResultAddForm,
             extra = items.__len__(),

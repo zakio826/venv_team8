@@ -14,6 +14,20 @@
         <canvas id="canvas"></canvas>
         <img id="image" src="{{ image.url }}" style="display: none;"/>
         <span id="create" style="display: none;">{{ create }}</span>
+        {% for result in results %}
+            {% if forloop.first %}
+                <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                <span id="item_box" style="display: none;">{{ results|length }}</span>
+            {% else %}
+                <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+            {% endif %}
+        {% endfor %}
     </div>
 
     <hr>
@@ -40,7 +54,7 @@
             {% else %}
                 <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set">
             {% endif %}
-            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="draw_box('{{ forloop.counter0 }}');">囲む</label>
+            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="draw_box('{{ forloop.counter0 }}');">選択</label>
         </div>
         <div class="col-auto">
             <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
@@ -50,14 +64,15 @@
     {% endfor %}
 
     <hr>
-
-    <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);">
+    <label class="my-3" for="finish">
+        <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> 終了する
+    </label>
     <form method="POST" enctype='multipart/form-data'>
         {% csrf_token %}
+        <button class="btn btn-primary" type="submit" id="submit" disabled>作成</button>
         <table class="table">
             {{ result_add_form.as_table }}
         </table>
-        <button class="btn btn-primary" type="submit" id="submit" disabled>作成</button>
     </form>
 </div>
 {% endblock %}
@@ -78,6 +93,18 @@
     const submit = document.getElementById("submit");
     const box_list = document.getElementById("box_list");
     const create = document.getElementById("create").innerText;
+    
+    const box_x_min = Number(document.getElementById("box_x_min").innerText);
+    const box_y_min = Number(document.getElementById("box_y_min").innerText);
+    const box_x_max = Number(document.getElementById("box_x_max").innerText);
+    const box_y_max = Number(document.getElementById("box_y_max").innerText);
+    
+    const item_box = Number(document.getElementById("item_box").innerText);
+
+    // const item_x_min = document.getElementById("item_x_min").innerText;
+    // const item_y_min = document.getElementById("item_y_min").innerText;
+    // const item_x_max = document.getElementById("item_x_max").innerText;
+    // const item_y_max = document.getElementById("item_y_max").innerText;
 
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
@@ -86,24 +113,77 @@
     // バウンディングボックスの座標を初期化
     let x_min, x_max, y_min, y_max;
     let box_li = [];
-    for (let i = 0; i < set.length; i++) box_li[i] = [0,0,0,0];
+    for (let i = 0; i < set.length; i++) {
+        // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
+        // console.log(document.getElementById(`item_${i+1}_y_min`).innerText);
+        // console.log(document.getElementById(`item_${i+1}_x_max`).innerText);
+        // console.log(document.getElementById(`item_${i+1}_y_max`).innerText);
+        // if (item_x_min[i]!=null && item_y_min[i]!=null && item_x_max[i]!=null && item_y_max[i]!=null) {
+        if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
+            box_li[i] = [
+                Number(document.getElementById(`item_${i+1}_x_min`).innerText) - box_x_min,
+                Number(document.getElementById(`item_${i+1}_y_min`).innerText) - box_y_min,
+                Number(document.getElementById(`item_${i+1}_x_max`).innerText) - box_x_min,
+                Number(document.getElementById(`item_${i+1}_y_max`).innerText) - box_y_min,
+            ];
+            // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
+        } else box_li[i] = [0,0,0,0];
+        // console.log(item_x_min);
+        // console.log(item_y_min[i]);
+        // console.log(item_x_max[i]);
+        // console.log(item_y_max[i]);
+        // console.log(box_li[i]);
+    }
 
     // キャンバスのサイズを画像のサイズに設定
-    canvas.width = image.width;
-    canvas.height = image.height;
+    // canvas.width = image.width;
+    // canvas.height = image.height;
+    canvas.width = box_x_max - box_x_min;
+    canvas.height = box_y_max - box_y_min;
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0);
+        // canvas.width = image.width;
+        // canvas.height = image.height;
+        // ctx.drawImage(image, 0, 0);
+        canvas.width = box_x_max - box_x_min;
+        canvas.height = box_y_max - box_y_min;
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+
+        ctx.strokeStyle = "blue"; // 青い線で描画
+        ctx.lineWidth = 2;
+        // if (item_x_min[i] && item_y_min[i] && item_x_max[i] && item_y_max[i]) {
+        for (let i = 0; i < set.length; i++) {
+            
+            if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
+                console.log(box_li[i]);
+                ctx.strokeRect(
+                    box_li[i][0],
+                    box_li[i][1],
+                    box_li[i][2] - box_li[i][0],
+                    box_li[i][3] - box_li[i][1],
+                );
+                
+                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
+                
+                if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+
+                box_in[i].checked = true;
+                check[i].checked = true;
+                checked[i].innerText = "チェック済み";
+            }
+        }
     };
 
     // 選択済みのバウンディングボックスを描画
     function draw_box(order) {
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0);
+        // ctx.drawImage(image, 0, 0);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
         // console.log(order);
         ctx.strokeStyle = "blue"; // 青い線で描画
         
@@ -194,10 +274,10 @@
                     y_max.toFixed()
                 ];
 
-                document.getElementById(`id_form-${i}-box_x_min`).value = x_min;
-                document.getElementById(`id_form-${i}-box_y_min`).value = y_min;
-                document.getElementById(`id_form-${i}-box_x_max`).value = x_max;
-                document.getElementById(`id_form-${i}-box_y_max`).value = y_max;
+                document.getElementById(`id_form-${i}-box_x_min`).value = x_min + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = y_min + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = x_max + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = y_max + box_y_min;
 
                 draw_box(i);
 
@@ -212,10 +292,10 @@
         
 
         box.innerHTML
-            = x_min.toFixed() + "px, "
-            + y_min.toFixed() + "px, "
-            + x_max.toFixed() + "px, "
-            + y_max.toFixed() + "px";
+            = (x_min + box_x_min).toFixed() + "px, "
+            + (y_min + box_y_min).toFixed() + "px, "
+            + (x_max + box_x_min).toFixed() + "px, "
+            + (y_max + box_y_min).toFixed() + "px";
     });
 
     // マウスアウトイベントのリスナーを追加
@@ -228,7 +308,8 @@
 
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0);
+        // ctx.drawImage(image, 0, 0);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) draw_box(i); // バウンディングボックスの描画
         }
