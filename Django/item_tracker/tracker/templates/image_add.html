@@ -7,14 +7,251 @@
 
 {% block contents %}
 <div class="container my-5">
+    <div style="position: relative; width: 100%; margin: auto;">
+        <canvas id="canvas" style="display: none;"></canvas>
+        <img id="image" src="{{ image.url }}" style="display: none;"/>
+        <!-- <span id="create" style="display: none;">{{ create }}</span> -->
+    </div>
+
+    <div id="checked" style="display: none;">
+        (x_min, y_min, x_max, y_max) = (<span id="box"></span>)
+        <h4 class="my-3" style="text-align: center;">全てのアイテムが入るように、外枠を囲ってください。</h4>
+    </div>
+
+    <div class="row w-75 mx-auto" id="control" style="display: none;">
+        <input class="btn-check" type="checkbox" id="check" disabled>
+        <label class="btn btn-outline-primary" for="check" onclick="del_box();">リセット</label>
+    </div>
+
+    <hr>
+    
     <div class="row">
         <form method="POST" enctype='multipart/form-data'>
             {% csrf_token %}
             <table class="table">
-                {{ form.as_table }}
+                {{ image_add_form.as_table }}
+                {{ item_add_form.as_table }}
+                {{ result_add_form.as_table }}
             </table>
-            <button class="btn btn-primary" type="submit">{{ submit }}</button>
+            <button class="btn btn-primary" type="submit" id="submit" disabled>{{ submit }}</button>
         </form>
     </div>
+    
 </div>
+{% endblock %}
+
+
+{% block js %}
+<script>// キャンバスとコンテキストを取得
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const image = document.getElementById("image");
+
+    const check = document.getElementById("check");
+    const checked = document.getElementById("checked");
+    const control = document.getElementById("control");
+    const set = false;
+    // const box_in = document.getElementsByName("box");
+    const box = document.getElementById("box");
+    // const finish = document.getElementById("finish");
+    const submit = document.getElementById("submit");
+    // const box_list = document.getElementById("box_list");
+    // const create = document.getElementById("create").innerText;
+    const image_get = document.getElementById("id_image");
+
+    // 描画状態を管理するフラグと座標を初期化
+    let isDrawing = false;
+    let startX, startY, width, height;
+
+    // バウンディングボックスの座標を初期化
+    let x_min, x_max, y_min, y_max;
+    let box_li = [0,0,0,0];
+    // for (let i = 0; i < set.length; i++) box_li[i] = 
+    
+    image_get.addEventListener('change', function() {
+        let reader = new FileReader();
+        reader.readAsDataURL(image_get.files[0]);
+        reader.onloadend = function(){ image.src = this.result; }
+
+        // キャンバスのサイズを画像のサイズに設定
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        canvas.style = "";
+        checked.style = "margin: 0 16px;";
+        control.style = "";
+
+        set = true;
+    });
+
+    // 画像の読み込みが完了したらキャンバスに描画
+    image.onload = () => {
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image, 0, 0);
+    };
+
+    // 選択済みのバウンディングボックスを描画
+    function draw_box(order) {
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+        // console.log(order);
+        ctx.strokeStyle = "blue"; // 青い線で描画
+        
+        if (order) ctx.lineWidth = 2;
+        else ctx.lineWidth = 1;
+
+        ctx.strokeRect(
+            box_li[0],
+            box_li[1],
+            box_li[2] - box_li[0],
+            box_li[3] - box_li[1],
+        );
+    };
+
+    // マウスダウンイベントのリスナーを追加
+    canvas.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        startX = e.clientX - canvas.getBoundingClientRect().left;
+        startY = e.clientY - canvas.getBoundingClientRect().top;
+    });
+
+    // マウスムーブイベントのリスナーを追加
+    canvas.addEventListener("mousemove", (e) => {
+        if (!isDrawing) return;
+
+        const x = e.clientX - canvas.getBoundingClientRect().left;
+        const y = e.clientY - canvas.getBoundingClientRect().top;
+
+        width = x - startX;
+        height = y - startY;
+
+        draw_box(false); // バウンディングボックスの描画
+
+        // 矩形を赤い線で描画
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, width, height);
+    });
+
+    // function submit_check(fin) {
+    //     if (fin) submit.disabled = false;
+    //     else submit.disabled = true;
+    //     // if (finish.checked) submit.disabled = true;
+    //     // else submit.disabled = false;
+    // }
+
+    // function finish_check(index=-1) {
+    //     finish.checked = true;
+    //     for (let i = 0; i < set.length; i++) {
+    //         if (i != index && !check[i].checked) {
+    //             finish.checked = false;
+    //         }
+    //     }
+    //     submit_check(finish.checked);
+    // }
+
+    // マウスアップイベントのリスナーを追加
+    canvas.addEventListener("mouseup", () => {
+        isDrawing = false;
+
+        // 描画した矩形の座標を表示
+        x_min = startX;
+        x_max = startX + width;
+        if (width < 0) {
+            x_min += width;
+            x_max -= width;
+        }
+
+        y_min = startY;
+        y_max = startY + height;
+        if (height < 0) {
+            y_min += height;
+            y_max -= height;
+        }
+
+        // キャンバスをクリアして画像を再描画
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.drawImage(image, 0, 0);
+        // isDrawing = true;
+        box_li = [
+            x_min.toFixed(),
+            y_min.toFixed(),
+            x_max.toFixed(),
+            y_max.toFixed()
+        ];
+        console.log(box_li);
+
+        document.getElementById(`id_box_x_min`).value = x_min;
+        document.getElementById(`id_box_y_min`).value = y_min;
+        document.getElementById(`id_box_x_max`).value = x_max;
+        document.getElementById(`id_box_y_max`).value = y_max;
+
+        check.checked = true;
+        check.disabled = false;
+        submit.disabled = false;
+
+        draw_box(true);
+        
+        // finish_check();
+
+        
+
+        box.innerHTML
+            = x_min.toFixed() + "px, "
+            + y_min.toFixed() + "px, "
+            + x_max.toFixed() + "px, "
+            + y_max.toFixed() + "px";
+    });
+
+    // マウスアウトイベントのリスナーを追加
+    canvas.addEventListener("mouseout", () => {
+        isDrawing = false;
+    });
+
+    // 選択したバウンディングボックスを強調して描画
+    function out_box() {
+
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) draw_box(i); // バウンディングボックスの描画
+        }
+    };
+
+    // 選択したバウンディングボックスの座標を追加
+    function set_box() {
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) {
+                box_li[i] = [
+                    x_min.toFixed(),
+                    y_min.toFixed(),
+                    x_max.toFixed(),
+                    y_max.toFixed()
+                ];
+                console.log(box_li[i]);
+            }
+        }
+        out_box();
+    };
+
+    // 選択したバウンディングボックスを削除
+    function del_box() {
+        box_li = [0,0,0,0];
+
+        document.getElementById(`id_box_x_min`).value = null;
+        document.getElementById(`id_box_y_min`).value = null;
+        document.getElementById(`id_box_x_max`).value = null;
+        document.getElementById(`id_box_y_max`).value = null;
+
+        check.disabled = true;
+        submit.disabled = true;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+    };
+    
+</script>
 {% endblock %}

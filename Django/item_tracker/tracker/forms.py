@@ -89,6 +89,24 @@ class ImageAddForm(forms.ModelForm):
     #     return obj
 
 class ItemAddForm(forms.ModelForm):
+
+    class Meta:
+        model = Item
+        fields = ['group', 'asset', 'item_name', 'outer_edge']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields['group'].widget = forms.HiddenInput()
+        self.fields['asset'].widget = forms.HiddenInput()
+        self.fields['outer_edge'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+        # self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+
+class ItemAddEXForm(forms.ModelForm):
     finish = forms.ChoiceField(
         label='続ける',
         required=False,
@@ -100,18 +118,42 @@ class ItemAddForm(forms.ModelForm):
     
     class Meta:
         model = Item
-        fields = ['group', 'asset', 'item_name']
+        fields = ['group', 'asset', 'item_name', 'outer_edge']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['group'].widget = forms.HiddenInput()
         self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['item_list'].widget = forms.HiddenInput()
+        self.fields['outer_edge'].widget = forms.HiddenInput()
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-
+        
         self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+    
+    # def save(self, group=None, asset=None, item_list=None):
+    #     obj = super.save(commit=False)
+    #     if group and asset and item_list:
+    #         obj.item_list = item_list
+    #         obj.group = group
+    #         obj.asset = asset
+    #         for name in obj.item_list:
+    #             obj.item_name = name
+    #             obj.save()
+    #     else:
+    #         for name in obj.item_list:
+    #             obj.item_name = name
+    #             obj.save()
+    #     return obj
+    
+    # def save(self, group, asset, item_list):
+    #     obj = super.save(commit=False)
+    #     for name in item_list:
+    #         obj.item_name = name
+    #         obj.save()
+    #     return obj
 
 class HistoryAddForm(forms.ModelForm):
 
@@ -136,16 +178,15 @@ class ResultAddForm(forms.ModelForm):
 
     class Meta:
         model = Result
-        fields = ['group', 'asset', 'item', 'image', 'result_class', 'box_x_min', 'box_y_min', 'box_x_max', 'box_y_max']
+        fields = ['asset', 'item', 'image', 'result_class', 'box_x_min', 'box_y_min', 'box_x_max', 'box_y_max']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['group'].widget = forms.HiddenInput()
         self.fields['asset'].widget = forms.HiddenInput()
-        # self.fields['item'].widget = forms.HiddenInput()
+        self.fields['item'].widget = forms.HiddenInput()
         self.fields['image'].widget = forms.HiddenInput()
-        # self.fields['result_class'].widget = forms.HiddenInput()
+        self.fields['result_class'].widget = forms.HiddenInput()
         # self.fields['box_x_min'].widget = forms.HiddenInput()
         # self.fields['box_y_min'].widget = forms.HiddenInput()
         # self.fields['box_x_max'].widget = forms.HiddenInput()
@@ -173,48 +214,6 @@ class ResultAddForm(forms.ModelForm):
 class ItemAddDummyForm(forms.ModelForm):
     name = forms.CharField(label='アイテム名', max_length=30)
 
-class ItemAddEXForm(forms.ModelForm):
-    # item_list = forms.MultipleChoiceField(
-    #     label="アイテムリスト",
-    #     required=True,
-    #     disabled=False,
-    #     widget=forms. SelectMultiple(attrs={'id': 'item_list',}))
-    
-    class Meta:
-        model = Item
-        fields = ['group', 'asset', 'item_name']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
-        # self.fields['item_list'].widget = forms.HiddenInput()
-
-        for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-control'
-    
-    # def save(self, group=None, asset=None, item_list=None):
-    #     obj = super.save(commit=False)
-    #     if group and asset and item_list:
-    #         obj.item_list = item_list
-    #         obj.group = group
-    #         obj.asset = asset
-    #         for name in obj.item_list:
-    #             obj.item_name = name
-    #             obj.save()
-    #     else:
-    #         for name in obj.item_list:
-    #             obj.item_name = name
-    #             obj.save()
-    #     return obj
-    
-    # def save(self, group, asset, item_list):
-    #     obj = super.save(commit=False)
-    #     for name in item_list:
-    #         obj.item_name = name
-    #         obj.save()
-    #     return obj
 
 
 

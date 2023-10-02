@@ -141,12 +141,13 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
     
 
 class ImageAddView(LoginRequiredMixin, generic.CreateView):
-    model = Asset
+    model = Image
     template_name = 'image_add.html'
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
     form_class = ImageAddForm
+    # fields = ()
     success_url = reverse_lazy('tracker:asset_list')
 
     # get_context_dataをオーバーライド
@@ -159,19 +160,44 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         # print(self.get_slug_field())
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        print(self.id)
-        print(Asset.objects.get(id=self.id))
+
+        image_add_form = ImageAddForm(**self.get_form_kwargs())
+        result_add_form = ResultAddForm(**self.get_form_kwargs())
+        item_add_form = None
+
+        print(image_add_form['group'])
+        # print(Asset.objects.get(id=self.id))
+
         assets = Asset.objects.prefetch_related('group').get(id=self.id)
-        print(assets.group)
-        context['form'].fields['group'].initial = assets.group
-        context['form'].fields['asset'].initial = assets
-        context['form'].fields['user'].initial = self.request.user
+
+        # print(assets.group)
+
+        image_add_form['group'].initial = assets.group
+        image_add_form['asset'].initial = assets
+        image_add_form['user'].initial = self.request.user
+
+
+        result_add_form['asset'].initial = assets
+        result_add_form['result_class'].initial = 9
+        result_add_form['asset'].field.widget = forms.HiddenInput()
+        result_add_form['item'].field.widget = forms.HiddenInput()
+        result_add_form['image'].field.widget = forms.HiddenInput()
+        result_add_form['result_class'].field.widget = forms.HiddenInput()
         
         ttts = re.findall(r'[^0-9]+', self.request.path)
         print("ff", ttts)
         if ttts[0] == '/asset-create/image-add/':
-            context['form'].fields['user'].widget = forms.HiddenInput()
-            context['form'].fields['front'].initial = True
+            image_add_form['user'].field.widget = forms.HiddenInput()
+            image_add_form['front'].initial = True
+            
+            item_add_form = ItemAddForm(**self.get_form_kwargs())
+            item_add_form['group'].initial = assets.group
+            item_add_form['asset'].initial = assets
+            item_add_form['item_name'].initial = f"外枠"
+            item_add_form['item_name'].field.widget = forms.HiddenInput()
+            # item_add_form['finish'].field.widget = forms.HiddenInput()
+            item_add_form['outer_edge'].initial = True
+
             submit = "登録"
         else:
             members = GroupMember.objects.prefetch_related('group').prefetch_related('user')
@@ -185,13 +211,16 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
                 for u in user_li[1:]:
                     users = users|u
             print("uu", users)
-            context['form'].fields['user'].queryset = users
+            image_add_form['user'].field.queryset = users
             submit = "追加"
 
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
             "submit": submit,
             "object": self.object,
+            "image_add_form": image_add_form,
+            "item_add_form": item_add_form,
+            "result_add_form": result_add_form,
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
@@ -199,15 +228,69 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         return context
 
     def form_valid(self, form):
-        image = form.save(commit=False)
-        image.user = self.request.user
-        image.save()
+        print("ss", form.data)
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        asset = Asset.objects.prefetch_related('group').get(id=self.id)
+
+        # image_form = ImageAddForm(self.request.POST, self.request.FILES)
+        image_form = form
+        image_form.save()
+        # print(image_form.instance)
+        image = image_form.instance
+
+        ttts = re.findall(r'[^0-9]+', self.request.path)
+        if ttts[0] == '/asset-create/image-add/':
+            item_form = ItemAddForm(self.request.POST)
+            item_form.save()
+            item = item_form.instance
+        else:
+            item = Item.objects.prefetch_related('group').prefetch_related('asset').get(asset=asset)
+
+        history = History(group=asset.group, asset=asset, user=self.request.user, image=image)
+        history.save()
+        
+        # print("ff", form.data['box_x_min'])
+        # print("ff", type(form.data['box_x_min']))
+        # print("ff", float(form.data['box_x_min']))
+        # print("ff", type(float(form.data['box_x_min'])))
+
+        result = Result(
+            history=history,
+            asset=asset,
+            image=image,
+            item=item,
+            result_class = int(form.data['result_class']),
+            box_x_min = float(form.data['box_x_min']),
+            box_y_min = float(form.data['box_y_min']),
+            box_x_max = float(form.data['box_x_max']),
+            box_y_max = float(form.data['box_y_max']),
+            # data = self.request.POST,
+            # initial = {
+            #     'history': history,
+            #     'asset': asset,
+            #     'image': image,
+            #     'item': item,
+            # },
+        )
+        # result(self.request.POST)
+        # result.fields['history'] = history
+        # result.fields['image'] = image
+        # result.fields['item'] = item
+        # result.instance.history = history
+        # result.instance.image = image
+        # result.instance.item = item
+        result.save()
+        # print("ff", result.)
+
+
+        # image = form.save(commit=False)
+        # image.user = self.request.user
         # ttt = re.findall(r'\d+', self.request.path)
-        self.id = image.id
-        ttt = re.findall(r'[^0-9]+', self.request.path)
-        print("f", ttt)
+        print("f", ttts)
         # self.id = int(ttt[0])
-        if ttt[0] == '/asset-create/image-add/':
+        self.id = history.id
+        if ttts[0] == '/asset-create/image-add/':
             self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
             messages.success(self.request, '写真を登録しました。')
         else:
@@ -221,12 +304,12 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
 
 
 class ItemAddView(LoginRequiredMixin, generic.CreateView):
-    model = Image
+    model = Item
     template_name = 'item_add.html'
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = ItemAddForm
+    form_class = ItemAddEXForm
     success_url = reverse_lazy('tracker:asset_list')
 
     # get_context_dataをオーバーライド
@@ -235,14 +318,20 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         context = super().get_context_data(**kwargs)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
+        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
+        result = Result.objects.get(history=history)
         # print(self.id)
         # print(Asset.objects.get(id=self.id))
-        images = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
-        context['form'].fields['group'].initial = images.group
-        context['form'].fields['asset'].initial = images.asset
+        # images = Image.objects.prefetch_related('group').prefetch_related('asset')
+        context['form'].fields['group'].initial = history.group
+        context['form'].fields['asset'].initial = history.asset
         extra = {
             "object": self.object,
-            "image": images.image,
+            "image": history.image.image,
+            "box_x_min": int(result.box_x_min),
+            "box_y_min": int(result.box_y_min),
+            "box_x_max": int(result.box_x_max),
+            "box_y_max": int(result.box_y_max),
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
@@ -275,7 +364,6 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 class HistoryAddView(LoginRequiredMixin, generic.CreateView):
-    model = Result
     model = Image
     template_name = 'history_add.html'
     pk_url_kwarg = 'id'
@@ -311,7 +399,6 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "result_add_form": result_add_form(
                 initial = [
                     {
-                        'group': images.group,
                         'asset': images.asset,
                         'item': x,
                         'image': images,

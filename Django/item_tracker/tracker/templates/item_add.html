@@ -7,7 +7,18 @@
 
 {% block contents %}
 <div class="container my-5">
-    <img src="{{ image.url }}" width="600" height="400"/>
+    <div style="position: relative; width: 100%; margin: auto;">
+        <canvas id="canvas"></canvas>
+        <img id="image" src="{{ image.url }}" style="display: none;"/>
+        <span id="box_x_min" style="display: none;">{{ box_x_min }}</span>
+        <span id="box_y_min" style="display: none;">{{ box_y_min }}</span>
+        <span id="box_x_max" style="display: none;">{{ box_x_max }}</span>
+        <span id="box_y_max" style="display: none;">{{ box_y_max }}</span>
+    </div>
+
+    <!-- <img src="{{ image.url }}" width="600" height="400"/> -->
+    <hr>
+
     <div class="row">
         <form method="POST" enctype='multipart/form-data'>
             {% csrf_token %}
@@ -21,22 +32,36 @@
 </div>
 {% endblock %}
 
-<!-- 
+
 {% block js %}
 <script>
-    const finish = document.getElementById("id_finish");
-    finish.value = false;
-    finish.addEventListener("click", function(){
-        if(finish.checked){
-            finish.value = true;
-            console.log(finish.value);
-            document.getElementById("result").innerHTML="True";
-        }else{
-            finish.value = false;
-            console.log(finish.value);
-            document.getElementById("result").innerHTML="False";
-        }
-    });
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const image = document.getElementById("image");
+    const box_x_min = Number(document.getElementById("box_x_min").innerText);
+    const box_y_min = Number(document.getElementById("box_y_min").innerText);
+    const box_x_max = Number(document.getElementById("box_x_max").innerText);
+    const box_y_max = Number(document.getElementById("box_y_max").innerText);
+
+    // キャンバスのサイズを画像のサイズに設定
+    canvas.width = image.width;
+    canvas.height = image.height;
+    console.log("canvas.width: " + canvas.width);
+    console.log("canvas.height: " + canvas.height);
+
+    // 画像の読み込みが完了したらキャンバスに描画
+    image.onload = () => {
+        canvas.width = box_x_max-box_x_min;
+        canvas.height = box_y_max-box_y_min;
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+
+        console.log("box_x_min: " + box_x_min);
+        console.log("box_y_min: " + box_y_min);
+        console.log("box_x_max: " + box_x_max);
+        console.log("box_y_max: " + box_y_max);
+
+        console.log("canvas.width: " + canvas.width);
+        console.log("canvas.height: " + canvas.height);
+    };
 </script>
 {% endblock %}
--->
