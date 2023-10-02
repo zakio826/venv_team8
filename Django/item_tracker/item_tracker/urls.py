@@ -17,12 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.staticfiles.urls import static
 from django.urls import path, include
+from accounts.views import LoginView
 
 from . import settings_common, settings_dev
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('tracker.urls')),
+    path('accounts/login/', LoginView.as_view(), name='account_login'),
     path('accounts/', include('allauth.urls')),
 ]
 

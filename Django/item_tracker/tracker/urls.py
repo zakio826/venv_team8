@@ -20,5 +20,10 @@ urlpatterns = [
     path('asset-check/<int:id>/', views.HistoryAddView.as_view(), name="asset_check"),
     # path('asset-check/history-add/<int:id>/', views.HistoryAddView.as_view(), name="history_add"),
 
+    path('create_group/', views.create_group, name='create_group'),
+    path('join_group/', views.join_group, name='join_group'),
+    path('mypage/', views.mypage, name='mypage'),
+    path('group_detail/<int:group_id>/', views.group_detail, name='group_detail'),
+
     path('group-join/', views.GroupJoinView.as_view(), name="group_join"),
 ]

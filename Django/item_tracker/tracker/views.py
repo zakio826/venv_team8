@@ -11,6 +11,9 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django import forms
 
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 # from .forms import InquiryForm, AssetCreateForm, ItemAddForm, ImageAddForm, AssetMultiCreateForm, ItemMultiAddForm, GroupJoinForm, ItemAddEXForm, .
 from .forms import *
 from accounts.models import CustomUser
@@ -78,7 +81,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             "object": self.object,
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
             "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.id),
-            "asset_id": self.id,
+            "asset_id": self.object.id,
         }
         # コンテキスト情報のキーを追加
         context.update(extra)
@@ -175,7 +178,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             # users = CustomUser.objects.prefetch_related('group').prefetch_related('user')
             # context['form'].fields['user'].initial = users.get(user=self.request.user)
             user_li = []
-            for m in members.filter(group=self.id):
+            for m in members.filter(group=assets.group):
                 user_li.append(CustomUser.objects.filter(id=m.user.id))
             users = user_li[0]
             if len(user_li) >= 2:
@@ -369,6 +372,62 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
+@login_required
+def create_group(request):
+    if request.method == 'POST':
+        Group.private=False
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            group_name = form.cleaned_data['group_name']
+            
+            # 同じグループ名のレコードが存在しないかを確認
+            group_exists = Group.objects.filter(user=request.user, group_name=group_name).exists()
+            
+            if group_exists:
+                messages.error(request, 'あなたは同じ名前のグループをすでに作成しています。別の名前を選択してください。')
+            else:
+                group = form.save(commit=False)
+                group.user = request.user  # ユーザーを設定
+                group.save()
+
+                # グループを作成したユーザーをグループメンバーとして追加
+                GroupMember.objects.create(user=request.user, group=group)
+
+                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
+    else:
+        form = GroupForm()
+
+    return render(request, 'create_group.html', {'form': form})
+
+
+@login_required
+def join_group(request):
+    if request.method == 'POST':
+        form = JoinGroupForm(request.POST)
+        if form.is_valid():
+            group = form.cleaned_data['group']
+            user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
+            
+            if user_already_in_group:
+                messages.error(request, '既にこのグループに参加しています。')
+            else:
+                # グループメンバーとしてユーザーを追加
+                GroupMember.objects.create(user=request.user, group=group)
+                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
+    else:
+        form = JoinGroupForm()
+
+    return render(request, 'join_group.html', {'form': form})
+
+
+def group_detail(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+    return render(request, 'group_detail.html', {'group': group})
+
+@login_required
+def mypage(request):
+    user_groups = GroupMember.objects.filter(user=request.user)
+    return render(request, 'mypage.html', {'user_groups': user_groups})
 
 
 

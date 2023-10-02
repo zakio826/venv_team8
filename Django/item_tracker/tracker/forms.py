@@ -261,6 +261,25 @@ class ItemMultiAddForm(MultiModelForm):
 
 
 
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['group_name', 'private']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # デフォルト値をNoneに設定
+        super().__init__(*args, **kwargs)
+        self.fields['private'].initial = False
+        self.fields['private'].widget = forms.HiddenInput()
+        if user:
+            self.fields['user'].initial = user
+
+class JoinGroupForm(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.filter(private=False),  # 個人利用でないグループを選択
+        label='グループ選択',
+    )
+
 
 
 

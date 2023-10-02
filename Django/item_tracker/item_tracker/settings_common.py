@@ -166,7 +166,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 
 # ログイン/ログアウト後の遷移先を設定
-LOGIN_REDIRECT_URL = 'tracker:asset_list'
+# LOGIN_REDIRECT_URL = 'tracker:asset_list'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'tracker:index'
 
 # ログアウトリンクのクリック一発でログアウトする設定
@@ -179,15 +179,15 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
 
 #allauth formの割り込み
-ACCOUNT_FORMS = {
-    'signup': 'accounts.forms.CustomSignupForm',
-    'login': 'accounts.forms.CustomLoginForm',
-    'reset_password': 'accounts.forms.CustomResetPasswordForm',
-    'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
-    'change_password': 'accounts.forms.CustomChangePasswordForm',
-    'add_email': 'accounts.forms.CustomAddEmailForm',
-    'set_password': 'accounts.forms.CustomSetPasswordForm',
-}
+# ACCOUNT_FORMS = {
+#     'signup': 'accounts.forms.CustomSignupForm',
+#     'login': 'accounts.forms.CustomLoginForm',
+#     'reset_password': 'accounts.forms.CustomResetPasswordForm',
+#     'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
+#     'change_password': 'accounts.forms.CustomChangePasswordForm',
+#     'add_email': 'accounts.forms.CustomAddEmailForm',
+#     'set_password': 'accounts.forms.CustomSetPasswordForm',
+# }
 
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 
