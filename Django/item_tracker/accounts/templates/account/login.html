@@ -66,8 +66,9 @@
                         
 
                         <div class="form-check mb-3">
-                            <input type="checkbox" name="personal_use" class="form-check-input" id="personalUse">
-                            <label for="personalUse" class="form-check-label">個人利用</label>
+                            <input type="checkbox" name="personal_use" class="form-check-input" id="personalUse" style="display: none;" checked>
+                            <!-- <input type="checkbox" name="personal_use" class="form-check-input" id="personalUse"> -->
+                            <!-- <label for="personalUse" class="form-check-label">個人利用</label> -->
                         </div>
                         <div class="d-grid mb-3"><button class="btn btn-primary btn-lg" id="submitButton" type="submit">ログイン</button></div>
                         <p><a class="button secondaryAction" href="{% url 'account_reset_password' %}">パスワードを忘れましたか？</a></p>
@@ -78,3 +79,4 @@
     </div>
 </section>
 {% endblock %}
+

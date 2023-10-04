@@ -17,12 +17,11 @@
                     <p class="lead fw-normal text-white-50 mb-4">世界で最も人気のあるフロントエンドのオープンソースツールキットであるBootstrapを使用して、レスポンシブモバイルファーストサイトをすばやく設計およびカスタマイズします！</p>
                     <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xl-start">
                         {% if user.is_authenticated %}
-                        <!--ログイン状態-->
+                            <a class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'tracker:asset_list' %}">管理項目一覧</a>
                         {% else %}
-                        <a class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'account_login' %}">ログイン</a>
+                            <a class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'account_login' %}">ログイン</a>
                         {% endif %}
                         <a class="btn btn-outline-light btn-lg px-4" href="#features">もっと詳しく知る</a>
-                        <a class="btn btn-outline-light btn-lg px-4" href="{% url 'tracker:join_group' %}">グループ参加</a>
                     </div>
                 </div>
             </div>
@@ -37,7 +36,7 @@
 <section class="py-5" id="features">
     <div class="container px-5 my-5">
         <div class="row gx-5">
-            <div class="col-lg-4 mb-5 mb-lg-0"><h2 class="fw-bolder mb-0">かさばる物を<br>　　管理します</h2></div>
+            <div class="col-lg-4 mb-5 mb-lg-0"><h2 class="fw-bolder mb-0">かさばる物を管理します。</h2></div>
             <div class="col-lg-8">
                 <div class="row gx-5 row-cols-1 row-cols-md-2">
                     <div class="col mb-5 h-100">
@@ -56,14 +55,14 @@
                         <p class="mb-0">確認作業を重ねることで、AIが自動で確認します。</p>
                     </div>
                     <div class="col h-100">
-                        <div class="bg-primary bg-gradient text-white rounded-3 mb-3"></div>
-                        <img src="{% static 'assets/all.png' %}" alt="" width="300" height="200">
+                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-toggles2"></i></div>
+                        <h2 class="h5">特集タイトル</h2>
+                        <p class="mb-0">見出しを説明するために、見出しの下のテキストの段落。これがもう少しテキストです。</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="pagetop">⋀</div>
 </section>
 
 <!-- Testimonial section-->

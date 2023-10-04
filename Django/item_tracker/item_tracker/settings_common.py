@@ -42,7 +42,9 @@ INSTALLED_APPS = [
 	'django.contrib.sites',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'django_bootstrap5',
+    'betterforms',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +65,9 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'), # 追加
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -85,10 +91,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'item_tracker',
-        'USER': 'postgres',
-        'PASSWORD': 'team8',
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': '',
-        'PORT': '5432',
+        'PORT': '',
     }
 }
 
@@ -160,8 +166,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 
 # ログイン/ログアウト後の遷移先を設定
-#LOGIN_REDIRECT_URL = 'tracker:index' viewで指定中
-ACCOUNT_LOGOUT_REDIRECT_URL = 'account_login'
+# LOGIN_REDIRECT_URL = 'tracker:asset_list'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'tracker:index'
 
 # ログアウトリンクのクリック一発でログアウトする設定
 ACCOUNT_LOGOUT_ON_GET = True
@@ -171,5 +177,18 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 
 # デフォルトのメール送信元を設定
 DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
+
+#allauth formの割り込み
+# ACCOUNT_FORMS = {
+#     'signup': 'accounts.forms.CustomSignupForm',
+#     'login': 'accounts.forms.CustomLoginForm',
+#     'reset_password': 'accounts.forms.CustomResetPasswordForm',
+#     'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
+#     'change_password': 'accounts.forms.CustomChangePasswordForm',
+#     'add_email': 'accounts.forms.CustomAddEmailForm',
+#     'set_password': 'accounts.forms.CustomSetPasswordForm',
+# }
+
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 
 MEDIA_URL = '/media/'

@@ -15,7 +15,7 @@ class Group(models.Model):
         verbose_name_plural = 'Group'
     
     def __str__(self):
-        return self.group_name
+        return self.group_name + "_" + self.user.username
 
 class GroupMember(models.Model):
     """グループメンバーモデル"""
@@ -39,7 +39,7 @@ class Asset(models.Model):
         verbose_name_plural = 'Asset'
     
     def __str__(self):
-        return self.asset_name
+        return self.group.group_name + "_" + self.asset_name
 
 class Item(models.Model):
     """アイテムモデル"""
@@ -48,6 +48,7 @@ class Item(models.Model):
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
 
     item_name = models.CharField(verbose_name='アイテム名', max_length=40)
+    outer_edge = models.BooleanField(verbose_name='外枠', default=False)
     
     class Meta:
         verbose_name_plural = 'Item'
@@ -81,7 +82,7 @@ class History(models.Model):
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
 
     checked_at = models.DateTimeField(verbose_name='確認日時', default=datetime.now)
-    updated_at = models.DateTimeField(verbose_name='更新日時')
+    updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)
 
     def save(self, *args, **kwargs):
         auto_now = kwargs.pop('updated_at_auto_now', True)
@@ -99,12 +100,12 @@ class Result(models.Model):
     """アイテム別履歴モデル"""
     
     history = models.ForeignKey(History, verbose_name='履歴', on_delete=models.PROTECT)
-    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
     item = models.ForeignKey(Item, verbose_name='アイテム', on_delete=models.PROTECT)
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
 
     result_class = models.IntegerField(verbose_name='詳細結果', validators=[MinValueValidator(0), MaxValueValidator(7)])
+    # result_class = {0: '無し', 1: '手動確認', 9: '外枠'}
     box_x_min = models.FloatField(verbose_name='バウンディングボックス (x_min)', blank=True, null=True)
     box_y_min = models.FloatField(verbose_name='バウンディングボックス (y_min)', blank=True, null=True)
     box_x_max = models.FloatField(verbose_name='バウンディングボックス (x_max)', blank=True, null=True)

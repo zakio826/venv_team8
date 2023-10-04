@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 
+import os
+from pathlib import Path
+
+from django.contrib.messages import constants as messages
+
+
 from .settings_common import *
 
 
@@ -38,8 +44,8 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'INFO',
         },
-        # diaryアプリケーションが利用するロガー
-        'diary': {
+        # trackerアプリケーションが利用するロガー
+        'tracker': {
             'handlers': ['console'],
             'level': 'DEBUG',
         },
@@ -70,3 +76,5 @@ LOGGING = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+

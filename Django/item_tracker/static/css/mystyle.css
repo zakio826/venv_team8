@@ -12,27 +12,3 @@ footer {
     margin-top: 3rem;
     margin-bottom: -1rem;
 }
-
-/* 上に戻るボタン */
-.pagetop {
-	color: #fff;
-	background-color: rgba(128, 128, 128, 0.3);
-	text-decoration: none;
-	display: none;
-	position: fixed;
-	bottom: 1rem;
-	right: 1rem;
-	font-size: 1.5rem;
-	width: 3.3rem;
-	height: 3.3rem;
-	line-height: 3.3rem;
-	border-radius: 3.3rem;
-	text-align: center;
-	cursor: pointer;
-}
-
-.pagetop:hover {
-	color: #fff !important;
-	background-color: #ed702b;
-	text-decoration: none;
-}

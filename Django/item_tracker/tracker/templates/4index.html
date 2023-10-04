@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ラベリング</title>
+
+    <style>
+        #canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 画像とキャンバス要素を配置 -->
+    <canvas id="canvas"></canvas>
+
+    <hr style="margin-bottom: 16px;">
+    
+    <div style="margin: 0 16px;">
+        (x_min, y_min, x_max, y_max) = (<span id="box"></span>)
+    </div>
+    <div style="display: flex;">
+        <ol>
+            <label for="class0">
+                <li><input type="radio" id="class0" name="class" value="0" checked> モンキーレンチ</li>
+            </label>
+            <label for="class1">
+                <li><input type="radio" id="class1" name="class" value="1"> ペンチ</li>
+            </label>
+            <label for="class2">
+                <li><input type="radio" id="class2" name="class" value="2"> ラジオペンチ</li>
+            </label>
+            <label for="class3">
+                <li><input type="radio" id="class3" name="class" value="3"> ドライバー</li>
+            </label>
+        </ol>
+        <p id="box_list" style="margin-left: 16px;"></p>
+    </div>
+    
+    <div style="margin: 0 16px;">
+        <input type="button" id="out" value="確認" onclick="out_box();">
+        <input type="button" id="set" value="追加" onclick="set_box();">
+        <input type="button" id="del" value="削除" onclick="del_box();">
+    </div>
+
+    <img id="image" src="../../media/0152_photo.jpg" alt="Image" style="visibility: hidden;"/>
+
+    <script>
+        // キャンバスとコンテキストを取得
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const image = document.getElementById("image");
+
+        const check = document.getElementsByName("class");
+        const box = document.getElementById("box");
+        const box_list = document.getElementById("box_list");
+
+        // 描画状態を管理するフラグと座標を初期化
+        let isDrawing = false;
+        let startX, startY, width, height;
+
+        // バウンディングボックスの座標を初期化
+        let x_min, x_max, y_min, y_max;
+        let box_li = [];
+        for (let i = 0; i < check.length; i++) box_li[i] = [0,0,0,0];
+
+        // キャンバスのサイズを画像のサイズに設定
+        canvas.width = image.width;
+        canvas.height = image.height;
+
+        // 画像の読み込みが完了したらキャンバスに描画
+        image.onload = () => {
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0);
+        };
+
+        // 選択済みのバウンディングボックスを描画
+        function draw_box(order) {
+        console.log(order);
+            ctx.strokeStyle = "blue"; // 青い線で描画
+            
+            for (let i = 0; i < check.length; i++) {
+                if (i == order) ctx.lineWidth = 2;
+                else ctx.lineWidth = 1;
+
+                ctx.strokeRect(
+                    box_li[i][0],
+                    box_li[i][1],
+                    box_li[i][2] - box_li[i][0],
+                    box_li[i][3] - box_li[i][1],
+                );
+            }
+        };
+
+        // マウスダウンイベントのリスナーを追加
+        canvas.addEventListener("mousedown", (e) => {
+            isDrawing = true;
+            startX = e.clientX - canvas.getBoundingClientRect().left;
+            startY = e.clientY - canvas.getBoundingClientRect().top;
+        });
+
+        // マウスムーブイベントのリスナーを追加
+        canvas.addEventListener("mousemove", (e) => {
+            if (!isDrawing) return;
+
+            const x = e.clientX - canvas.getBoundingClientRect().left;
+            const y = e.clientY - canvas.getBoundingClientRect().top;
+
+            width = x - startX;
+            height = y - startY;
+
+            // キャンバスをクリアして画像を再描画
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+            draw_box(-1); // バウンディングボックスの描画
+
+            // 矩形を赤い線で描画
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(startX, startY, width, height);
+        });
+
+        // マウスアップイベントのリスナーを追加
+        canvas.addEventListener("mouseup", () => {
+            isDrawing = false;
+
+            // 描画した矩形の座標を表示
+            x_min = startX;
+            x_max = startX + width;
+            if (width < 0) {
+                x_min += width;
+                x_max -= width;
+            }
+
+            y_min = startY;
+            y_max = startY + height;
+            if (height < 0) {
+                y_min += height;
+                y_max -= height;
+            }
+
+            box.innerHTML
+                = x_min.toFixed() + "px, "
+                + y_min.toFixed() + "px, "
+                + x_max.toFixed() + "px, "
+                + y_max.toFixed() + "px";
+        });
+
+        // マウスアウトイベントのリスナーを追加
+        canvas.addEventListener("mouseout", () => {
+            isDrawing = false;
+        });
+
+        // 選択したバウンディングボックスを強調して描画
+        function out_box() {
+            box_list.innerHTML = "";
+            for (let i = 0; i < check.length; i++) {
+                if (box_li[i].toString() != [0,0,0,0].toString()) {
+                    box_list.innerHTML
+                        += "(x_min, y_min, x_max, y_max) = ("
+                        +  box_li[i][0] + "px, "
+                        +  box_li[i][1] + "px, "
+                        +  box_li[i][2] + "px, "
+                        +  box_li[i][3] + "px)";
+                }
+                box_list.innerHTML += "<br>";
+            }
+
+            // キャンバスをクリアして画像を再描画
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, 0, 0);
+            for (let i = 0; i < check.length; i++) {
+                if (check[i].checked) draw_box(i); // バウンディングボックスの描画
+            }
+        };
+
+        // 選択したバウンディングボックスの座標を追加
+        function set_box() {
+            for (let i = 0; i < check.length; i++) {
+                if (check[i].checked) {
+                    box_li[i] = [
+                        x_min.toFixed(),
+                        y_min.toFixed(),
+                        x_max.toFixed(),
+                        y_max.toFixed()
+                    ];
+                    console.log(box_li[i]);
+                }
+            }
+            out_box();
+        };
+
+        // 選択したバウンディングボックスを削除
+        function del_box() {
+            for (let i = 0; i < check.length; i++) {
+                if (check[i].checked) box_li[i] = [0,0,0,0];
+            }
+            out_box();
+        };
+    </script>
+</body>
+</html>

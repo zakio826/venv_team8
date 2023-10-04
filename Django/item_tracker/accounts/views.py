@@ -20,13 +20,13 @@ class LoginView(AllauthLoginView):
             # ユーザーが個人利用を選択した場合
             if personal_use:
                 # グループ名を設定
-                group_name = "solo_" + self.request.user.username
+                group_name = "個人利用グループ"
 
                 # 同じホストユーザーとグループ名のグループが存在するかを確認
                 group_exists = Group.objects.filter(user=self.request.user, group_name=group_name).exists()
 
                 if group_exists:
-                    messages.error(self.request, '同じ名前のグループがすでに存在します。別の名前を選択してください。')
+                    # messages.error(self.request, '同じ名前のグループがすでに存在します。別の名前を選択してください。')
                     return redirect('tracker:index')
                     #return self.render_to_response(self.get_context_data(form=form))
                 else:

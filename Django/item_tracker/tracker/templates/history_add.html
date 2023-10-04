@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}日記作成 | Private Diary{% endblock %}
+
+{% block active_diary_list %}active{% endblock %}
+
+{% block contents %}
+<div class="container my-5">
+    <!-- <input class="btn-check" type="radio" id="test0" name="test"><label class="btn btn-outline-primary" for="test0">test0</label>
+    <input class="btn-check" type="radio" id="test1" name="test"><label class="btn btn-outline-primary" for="test1">test1</label> -->
+        
+    <div class="row">
+        <div class="col" style="position: relative;">
+            <canvas id="canvas"></canvas>
+            <img id="image" src="{{ image.url }}" style="display: none;"/>
+            <span id="create" style="display: none;">{{ create }}</span>
+            {% for result in results reversed %}
+                {% if forloop.last %}
+                    <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                    <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                    <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                    <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                    <span id="item_box" style="display: none;">{{ results|length }}</span>
+                {% else %}
+                    <span id="item_{{ forloop.counter }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                    <span id="item_{{ forloop.counter }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                    <span id="item_{{ forloop.counter }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                    <span id="item_{{ forloop.counter }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col" id="check_list" style="overflow-y: scroll;">
+            {% include 'common_history_add.html' %}
+            <div class="row my-5">ダミー</div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div style="margin: 0 16px;">
+        (x_min, y_min, x_max, y_max) = (<span id="box"></span>)
+    </div>
+
+    <hr>
+
+
+    <hr>
+    <label class="my-3" for="finish">
+        <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> 終了する
+    </label>
+    <form method="POST" enctype='multipart/form-data'>
+        {% csrf_token %}
+        <button class="btn btn-primary" type="submit" id="submit" disabled>作成</button>
+        <table class="table">
+            {{ result_add_form.as_table }}
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script>// キャンバスとコンテキストを取得
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const image = document.getElementById("image");
+
+    const check = document.getElementsByName("check");
+    const checked = document.getElementsByName("checked");
+    const set = document.getElementsByName("set");
+    const box_in = document.getElementsByName("box");
+    const box = document.getElementById("box");
+    const finish = document.getElementById("finish");
+    const submit = document.getElementById("submit");
+    const box_list = document.getElementById("box_list");
+    const create = document.getElementById("create").innerText;
+
+    const check_list = document.getElementById("check_list");
+    
+    const box_x_min = Number(document.getElementById("box_x_min").innerText);
+    const box_y_min = Number(document.getElementById("box_y_min").innerText);
+    const box_x_max = Number(document.getElementById("box_x_max").innerText);
+    const box_y_max = Number(document.getElementById("box_y_max").innerText);
+    
+    const item_box = Number(document.getElementById("item_box").innerText);
+
+    // const item_x_min = document.getElementById("item_x_min").innerText;
+    // const item_y_min = document.getElementById("item_y_min").innerText;
+    // const item_x_max = document.getElementById("item_x_max").innerText;
+    // const item_y_max = document.getElementById("item_y_max").innerText;
+
+    // 描画状態を管理するフラグと座標を初期化
+    let isDrawing = false;
+    let startX, startY, width, height;
+
+    // バウンディングボックスの座標を初期化
+    let x_min, x_max, y_min, y_max;
+    let box_li = [];
+    for (let i = 0; i < set.length; i++) {
+        // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
+        // console.log(document.getElementById(`item_${i+1}_y_min`).innerText);
+        // console.log(document.getElementById(`item_${i+1}_x_max`).innerText);
+        // console.log(document.getElementById(`item_${i+1}_y_max`).innerText);
+        // if (item_x_min[i]!=null && item_y_min[i]!=null && item_x_max[i]!=null && item_y_max[i]!=null) {
+        if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
+            box_li[i] = [
+                Number(document.getElementById(`item_${i+1}_x_min`).innerText) - box_x_min,
+                Number(document.getElementById(`item_${i+1}_y_min`).innerText) - box_y_min,
+                Number(document.getElementById(`item_${i+1}_x_max`).innerText) - box_x_min,
+                Number(document.getElementById(`item_${i+1}_y_max`).innerText) - box_y_min,
+            ];
+            // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
+        } else box_li[i] = [0,0,0,0];
+        // console.log(item_x_min);
+        // console.log(item_y_min[i]);
+        // console.log(item_x_max[i]);
+        // console.log(item_y_max[i]);
+        // console.log(box_li[i]);
+    }
+
+    // キャンバスのサイズを画像のサイズに設定
+    // canvas.width = image.width;
+    // canvas.height = image.height;
+    canvas.width = box_x_max - box_x_min;
+    canvas.height = box_y_max - box_y_min;
+
+    // 画像の読み込みが完了したらキャンバスに描画
+    image.onload = () => {
+        // canvas.width = image.width;
+        // canvas.height = image.height;
+        // ctx.drawImage(image, 0, 0);
+        canvas.width = box_x_max - box_x_min;
+        canvas.height = box_y_max - box_y_min;
+
+        check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
+
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+
+        ctx.strokeStyle = "blue"; // 青い線で描画
+        ctx.lineWidth = 2;
+        // if (item_x_min[i] && item_y_min[i] && item_x_max[i] && item_y_max[i]) {
+        for (let i = 0; i < set.length; i++) {
+            
+            if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
+                console.log(box_li[i]);
+                ctx.strokeRect(
+                    box_li[i][0],
+                    box_li[i][1],
+                    box_li[i][2] - box_li[i][0],
+                    box_li[i][3] - box_li[i][1],
+                );
+                
+                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
+                
+                if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+
+                box_in[i].checked = true;
+                check[i].checked = true;
+                checked[i].innerText = "チェック済み";
+            }
+        }
+    };
+
+    // 選択済みのバウンディングボックスを描画
+    function draw_box(order) {
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.drawImage(image, 0, 0);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+        // console.log(order);
+        ctx.strokeStyle = "blue"; // 青い線で描画
+        
+        for (let i = 0; i < set.length; i++) {
+            if (i == order) ctx.lineWidth = 2;
+            else ctx.lineWidth = 1;
+
+            ctx.strokeRect(
+                box_li[i][0],
+                box_li[i][1],
+                box_li[i][2] - box_li[i][0],
+                box_li[i][3] - box_li[i][1],
+            );
+        }
+    };
+
+    // マウスダウンイベントのリスナーを追加
+    canvas.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        startX = e.clientX - canvas.getBoundingClientRect().left;
+        startY = e.clientY - canvas.getBoundingClientRect().top;
+    });
+
+    // マウスムーブイベントのリスナーを追加
+    canvas.addEventListener("mousemove", (e) => {
+        if (!isDrawing) return;
+
+        const x = e.clientX - canvas.getBoundingClientRect().left;
+        const y = e.clientY - canvas.getBoundingClientRect().top;
+
+        width = x - startX;
+        height = y - startY;
+
+        draw_box(-1); // バウンディングボックスの描画
+
+        // 矩形を赤い線で描画
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(startX, startY, width, height);
+    });
+
+    function submit_check(fin) {
+        if (fin) submit.disabled = false;
+        else submit.disabled = true;
+        // if (finish.checked) submit.disabled = true;
+        // else submit.disabled = false;
+    }
+
+    function finish_check(index=-1) {
+        finish.checked = true;
+        for (let i = 0; i < set.length; i++) {
+            if (i != index && !check[i].checked) {
+                finish.checked = false;
+            }
+        }
+        submit_check(finish.checked);
+    }
+
+    // マウスアップイベントのリスナーを追加
+    canvas.addEventListener("mouseup", () => {
+        isDrawing = false;
+
+        // 描画した矩形の座標を表示
+        x_min = startX;
+        x_max = startX + width;
+        if (width < 0) {
+            x_min += width;
+            x_max -= width;
+        }
+
+        y_min = startY;
+        y_max = startY + height;
+        if (height < 0) {
+            y_min += height;
+            y_max -= height;
+        }
+
+        // キャンバスをクリアして画像を再描画
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.drawImage(image, 0, 0);
+        // isDrawing = true;
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) {
+                box_li[i] = [
+                    x_min.toFixed(),
+                    y_min.toFixed(),
+                    x_max.toFixed(),
+                    y_max.toFixed()
+                ];
+
+                document.getElementById(`id_form-${i}-box_x_min`).value = x_min + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = y_min + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = x_max + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = y_max + box_y_min;
+
+                draw_box(i);
+
+                box_in[i].checked = true;
+                check[i].checked = true;
+                checked[i].innerText = "チェック済み";
+            }
+            console.log(box_li[i]);
+        }
+        finish_check();
+
+        
+
+        box.innerHTML
+            = (x_min + box_x_min).toFixed() + "px, "
+            + (y_min + box_y_min).toFixed() + "px, "
+            + (x_max + box_x_min).toFixed() + "px, "
+            + (y_max + box_y_min).toFixed() + "px";
+    });
+
+    // マウスアウトイベントのリスナーを追加
+    canvas.addEventListener("mouseout", () => {
+        isDrawing = false;
+    });
+
+    // 選択したバウンディングボックスを強調して描画
+    function out_box() {
+
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.drawImage(image, 0, 0);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) draw_box(i); // バウンディングボックスの描画
+        }
+    };
+
+    // 選択したバウンディングボックスの座標を追加
+    function set_box() {
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) {
+                box_li[i] = [
+                    x_min.toFixed(),
+                    y_min.toFixed(),
+                    x_max.toFixed(),
+                    y_max.toFixed()
+                ];
+                console.log(box_li[i]);
+            }
+        }
+        out_box();
+    };
+
+    // 選択したバウンディングボックスを削除
+    function del_box(i) {
+        if (check[i].checked) {
+            box_li[i] = [0,0,0,0];
+            // check[i].checked = false;
+            checked[i].innerText = "チェック";
+            box_in[i].checked = false;
+            if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
+            document.getElementById(`id_form-${i}-box_x_min`).value = null;
+            document.getElementById(`id_form-${i}-box_y_min`).value = null;
+            document.getElementById(`id_form-${i}-box_x_max`).value = null;
+            document.getElementById(`id_form-${i}-box_y_max`).value = null;
+            finish.checked = false;
+            submit.disabled = true;
+            out_box();
+        } else {
+            if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+            checked[i].innerText = "チェック済み";
+            finish_check(i);
+        }
+    };
+    
+</script>
+{% endblock %}
