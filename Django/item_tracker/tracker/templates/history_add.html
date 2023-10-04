@@ -10,24 +10,30 @@
     <!-- <input class="btn-check" type="radio" id="test0" name="test"><label class="btn btn-outline-primary" for="test0">test0</label>
     <input class="btn-check" type="radio" id="test1" name="test"><label class="btn btn-outline-primary" for="test1">test1</label> -->
         
-    <div style="position: relative;">
-        <canvas id="canvas"></canvas>
-        <img id="image" src="{{ image.url }}" style="display: none;"/>
-        <span id="create" style="display: none;">{{ create }}</span>
-        {% for result in results reversed %}
-            {% if forloop.last %}
-                <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
-                <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
-                <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
-                <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
-                <span id="item_box" style="display: none;">{{ results|length }}</span>
-            {% else %}
-                <span id="item_{{ forloop.counter }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
-                <span id="item_{{ forloop.counter }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
-                <span id="item_{{ forloop.counter }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
-                <span id="item_{{ forloop.counter }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
-            {% endif %}
-        {% endfor %}
+    <div class="row">
+        <div class="col" style="position: relative;">
+            <canvas id="canvas"></canvas>
+            <img id="image" src="{{ image.url }}" style="display: none;"/>
+            <span id="create" style="display: none;">{{ create }}</span>
+            {% for result in results reversed %}
+                {% if forloop.last %}
+                    <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                    <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                    <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                    <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                    <span id="item_box" style="display: none;">{{ results|length }}</span>
+                {% else %}
+                    <span id="item_{{ forloop.counter }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                    <span id="item_{{ forloop.counter }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                    <span id="item_{{ forloop.counter }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                    <span id="item_{{ forloop.counter }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col" id="check_list" style="overflow-y: scroll;">
+            {% include 'common_history_add.html' %}
+            <div class="row my-5">ダミー</div>
+        </div>
     </div>
 
     <hr>
@@ -38,30 +44,6 @@
 
     <hr>
 
-    {% for item in items reversed %}
-    <div class="row m-2">
-        <div class="col-auto" style="width: 18%;">
-            <input class="btn-check" type="checkbox" id="check_{{ forloop.counter0 }}" name="check">
-            <label class="btn btn-outline-primary" for="check_{{ forloop.counter0 }}" style="width: 100%;" onclick="del_box('{{ forloop.counter0 }}');">
-                <span name="checked">チェック</span>
-            </label>
-        </div>
-        <div class="col my-auto">{{ item.item_name }}</div>
-
-        <div class="col-auto">
-            {% if forloop.first %}
-                <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set" checked>
-            {% else %}
-                <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set">
-            {% endif %}
-            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="draw_box('{{ forloop.counter0 }}');">選択</label>
-        </div>
-        <div class="col-auto">
-            <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
-            <label class="btn btn-outline-primary" for="box_{{ forloop.counter0 }}">座標獲得済み</label>
-        </div>
-    </div>
-    {% endfor %}
 
     <hr>
     <label class="my-3" for="finish">
@@ -93,6 +75,8 @@
     const submit = document.getElementById("submit");
     const box_list = document.getElementById("box_list");
     const create = document.getElementById("create").innerText;
+
+    const check_list = document.getElementById("check_list");
     
     const box_x_min = Number(document.getElementById("box_x_min").innerText);
     const box_y_min = Number(document.getElementById("box_y_min").innerText);
@@ -148,6 +132,9 @@
         // ctx.drawImage(image, 0, 0);
         canvas.width = box_x_max - box_x_min;
         canvas.height = box_y_max - box_y_min;
+
+        check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
+
         ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
 
         ctx.strokeStyle = "blue"; // 青い線で描画
