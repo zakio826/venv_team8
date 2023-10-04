@@ -8,34 +8,22 @@
 {% block contents %}
 <div class="container my-5">
     <div class="row">
-        <form method="POST" enctype='multipart/form-data'>
+        <form method="POST" enctype='multipart/form-data' id="item-form">
             {% csrf_token %}
-            <table class="table">
-                {{ form.as_table }}
-            </table>
+            {{ form.management_form }}
+            <div class="roll">
+                <table class="table" id="item-table">
+                    {{ form.as_table }}
+                </table>
+            </div>
+            <hr>
+            <button class="btn btn-primary" type="button" id="add-item">アイテム追加</button>
             <button class="btn btn-primary" type="submit">作成</button>
         </form>
-        <!-- <p id="result">fff</p> -->
     </div>
 </div>
+
 {% endblock %}
 
-<!-- 
-{% block js %}
-<script>
-    const finish = document.getElementById("id_finish");
-    finish.value = false;
-    finish.addEventListener("click", function(){
-        if(finish.checked){
-            finish.value = true;
-            console.log(finish.value);
-            document.getElementById("result").innerHTML="True";
-        }else{
-            finish.value = false;
-            console.log(finish.value);
-            document.getElementById("result").innerHTML="False";
-        }
-    });
-</script>
-{% endblock %}
--->
+
+
