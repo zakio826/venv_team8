@@ -14,18 +14,18 @@
         <canvas id="canvas"></canvas>
         <img id="image" src="{{ image.url }}" style="display: none;"/>
         <span id="create" style="display: none;">{{ create }}</span>
-        {% for result in results %}
-            {% if forloop.first %}
+        {% for result in results reversed %}
+            {% if forloop.last %}
                 <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
                 <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
                 <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
                 <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
                 <span id="item_box" style="display: none;">{{ results|length }}</span>
             {% else %}
-                <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
-                <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
-                <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
-                <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                <span id="item_{{ forloop.counter }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                <span id="item_{{ forloop.counter }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                <span id="item_{{ forloop.counter }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                <span id="item_{{ forloop.counter }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
             {% endif %}
         {% endfor %}
     </div>
@@ -38,7 +38,7 @@
 
     <hr>
 
-    {% for item in items %}
+    {% for item in items reversed %}
     <div class="row m-2">
         <div class="col-auto" style="width: 18%;">
             <input class="btn-check" type="checkbox" id="check_{{ forloop.counter0 }}" name="check">

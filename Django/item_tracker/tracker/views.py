@@ -82,6 +82,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
             "item_list": Item.objects.prefetch_related('asset').filter(asset=self.object.id, outer_edge=False),
             "asset_id": self.object.id,
+            "historys": History.objects.prefetch_related('asset').prefetch_related('user').filter(asset_id=self.object.id),
         }
         # コンテキスト情報のキーを追加
         context.update(extra)
@@ -396,16 +397,16 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         print("f", ttts)
         # self.id = int(ttt[0])
         if ttts[0] == '/asset-check/':
-            result_class = 1
+            result_class = 0
             results = Result.objects.filter(history=historys[1])
         else:
-            result_class = 0
+            result_class = 1
             results = Result.objects.filter(history=historys[0])
         
         extra = {
             "create": result_class,
             "image": history.image.image,
-            "items": items,
+            "items": items.order_by('-id'),
             "results": results,
             # "box_x_min": round(result.box_x_min),
             # "box_y_min": round(result.box_y_min),

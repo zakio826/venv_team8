@@ -184,7 +184,7 @@ class ResultAddForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['asset'].widget = forms.HiddenInput()
-        self.fields['item'].widget = forms.HiddenInput()
+        # self.fields['item'].widget = forms.HiddenInput()
         self.fields['image'].widget = forms.HiddenInput()
         self.fields['result_class'].widget = forms.HiddenInput()
         # self.fields['box_x_min'].widget = forms.HiddenInput()
@@ -194,7 +194,7 @@ class ResultAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            field.widget = forms.HiddenInput()
+            # field.widget = forms.HiddenInput()
 
 # class HistoryMultiAddForm(MultiModelForm):
 

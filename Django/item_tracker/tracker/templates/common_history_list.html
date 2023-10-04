@@ -1,0 +1,12 @@
+{% for history in historys %}
+    <!-- <h3>管理名： {{ history.asset.asset_name }} - <span style="font-size: smaller; font-weight: lighter;">{{ history.group }}</span></h3> -->
+    <!-- <img src="{{ history.image.image.url }}"/> -->
+    <p>{{ history.checked_at }} - {{ history.user.username }}</p>
+    {% if forloop.finish %}
+        <!-- <a href="{% url 'tracker:asset_detail' image.asset.id %}">
+        </a> -->
+    {% endif %}
+
+    {% empty %}
+    <p>履歴がありません。</p>
+{% endfor %}
