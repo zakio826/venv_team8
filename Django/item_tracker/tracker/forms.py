@@ -68,11 +68,12 @@ class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
 class ImageAddForm(forms.ModelForm):
     class Meta:
         model = Image
-        fields = ['image', 'group', 'asset', 'user', 'taken_at', 'front']
+        fields = ['movie', 'image', 'group', 'asset', 'user', 'taken_at', 'front']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['image'].widget = forms.HiddenInput()
         self.fields['group'].widget = forms.HiddenInput()
         self.fields['asset'].widget = forms.HiddenInput()
         self.fields['front'].widget = forms.HiddenInput()

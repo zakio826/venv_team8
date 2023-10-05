@@ -42,8 +42,8 @@ class Asset(models.Model):
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
     asset_name = models.CharField(verbose_name='管理名', max_length=40)
 
-    asset_name = models.FileField(
-        upload_to='movie/',
+    learning_model = models.FileField(
+        upload_to='learning/',
         verbose_name='学習モデル',
         blank=True,
         null=True
