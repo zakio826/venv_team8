@@ -10,6 +10,7 @@ from io import BytesIO
 import os
 import cv2
 import re
+import shutil
 
 class Group(models.Model):
     """グループモデル"""
@@ -93,6 +94,7 @@ class Image(models.Model):
 
         # アップロードされた動画ファイルのパスを取得
         video_path = os.path.join(settings.MEDIA_ROOT, str(self.movie))
+        print("settings.MEDIA_ROOT", settings.MEDIA_ROOT)
         
         #動画のプロパティを取得
         cap = cv2.VideoCapture(video_path)
@@ -121,10 +123,19 @@ class Image(models.Model):
         # 先頭の1フレームを取得してImageFieldに保存
         cap = cv2.VideoCapture(output_path)
         ret, frame = cap.read()
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'image'), exist_ok=True)
         if ret:
-            # img_path = os.path.join(settings.MEDIA_ROOT, str(self.image))
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
+            print(image_path)
+            # if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'image')):
+            image_name = os.path.relpath(image_path, settings.MEDIA_ROOT)
+            print(os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
+            image_path = shutil.move(image_path, os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
+            print(image_path)
+            # output_path = os.path.join(settings.MEDIA_ROOT, 'image', str(self.movie)[6:-4])
+            # image_path = os.path.splitext(output_path)[0] + '.jpg'
+
             self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)
         
         # 最終的に保存
