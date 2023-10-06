@@ -330,10 +330,10 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         extra = {
             "object": self.object,
             "image": history.image.image,
-            "box_x_min": round(result.box_x_min),
-            "box_y_min": round(result.box_y_min),
-            "box_x_max": round(result.box_x_max),
-            "box_y_max": round(result.box_y_max),
+            "box_x_min": result.box_x_min,
+            "box_y_min": result.box_y_min,
+            "box_x_max": result.box_x_max,
+            "box_y_max": result.box_y_max,
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
@@ -398,7 +398,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         # self.id = int(ttt[0])
         if ttts[0] == '/asset-check/':
             result_class = 0
-            results = Result.objects.filter(history=historys[1])
+            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('updated_at')[0])
         else:
             result_class = 1
             results = Result.objects.filter(history=historys[0])

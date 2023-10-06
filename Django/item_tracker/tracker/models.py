@@ -122,6 +122,7 @@ class Image(models.Model):
         cap = cv2.VideoCapture(output_path)
         ret, frame = cap.read()
         if ret:
+            # img_path = os.path.join(settings.MEDIA_ROOT, str(self.image))
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
             self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)

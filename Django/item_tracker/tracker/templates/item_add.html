@@ -8,8 +8,8 @@
 {% block contents %}
 <div class="container my-5">
     <div style="position: relative; width: 100%; margin: auto;">
-        <canvas id="canvas"></canvas>
-        <img id="image" src="{{ image.url }}" style="display: none;"/>
+        <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
+        <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
         <span id="box_x_min" style="display: none;">{{ box_x_min }}</span>
         <span id="box_y_min" style="display: none;">{{ box_y_min }}</span>
         <span id="box_x_max" style="display: none;">{{ box_x_max }}</span>
@@ -44,10 +44,10 @@
     const box_y_max = Number(document.getElementById("box_y_max").innerText);
 
     // キャンバスのサイズを画像のサイズに設定
-    canvas.width = image.width;
-    canvas.height = image.height;
-    console.log("canvas.width: " + canvas.width);
-    console.log("canvas.height: " + canvas.height);
+    // canvas.width = image.width;
+    // canvas.height = image.height;
+    // console.log("canvas.width: " + canvas.width);
+    // console.log("canvas.height: " + canvas.height);
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {

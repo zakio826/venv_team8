@@ -7,10 +7,11 @@
 
 {% block contents %}
 <div class="container my-5">
-    <div style="position: relative; width: 100%; margin: auto;">
+    <div id="preview" style="position: relative; width: 100%; margin: auto;">
         <canvas id="canvas" style="display: none;"></canvas>
         <video id="movie" controls autoplay loop style="display: none;"></video>
         <img id="image" src="{{ image.url }}" style="display: none;"/>
+        <!-- <img id="img" src="{{ image.url }}" style="display: none;"/> -->
         <!-- <span id="create" style="display: none;">{{ create }}</span> -->
     </div>
 
@@ -47,8 +48,8 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     // const previewCanvas = new HTMLCanvasElement(); // プレビュー用のキャンバス
-    // const previewCanvas = document.createElement("canvas"); // プレビュー用のキャンバス
-    // const previewCtx = previewCanvas.getContext("2d");
+    const previewCanvas = document.createElement("canvas"); // プレビュー用のキャンバス
+    const previewCtx = previewCanvas.getContext("2d");
     const image = document.getElementById("image");
     const movie = document.getElementById("movie");
 
@@ -65,6 +66,10 @@
     const image_get = document.getElementById("id_image");
     const movie_get = document.getElementById("id_movie");
 
+    
+    const preview = document.getElementById("preview");
+    // const img = document.getElementById("img");
+
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
     let startX, startY, width, height;
@@ -74,19 +79,45 @@
     let box_li = [0,0,0,0];
     // for (let i = 0; i < set.length; i++) box_li[i] = 
     
-    // function captureFrame() {
-    function captureFirstFrame(videoElement, canvasElement) {
+    movie.autoplay = false;
+    movie.muted = true;
+
+    function auto_set_box() {
+        // let w = preview.getBoundingClientRect().width;
+        // let h = preview.getBoundingClientRect().height;
+        // let w = movie.videoWidth;
+        // let h = movie.videoHeight;
+        let w = movie.videoWidth / canvas.width;
+        let h = movie.videoHeight / canvas.height;
+
+        document.getElementById(`id_box_x_min`).value = box_li[0] * w;
+        document.getElementById(`id_box_y_min`).value = box_li[1] * h;
+        document.getElementById(`id_box_x_max`).value = box_li[2] * w;
+        document.getElementById(`id_box_y_max`).value = box_li[3] * h;
+    };
+    
+    // function captureFirstFrame(videoElement, canvasElement) {
+    function captureFrame() {
         // const canvas = canvasElement;
-        let context = canvasElement.getContext('2d');
+        // let context = canvasElement.getContext('2d');
         // drawFirstFrame(); // 動画の最初のフレームを描画
+        videoElement.currentTime = 0;
         context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
         // ctx.drawImage(image, 0, 0);
         return canvasElement.toDataURL('image/jpeg');
     }
     
+    
     // 動画の最初のフレームをキャンバスに描画する関数
     function drawFirstFrame() {
-        movie.currentTime = 0;
+        
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // image.src = canvas.toDataURL('image/jpeg');
+        // movie.currentTime = 0;
+        // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
+        // image.src = previewCanvas.toDataURL('image/jpeg');
 
         // ctx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
         // const previewCanvas = new HTMLCanvasElement(canvas); // プレビュー用のキャンバス
@@ -95,29 +126,64 @@
         // const previewCtx = previewCanvas.getContext("2d");
         // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
 
-        // ctx.drawImage(image, 0, 0);
-        ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+        // ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
         // ctx.drawImage(previewCanvas, 0, 0, canvas.width, canvas.height);
         // ctx.drawImage(captureFirstFrame(movie, canvas), 0, 0, canvas.width, canvas.height);
     }
+    
 
     movie_get.addEventListener('change', function() {
         movie.src = URL.createObjectURL(movie_get.files[0]);
         movie.onloadedmetadata = function() {
-            canvas.width = movie.videoWidth;
-            canvas.height = movie.videoHeight;
-            canvas.style = "";
+            // canvas.width = movie.videoWidth;
+            // canvas.height = movie.videoHeight;
+            // canvas.width = canvas.getBoundingClientRect().width;
+            // canvas.height = canvas.getBoundingClientRect().height;
+            canvas.width = preview.getBoundingClientRect().width;
+            canvas.height = canvas.width * (movie.videoHeight / movie.videoWidth);
+            // canvas.height = preview.getBoundingClientRect().height * (movie.videoHeight/movie.videoWidth);
+            // canvas.style = "width: 100%; height: auto;";
+            canvas.style = "width: 100%; height: auto;";
             checked.style = "margin: 0 16px;";
             control.style = "";
-            set = true;
             
             // captureFirstFrame(movie, canvas);
             // image.src = captureFrame(movie, canvas);
             // ctx.drawImage(image, 0, 0);
-            drawFirstFrame();
-        };
+            
+            movie.currentTime = 0;
 
-        // console.log(captureFrame());
+            
+            image.width = canvas.width;
+            image.height = canvas.height;
+            ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
+            image.src = canvas.toDataURL('image/jpeg');
+            ctx.drawImage(image, 0, 0);
+            
+            
+            // drawFirstFrame(); // 動画の最初のフレームを描画
+            
+            // image.style = "width: 80px; height: 60px;";
+        };
+        
+        
+
+        // image.width = previewCanvas.width;
+        // image.height = previewCanvas.height;
+        // previewCanvas.width = canvas.width;
+        // previewCanvas.height = canvas.height;
+        // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
+        // image.src = previewCanvas.toDataURL('image/jpeg');
+        
+        // image.width = canvas.width;
+        // image.height = canvas.height;
+        // ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
+        // image.src = canvas.toDataURL('image/jpeg');
+
+        // ctx.drawImage(image, 0, 0);
+
+        // console.log(canvas);
 
         // let reader = new FileReader();
         // reader.readAsDataURL(image_get.files[0]);
@@ -134,20 +200,122 @@
         // set = true;
     });
 
+    // // 画像の読み込みが完了したらキャンバスに描画
+    // previewCanvas.onload = () => {
+    //     // canvas.width = image.width;
+    //     // canvas.height = image.height;
+    //     // movie.autoplay = false;
+    //     // movie.muted = true;
+    //     // movie.currentTime = 0;
+    //     image.width = canvas.width;
+    //     image.height = canvas.height;
+    //     ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
+    //     image.src = canvas.toDataURL('image/jpeg');
+    //     // drawFirstFrame(); // 動画の最初のフレームを描画
+    //     ctx.drawImage(image, 0, 0);
+        
+    //     console.log("ttttt");
+    // };
+
 
     // // 画像の読み込みが完了したらキャンバスに描画
     // image.onload = () => {
-    //     canvas.width = image.width;
-    //     canvas.height = image.height;
-    //     drawFirstFrame(); // 動画の最初のフレームを描画
+    //     // canvas.width = preview.getBoundingClientRect().width;
+    //     // canvas.height = canvas.width * (movie.videoHeight / movie.videoWidth);
+    //     image.width = preview.getBoundingClientRect().width;
+    //     image.height = image.width * (movie.videoHeight / movie.videoWidth);
+    //     if (canvas.width != preview.getBoundingClientRect().width) {
+    //         // movie.currentTime = 0;
+    //         // ctx.drawImage(movie, 0, 0, image.width, image.height);
+    //         // image.src = canvas.toDataURL('image/jpeg');
+    //         // ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //         // set = true;
+    //         console.log("tttt");
+    //         // previewCanvas.width = preview.getBoundingClientRect().width;
+    //         // previewCanvas.height = previewCtx.width * (movie.videoHeight / movie.videoWidth);
+
+    //         // previewCanvas.width = image.width;
+    //         // previewCanvas.height = image.height;
+    //         // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
+    //         // image.src = previewCanvas.toDataURL('image/jpeg');
+    //         // image.width = previewCanvas.width;
+    //         // image.height = previewCanvas.height;
+            
+    //         // image.width = canvas.width;
+    //         // image.height = canvas.height;
+    //         canvas.width = image.width;
+    //         canvas.height = image.height;
+    //         // ctx.drawImage(movie, 0, 0, image.width, image.height);
+    //         ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
+    //         image.src = canvas.toDataURL('image/jpeg');
+    //     }
+    //     // canvas.width = image.width;
+    //     // canvas.height = image.height;
+    //     // // drawFirstFrame(); // 動画の最初のフレームを描画
+        
+    //     // movie.currentTime = 0;
+    //     // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
+    //     // image.src = previewCanvas.toDataURL('image/jpeg');
+        
+    //     // movie.currentTime = 1;
+    //     // image.src = canvas.toDataURL('image/jpeg');
+    //     // ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //     ctx.drawImage(image, 0, 0);
+    //     console.log("ttt");
     // };
+
+    
+    function auto_fit() {
+        // movie.currentTime = 0;
+        // ctx.drawImage(movie, 0, 0, image.width, image.height);
+        // image.src = canvas.toDataURL('image/jpeg');
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // set = true;
+        console.log("tttt");
+        // previewCanvas.width = preview.getBoundingClientRect().width;
+        // previewCanvas.height = previewCtx.width * (movie.videoHeight / movie.videoWidth);
+
+        // previewCanvas.width = image.width;
+        // previewCanvas.height = image.height;
+        // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
+        // image.src = previewCanvas.toDataURL('image/jpeg');
+        // image.width = previewCanvas.width;
+        // image.height = previewCanvas.height;
+        
+        // canvas.width = image.width;
+        // canvas.height = image.height;
+        // image.width = canvas.width;
+        // image.height = canvas.height;
+        // ctx.drawImage(movie, 0, 0, image.width, image.height);
+        if (canvas.width != preview.getBoundingClientRect().width) {
+            set = false;
+
+            canvas.width = preview.getBoundingClientRect().width;
+            canvas.height = canvas.width * (movie.videoHeight / movie.videoWidth);
+
+            box_li[0] *= canvas.width / image.width;
+            box_li[1] *= canvas.height / image.height;
+            box_li[2] *= canvas.width / image.width;
+            box_li[3] *= canvas.height / image.height;
+
+            image.width = canvas.width;
+            image.height = canvas.height;
+            
+        }
+        if (!set) {
+            ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
+            image.src = canvas.toDataURL('image/jpeg');
+
+            set = true;
+        }
+        ctx.drawImage(image, 0, 0);
+    };
 
 
     // 選択済みのバウンディングボックスを描画
     function draw_box(order) {
-        // キャンバスをクリアして画像を再描画
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawFirstFrame(); // 動画の最初のフレームを描画
+
         // console.log(order);
         ctx.strokeStyle = "blue"; // 青い線で描画
         
@@ -164,7 +332,12 @@
 
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
-        movie.currentTime = 0;
+        // movie.currentTime = 0;
+        // previewCtx.drawImage(movie, 0, 0, previewCanvas.width, previewCanvas.height);
+        auto_fit();
+        // image.src = previewCanvas.toDataURL('image/jpeg');
+        // ctx.drawImage(image, 0, 0);
+
         isDrawing = true;
         startX = e.clientX - canvas.getBoundingClientRect().left;
         startY = e.clientY - canvas.getBoundingClientRect().top;
@@ -172,7 +345,7 @@
 
     // マウスムーブイベントのリスナーを追加
     canvas.addEventListener("mousemove", (e) => {
-        movie.currentTime = 0;
+        // movie.currentTime = 0;
         if (!isDrawing) return;
 
         const x = e.clientX - canvas.getBoundingClientRect().left;
@@ -208,7 +381,7 @@
 
     // マウスアップイベントのリスナーを追加
     canvas.addEventListener("mouseup", () => {
-        movie.currentTime = 0;
+        // movie.currentTime = 0;
         isDrawing = false;
 
         // 描画した矩形の座標を表示
@@ -231,17 +404,18 @@
         // drawFirstFrame(); // 動画の最初のフレームを描画
         // isDrawing = true;
         box_li = [
-            x_min.toFixed(),
-            y_min.toFixed(),
-            x_max.toFixed(),
-            y_max.toFixed()
+            x_min,
+            y_min,
+            x_max,
+            y_max
         ];
         console.log(box_li);
 
-        document.getElementById(`id_box_x_min`).value = x_min;
-        document.getElementById(`id_box_y_min`).value = y_min;
-        document.getElementById(`id_box_x_max`).value = x_max;
-        document.getElementById(`id_box_y_max`).value = y_max;
+        auto_set_box();
+        // document.getElementById(`id_box_x_min`).value = x_min;
+        // document.getElementById(`id_box_y_min`).value = y_min;
+        // document.getElementById(`id_box_x_max`).value = x_max;
+        // document.getElementById(`id_box_y_max`).value = y_max;
 
         check.checked = true;
         check.disabled = false;
@@ -262,7 +436,7 @@
 
     // マウスアウトイベントのリスナーを追加
     canvas.addEventListener("mouseout", () => {
-        movie.currentTime = 0;
+        // movie.currentTime = 0;
         isDrawing = false;
     });
 
@@ -270,7 +444,7 @@
     function out_box() {
 
         // キャンバスをクリアして画像を再描画
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawFirstFrame(); // 動画の最初のフレームを描画
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) draw_box(i); // バウンディングボックスの描画
@@ -305,7 +479,7 @@
         check.disabled = true;
         submit.disabled = true;
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawFirstFrame(); // 動画の最初のフレームを描画
     };
     

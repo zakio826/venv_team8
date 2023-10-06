@@ -8,7 +8,7 @@
             {% else %}
                 <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set">
             {% endif %}
-            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="draw_box('{{ forloop.counter0 }}');">選択</label>
+            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="auto_fit(); draw_box('{{ forloop.counter0 }}');">選択</label>
         </div>
 
         <div class="col-auto">
