@@ -47,7 +47,7 @@ class Asset(models.Model):
         upload_to='learning/',
         verbose_name='学習モデル',
         blank=True,
-        null=True
+        null=True,
     )
     
     class Meta:
@@ -94,7 +94,10 @@ class Image(models.Model):
 
         # アップロードされた動画ファイルのパスを取得
         video_path = os.path.join(settings.MEDIA_ROOT, str(self.movie))
-        print("settings.MEDIA_ROOT", settings.MEDIA_ROOT)
+        print()
+        print("self.movie:", self.movie)
+        print("type(self.movie):", type(self.movie))
+        print()
         
         #動画のプロパティを取得
         cap = cv2.VideoCapture(video_path)
@@ -125,14 +128,15 @@ class Image(models.Model):
         ret, frame = cap.read()
         os.makedirs(os.path.join(settings.MEDIA_ROOT, 'image'), exist_ok=True)
         if ret:
+            output_path = os.path.join(settings.MEDIA_ROOT, 'image', self.movie.name[6:])
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
-            print(image_path)
+            # print(image_path)
             # if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'image')):
-            image_name = os.path.relpath(image_path, settings.MEDIA_ROOT)
-            print(os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
-            image_path = shutil.move(image_path, os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
-            print(image_path)
+            # image_name = os.path.relpath(image_path, settings.MEDIA_ROOT)
+            # print(os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
+            # image_path = shutil.move(image_path, os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
+            # print(image_path)
             # output_path = os.path.join(settings.MEDIA_ROOT, 'image', str(self.movie)[6:-4])
             # image_path = os.path.splitext(output_path)[0] + '.jpg'
 
@@ -155,6 +159,10 @@ class History(models.Model):
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
     user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', on_delete=models.PROTECT)
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
+    
+    coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,
+        # validators=[FileExtensionValidator(['pdf', ])],
+    )
 
     checked_at = models.DateTimeField(verbose_name='確認日時', default=datetime.now)
     updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)

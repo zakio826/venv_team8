@@ -25,5 +25,5 @@ urlpatterns = [
     path('mypage/', views.mypage, name='mypage'),
     path('group_detail/<int:group_id>/', views.group_detail, name='group_detail'),
 
-    path('group-join/', views.GroupJoinView.as_view(), name="group_join"),
+    path('test-page/<int:id>/', views.TestPageView.as_view(), name="test_page"),
 ]

@@ -93,19 +93,26 @@ class ItemAddForm(forms.ModelForm):
 
     class Meta:
         model = Item
-        fields = ['group', 'asset', 'item_name', 'outer_edge']
+        fields = ['item_name', 'outer_edge']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['group'].widget = forms.HiddenInput()
+        # self.fields['asset'].widget = forms.HiddenInput()
         self.fields['outer_edge'].widget = forms.HiddenInput()
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
         # self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+
+    # def save(self):
+    #     obj = super.save(commit=False)
+    #     for name in item_list:
+    #         obj.item_name = name
+    #         obj.save()
+    #     return obj
 
 class ItemAddEXForm(forms.ModelForm):
     finish = forms.ChoiceField(

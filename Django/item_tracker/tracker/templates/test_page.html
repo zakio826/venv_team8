@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}日記作成 | Private Diary{% endblock %}
+
+{% block active_diary_list %}active{% endblock %}
+
+{% block contents %}
+<div class="container my-5">
+    <form method="POST" enctype='multipart/form-data'>
+        <div class="row my-3" style="text-align: center;">
+            <h3>すべてのアイテムの名前を入力してください。</h3>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-8 h-100" style="position: relative;">
+                <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
+                <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
+                <span id="box_x_min" style="display: none;">{{ box_x_min }}</span>
+                <span id="box_y_min" style="display: none;">{{ box_y_min }}</span>
+                <span id="box_x_max" style="display: none;">{{ box_x_max }}</span>
+                <span id="box_y_max" style="display: none;">{{ box_y_max }}</span>
+                <!-- <div style="position: relative; width: 100%;">
+                </div> -->
+            </div>
+
+            <div class="col-4">
+                    {% csrf_token %}
+                    {{ formset.management_form }}
+                    <div class="w-100 mb-3" id="formset" style="overflow-y: scroll;">
+                        <ol class="row row-cols-1 align-items-start w-100" id="form_area"></ol>
+                    </div>
+
+                    <hr>
+                    
+                    <div class="row justify-content-around w-100" id="form_edit">
+                        <button class="col-5 btn btn-primary" type="button" id="item_add">追加</button>
+                        <!-- <div class="col-6">
+                        </div> -->
+                        <button class="col-5 btn btn-primary" type="button" id="item_del">削除</button>
+                        <!-- <div class="col-6">
+                        </div> -->
+                    </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row w-75 m-auto mt-5">
+            <button class="btn btn-primary" type="submit">作成</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block js %}
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const image = document.getElementById("image");
+    const box_x_min = Number(document.getElementById("box_x_min").innerText);
+    const box_y_min = Number(document.getElementById("box_y_min").innerText);
+    const box_x_max = Number(document.getElementById("box_x_max").innerText);
+    const box_y_max = Number(document.getElementById("box_y_max").innerText);
+
+    const form_area = document.getElementById("form_area");
+    const form_edit = document.getElementById("form_edit");
+
+    // 画像の読み込みが完了したらキャンバスに描画
+    image.onload = () => {
+        canvas.width = box_x_max - box_x_min;
+        canvas.height = box_y_max - box_y_min;
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+
+        form_area.style = `height: ${canvas.getBoundingClientRect().height - form_edit.getBoundingClientRect().height - 50};`;
+
+        console.log("box_x_min: " + box_x_min);
+        console.log("box_y_min: " + box_y_min);
+        console.log("box_x_max: " + box_x_max);
+        console.log("box_y_max: " + box_y_max);
+
+        console.log("canvas.width: " + canvas.width);
+        console.log("canvas.height: " + canvas.height);
+    };
+
+    window.onresize = () => {
+        form_area.style = `height: ${canvas.getBoundingClientRect().height - form_edit.getBoundingClientRect().height - 50};`;
+    };
+
+
+
+
+
+
+
+    function create_item_from(num) {
+        var tag = document.createElement('li');
+        tag.setAttribute('id', 'item_' + num);
+        tag.setAttribute('class', 'col my-2');
+        // tag.appendChild();
+
+        // <input type="text" name="form-0-item_name" maxlength="40" class="form-control" id="id_form-0-item_name">
+        // <input type="hidden" name="form-0-group" class="form-control" id="id_form-0-group">
+        // <input type="hidden" name="form-0-asset" class="form-control" id="id_form-0-asset">
+        // <input type="hidden" name="form-0-outer_edge" value="False" class="form-control" id="id_form-0-outer_edge">
+        var nameset = ["item_name", "outer_edge"];
+
+        for (let i = 0; i < nameset.length; i++) {
+            var text_form = document.createElement('input');
+            if (i <= 0) text_form.setAttribute('type', 'text');
+            else text_form.setAttribute('type', 'hidden');
+
+            text_form.setAttribute('name', `form-${num}-${nameset[i]}`);
+            text_form.setAttribute('class', 'form-control');
+
+            if (i-1 >= nameset.length) text_form.setAttribute('value', 'False');
+            tag.appendChild(text_form);
+
+            // console.log(nameset[i]);
+            // console.log(tag);
+        }
+
+        return tag;
+    }
+
+    var num = 0;
+    const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+    const add = document.getElementById("item_add");
+    const del = document.getElementById("item_del");
+    del.disabled = true;
+
+    // const items = document.getElementById("items");
+    form_area.appendChild(create_item_from(num));
+
+    add.addEventListener("click", function(){
+        num++;
+        form_area.appendChild(create_item_from(num));
+        totalForms.value = String(num + 1);
+        if (del.disabled == true) del.disabled = false;
+    });
+
+    del.addEventListener("click", function(){
+        document.getElementById('item_' + num).remove();
+        num--;
+        totalForms.value = String(num + 1);
+        if (num <= 0) del.disabled = true;
+    });
+</script>
+
+<!-- <script>
+    $(document).ready(function() {
+        $(".add-form").click(function() {
+            // 新しいフォームをフォームセットに追加
+            var formset = $("#formset");
+            var totalForms = parseInt($("#id_form-TOTAL_FORMS").val());
+            var newForm = formset.find("p:first").clone();
+            // var newForm = formset.find("div:first").clone();
+            
+            newForm.find("input").val(""); // 新しいフォームの入力をクリア
+            newForm.find(".errorlist").remove(); // エラーメッセージをクリア
+            // formset.find("tbody").append();
+            formset.append(newForm);
+            
+            // TOTAL_FORMSの値を更新
+            totalForms += 1;
+            $("#id_form-TOTAL_FORMS").val(totalForms);
+        });
+
+        $(".delete-form").click(function() {
+            // フォームを削除
+            var formset = $("#formset");
+            var totalForms = parseInt($("#id_form-TOTAL_FORMS").val());
+            
+            if (totalForms > 1) {
+                formset.find("p:last").remove();
+                // formset.find("div:last").remove();
+                
+                // TOTAL_FORMSの値を更新
+                totalForms -= 1;
+                $("#id_form-TOTAL_FORMS").val(totalForms);
+            }
+        });
+    });
+</script> -->
+{% endblock %}

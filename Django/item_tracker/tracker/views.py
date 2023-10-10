@@ -192,8 +192,8 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             image_add_form['front'].initial = True
             
             item_add_form = ItemAddForm(**self.get_form_kwargs())
-            item_add_form['group'].initial = assets.group
-            item_add_form['asset'].initial = assets
+            # item_add_form['group'].initial = assets.group
+            # item_add_form['asset'].initial = assets
             item_add_form['item_name'].initial = f"外枠"
             item_add_form['item_name'].field.widget = forms.HiddenInput()
             # item_add_form['finish'].field.widget = forms.HiddenInput()
@@ -243,6 +243,8 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         ttts = re.findall(r'[^0-9]+', self.request.path)
         if ttts[0] == '/asset-create/image-add/':
             item_form = ItemAddForm(self.request.POST)
+            item_form.group = asset.group
+            item_form.asset = asset
             item_form.save()
             item = item_form.instance
         else:
@@ -534,7 +536,104 @@ def mypage(request):
 
 
 
+class TestPageView(LoginRequiredMixin, generic.CreateView):
+    model = Item
+    template_name = 'test_page.html'
+    # pk_field = 'asset.id'
+    pk_url_kwarg = 'id'
+    # slug_field = "asset_name" # モデルのフィールドの名前
+    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
+    success_url = reverse_lazy('tracker:asset_list')
+    formset = forms.formset_factory(
+        form = ItemAddForm,
+        # extra = 1,
+        # max_num = items.__len__(),
+    )
+    # form_class = ItemAddForm
+    fields = ()
 
+    # def get_form_kwargs(self) -> dict[str, Any]:
+    #     print()
+    #     print("super().get_form_kwargs():", super().get_form_kwargs())
+    #     print("type(super().get_form_kwargs()):", type(super().get_form_kwargs()))
+    #     # print("self.request.path:", self.request.path)
+    #     print()
+
+    #     return super().get_form_kwargs()
+
+    # get_context_dataをオーバーライド
+    def get_context_data(self, **kwargs):
+        # 既存のget_context_dataをコール
+        context = super().get_context_data(**kwargs)
+
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
+        result = Result.objects.get(history=history)
+        # print(self.id)
+        # print(Asset.objects.get(id=self.id))
+        # images = Image.objects.prefetch_related('group').prefetch_related('asset')
+        # context['form'].fields['group'].initial = history.group
+        # context['form'].fields['asset'].initial = history.asset
+        # self.get_form_kwargs
+        # context['form'].fields['item_name'].requied = False
+        extra = {
+            "object": self.object,
+            "image": history.image.image,
+            "box_x_min": result.box_x_min,
+            "box_y_min": result.box_y_min,
+            "box_x_max": result.box_x_max,
+            "box_y_max": result.box_y_max,
+            "formset": self.formset,
+        }
+        # print(self.success_url)
+        # コンテキスト情報のキーを追加
+        context.update(extra)
+        return context
+
+    def form_valid(self, form):
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+
+        formset = self.formset(self.request.POST)
+
+        if formset.is_valid():
+            for forms in formset:
+                print(forms.data)
+                item = forms.save(commit=False)
+                item.group = history.group
+                item.asset = history.asset
+                item.save()
+
+            # return redirect(self.get_redirect_url())
+            self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+            messages.success(self.request, 'アイテムを追加しました。')
+            return redirect(self.success_url)
+
+        else:
+            # ctx["form"] = formset
+            # print("tttd", form)
+            messages.error(self.request, "アイテムの追加に失敗しました。")
+            return super().form_invalid(form)
+        # form_kwargs = self.get_form_kwargs()
+        # print("rrr", form_kwargs)
+        # finish = form_kwargs['data']['finish']
+        # ttt = re.findall(r'\d+', self.request.path)
+        # self.id = int(ttt[0])
+        # if finish == '0':
+        #     print("true")
+        #     self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+        # else:
+        #     print("false")
+        #     self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+        # self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+        # messages.success(self.request, 'アイテムを追加しました。')
+        # return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, "アイテムの追加に失敗しました。")
+        return super().form_invalid(form)
 
 
 
