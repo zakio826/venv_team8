@@ -313,22 +313,25 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = ItemAddEXForm
     success_url = reverse_lazy('tracker:asset_list')
+    formset = forms.formset_factory(
+        form = ItemAddForm,
+        # extra = 1,
+        # max_num = items.__len__(),
+    )
+    # form_class = ItemAddForm
+    fields = ()
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
+
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
         result = Result.objects.get(history=history)
-        # print(self.id)
-        # print(Asset.objects.get(id=self.id))
-        # images = Image.objects.prefetch_related('group').prefetch_related('asset')
-        context['form'].fields['group'].initial = history.group
-        context['form'].fields['asset'].initial = history.asset
+
         extra = {
             "object": self.object,
             "image": history.image.image,
@@ -336,6 +339,7 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
             "box_y_min": result.box_y_min,
             "box_x_max": result.box_x_max,
             "box_y_max": result.box_y_max,
+            "formset": self.formset,
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
@@ -343,27 +347,29 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         return context
 
     def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        form_kwargs = self.get_form_kwargs()
-        # print("rrr", form_kwargs)
-        finish = form_kwargs['data']['finish']
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        if finish == '0':
-            print("true")
-            self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        else:
-            print("false")
+        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+
+        formset = self.formset(self.request.POST)
+
+        if formset.is_valid():
+            for forms in formset:
+                print(forms.data)
+                item = forms.save(commit=False)
+                item.group = history.group
+                item.asset = history.asset
+                item.save()
+
             self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
-        messages.success(self.request, 'アイテムを追加しました。')
-        return super().form_valid(form)
+            messages.success(self.request, 'アイテムを追加しました。')
+            return redirect(self.success_url)
+
+        else:
+            messages.error(self.request, "アイテムの追加に失敗しました。")
+            return super().form_invalid(form)
     
     def form_invalid(self, form):
-        # print("rrr", form.fields['finish'])
-        # print("aaa", form.fields['finish'].initial)
-        # print("aaa", form.fields['finish'].choices)
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
 
