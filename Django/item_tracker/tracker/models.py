@@ -131,14 +131,6 @@ class Image(models.Model):
             output_path = os.path.join(settings.MEDIA_ROOT, 'image', self.movie.name[6:])
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
-            # print(image_path)
-            # if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'image')):
-            # image_name = os.path.relpath(image_path, settings.MEDIA_ROOT)
-            # print(os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
-            # image_path = shutil.move(image_path, os.path.join(settings.MEDIA_ROOT, 'image', image_name[6:]))
-            # print(image_path)
-            # output_path = os.path.join(settings.MEDIA_ROOT, 'image', str(self.movie)[6:-4])
-            # image_path = os.path.splitext(output_path)[0] + '.jpg'
 
             self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)
         

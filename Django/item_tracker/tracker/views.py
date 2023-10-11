@@ -242,14 +242,14 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
 
         ttts = re.findall(r'[^0-9]+', self.request.path)
         if ttts[0] == '/asset-create/image-add/':
-            item_form = ItemAddForm(self.request.POST)
+            item_form = ItemAddForm(self.request.POST).save(commit=False)
             item_form.group = asset.group
             item_form.asset = asset
             item_form.save()
-            item = item_form.instance
-        else:
+            # item = item_form.instance
+        # else:
             # item = History.objects.prefetch_related('item').order_by('-updated_at').first()
-            item = Item.objects.filter(outer_edge=True).get(asset=asset)
+        item = Item.objects.filter(outer_edge=True).get(asset=asset)
 
         history = History(group=asset.group, asset=asset, user=self.request.user, image=image)
         history.save()
@@ -300,7 +300,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         else:
             self.success_url = reverse_lazy(f'tracker:asset_check', kwargs={'id': self.id})
             messages.success(self.request, '写真を追加しました。')
-        return super().form_valid(form)
+        return redirect(self.success_url)
     
     def form_invalid(self, form):
         messages.error(self.request, "写真の登録に失敗しました。")
