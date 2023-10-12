@@ -16,11 +16,19 @@
     <div class="container px-4 px-lg-5 mt-3">
         <div class="d-flex justify-content-end mb-4">
             <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
+            <a class="btn btn-primary float-right" href="{% url 'tracker:history_list' %}">履歴一覧</a>
         </div>
         <form method="get">
             {{ group_filter_form.as_p }}
             <button type="submit" class="btn btn-primary">絞り込み</button>
         </form>
+        <script>
+          // フォームが「すべてのグループ」を選択中である場合、選択状態にする
+          var groupFilterForm = document.querySelector('#id_group');
+          if (groupFilterForm.value === 'all') {
+            groupFilterForm.selectedIndex = 0;
+          }
+        </script>
         <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
             {% for image in page_obj %}
                 <div class="col mb-5">
@@ -59,20 +67,20 @@
             <div class="d-flex justify-content-center mt-4">
                 <ul class="pagination">
                     {% if page_obj.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page=1">最初</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">前へ</a></li>
+                    <li class="page-item"><a class="page-link" href="?page=1&group={{ request.GET.group }}">最初</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}">前へ</a></li>
                     {% endif %}
                     <!-- ページ番号のセレクトボックス -->
                     <li class="page-item">
-                        <select class="form-select" onchange="window.location.href = this.value;">
+                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group=' + '{{ request.GET.group }}';">
                             {% for page_num in page_obj.paginator.page_range %}
-                                <option value="?page={{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
+                                <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
                             {% endfor %}
                         </select>
                     </li>
                     {% if page_obj.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">次へ</a></li>
-                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}">次へ</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}">最後</a></li>
                     {% endif %}
                 </ul>
             </div>

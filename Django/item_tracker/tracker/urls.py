@@ -25,5 +25,8 @@ urlpatterns = [
     path('mypage/', views.mypage, name='mypage'),
     path('group_detail/<int:group_id>/', views.group_detail, name='group_detail'),
 
+    path('history/', views.HistoryListView.as_view(), name='history_list'),
+    path('history/<int:pk>/', views.HistoryDetailView.as_view(), name='history_detail'),
+
     path('test-page/<int:id>/', views.TestPageView.as_view(), name="test_page"),
 ]

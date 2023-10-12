@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}History List{% endblock %}
+
+{% block contents %}
+<h2>履歴一覧</h2>
+<ul>
+    {% for history in history_list %}
+        <li>
+            <!-- Display relevant history information -->
+            <a href="{% url 'tracker:history_detail' history.pk %}">詳細</a>
+            グループ: {{ history.group.group_name }}
+            管理項目: {{ history.asset.asset_name }}
+            ユーザー: {{ history.user.username }}
+            画像: <img src="{{ history.image.url }}" alt="Image">
+            確認日時: {{ history.checked_at }}
+            更新日時: {{ history.updated_at }}
+        </li>
+    {% empty %}
+        <p>履歴が存在しません</p>
+    {% endfor %}
+</ul>
+<a class="btn btn-primary float-right" href="{% url 'tracker:asset_list' %}">管理項目に戻る</a>
+{% endblock %}
+

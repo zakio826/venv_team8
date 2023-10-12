@@ -510,7 +510,7 @@ def create_group(request):
                 # グループを作成したユーザーをグループメンバーとして追加
                 GroupMember.objects.create(user=request.user, group=group)
 
-                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
+                return redirect('tracker:mypage')  # グループ一覧ページにリダイレクトする
     else:
         form = GroupForm()
 
@@ -530,7 +530,7 @@ def join_group(request):
             else:
                 # グループメンバーとしてユーザーを追加
                 GroupMember.objects.create(user=request.user, group=group)
-                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
+                return redirect('tracker:mypage')  # グループ一覧ページにリダイレクトする
     else:
         form = JoinGroupForm()
 
@@ -1246,3 +1246,18 @@ class GroupJoinView(LoginRequiredMixin, generic.CreateView):
     def form_invalid(self, form):
         messages.error(self.request, "管理項目の作成に失敗しました。")
         return super().form_invalid(form)
+    
+class HistoryListView(LoginRequiredMixin, generic.ListView):
+    model = History
+    template_name = 'history_list.html'
+    context_object_name = 'history_list'
+
+    def get_queryset(self):
+        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
+        history_list = History.objects.filter(group__in=user_groups)
+        return history_list
+    
+class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
+    model = History
+    template_name = 'history_detail.html'  # このテンプレートは後で作成します
+    context_object_name = 'history'
