@@ -17,70 +17,66 @@
         <div class="d-flex justify-content-end mb-4">
             <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
         </div>
-        {% for image in image_list %}
-            <a href="{% url 'tracker:asset_detail' image.asset.id %}">
-                <p>{{ image.asset }} - {{ image.group }}</p>
-                {% if image.image %}
-                    <img src="{{ image.image.url }}" width="400" height="300"/>
-                {% endif %}
-            </a>
-            <p>{{ image.asset.asset_name }}</p>
-
-            {% empty %}
-            <p>管理項目がありません。</p>
-        {% endfor %}
-        <p>{{ image_list }}</p>
-        <div class="row gx-4 gx-lg-5 row-cols-1 justify-content-center">
-            <div class="col mb-5">
-                <div class="card h-50">
-                    <!-- Product image-->
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">{{ object.asset_name }}</h5>
-                            <!-- Product price-->
-                            $40.00 - $80.00
-                        </div>
-                    </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">View options</a></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 mb-5">
-                <div class="card h-100">
-                    <!-- Sale badge-->
-                    <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">Sale</div>
-                    <!-- Product image-->
-                    <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">Special Item</h5>
-                            <!-- Product reviews-->
-                            <div class="d-flex justify-content-center small text-warning mb-2">
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
-                                <div class="bi-star-fill"></div>
+        <form method="get">
+            {{ group_filter_form.as_p }}
+            <button type="submit" class="btn btn-primary">絞り込み</button>
+        </form>
+        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
+            {% for image in page_obj %}
+                <div class="col mb-5">
+                    <div class="card h-100">
+                        <!--badge-->
+                        <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">box</div>
+                        <!-- Product image-->
+                        {% if image.image %}
+                            <img class="card-img-top" src="{{ image.image.url }}" alt="..." />
+                        {% endif %}
+                        <!-- Product details-->
+                        <div class="card-body">
+                            <div class="text-center">
+                                <!-- Product name-->
+                                <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>
+                                <!-- Product reviews-->
+                                <div class="d-flex justify-content-center small text-warning mb-2">
+                                    <!--何か入れたければ入れる-->
+                                </div>
                             </div>
-                            <!-- Product price-->
-                            <span class="text-muted text-decoration-line-through">$20.00</span>
-                            $18.00
+                        </div>
+                        <!-- Product actions-->
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                            <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'tracker:asset_detail' image.asset.id %}">{{ image.asset }} - {{ image.group }}</a></div>
                         </div>
                     </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#">Add to cart</a></div>
-                    </div>
                 </div>
-            </div>
+                {% empty %}
+                <p>管理項目がありません。</p>
+            {% endfor %}
         </div>
+        <!--<p>{{ image_list }}</p>-->
+
+        <!-- ページネーションリンクの表示 -->
+        {% if page_obj.paginator.count > 0 %}
+            <div class="d-flex justify-content-center mt-4">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1">最初</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">前へ</a></li>
+                    {% endif %}
+                    <!-- ページ番号のセレクトボックス -->
+                    <li class="page-item">
+                        <select class="form-select" onchange="window.location.href = this.value;">
+                            {% for page_num in page_obj.paginator.page_range %}
+                                <option value="?page={{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">次へ</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">最後</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

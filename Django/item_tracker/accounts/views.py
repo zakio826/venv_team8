@@ -7,6 +7,7 @@ from tracker.models import Group, GroupMember
 from django.contrib.auth import login
 from django.contrib import messages
 
+from django.conf import settings
 
 class LoginView(AllauthLoginView):
     def form_valid(self, form):
@@ -27,7 +28,7 @@ class LoginView(AllauthLoginView):
 
                 if group_exists:
                     # messages.error(self.request, '同じ名前のグループがすでに存在します。別の名前を選択してください。')
-                    return redirect('tracker:index')
+                    return redirect(settings.LOGIN_REDIRECT_URL)
                     #return self.render_to_response(self.get_context_data(form=form))
                 else:
                     # グループを作成
@@ -38,12 +39,12 @@ class LoginView(AllauthLoginView):
                     )
                     # ユーザーをグループメンバーとして追加
                     GroupMember.objects.create(user=self.request.user, group=group)
-                    return redirect('tracker:index')
+                    return redirect(settings.LOGIN_REDIRECT_URL)
             else:
                 # ユーザーがどのグループにも所属していないかを確認
                 user_belongs_to_groups = GroupMember.objects.filter(user=self.request.user).exists()
                 if user_belongs_to_groups:
-                    return redirect('tracker:index') 
+                    return redirect(settings.LOGIN_REDIRECT_URL) 
                 else:
                     return redirect('tracker:create_group')
         return response

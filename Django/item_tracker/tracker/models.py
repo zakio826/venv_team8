@@ -2,7 +2,15 @@ from accounts.models import CustomUser
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from django.conf import settings
+
 from datetime import datetime
+from PIL import Image
+from io import BytesIO
+import os
+import cv2
+import re
+import shutil
 
 class Group(models.Model):
     """グループモデル"""
@@ -34,6 +42,13 @@ class Asset(models.Model):
     
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
     asset_name = models.CharField(verbose_name='管理名', max_length=40)
+
+    learning_model = models.FileField(
+        upload_to='learning/',
+        verbose_name='学習モデル',
+        blank=True,
+        null=True,
+    )
     
     class Meta:
         verbose_name_plural = 'Asset'
@@ -63,9 +78,65 @@ class Image(models.Model):
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
     user = models.ForeignKey(CustomUser, verbose_name='撮影ユーザー', on_delete=models.PROTECT)
 
-    image = models.ImageField(verbose_name='写真')
+    movie = models.FileField(
+        upload_to='movie/',
+        verbose_name='動画',
+        # validators=[FileExtensionValidator(['pdf', ])],
+    )
+    image = models.ImageField(upload_to='image/', verbose_name='写真', blank=True, null=True)
     taken_at = models.DateTimeField(verbose_name='撮影日時', default=datetime.now)
     front = models.BooleanField(verbose_name='サムネイル', default=False)
+
+    def save(self, *args, **kwargs):
+        
+        # 親クラスのsaveメソッドを呼び出す
+        super().save(*args, **kwargs)
+
+        # アップロードされた動画ファイルのパスを取得
+        video_path = os.path.join(settings.MEDIA_ROOT, str(self.movie))
+        print()
+        print("self.movie:", self.movie)
+        print("type(self.movie):", type(self.movie))
+        print()
+        
+        #動画のプロパティを取得
+        cap = cv2.VideoCapture(video_path)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+
+        # mp4に変換するコード
+        output_path = os.path.splitext(video_path)[0] + '.mp4'
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 使用するコーデックを指定
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))  # 出力ファイルの設定
+        
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            # フレームを書き込む
+            out.write(frame)
+        
+        cap.release()
+        out.release()
+    
+        # 変換後のファイルを保存
+        self.movie.name = os.path.relpath(output_path, settings.MEDIA_ROOT)
+
+        # 先頭の1フレームを取得してImageFieldに保存
+        cap = cv2.VideoCapture(output_path)
+        ret, frame = cap.read()
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'image'), exist_ok=True)
+        if ret:
+            output_path = os.path.join(settings.MEDIA_ROOT, 'image', self.movie.name[6:])
+            image_path = os.path.splitext(output_path)[0] + '.jpg'
+            cv2.imwrite(image_path, frame)
+
+            self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)
+        
+        # 最終的に保存
+        super().save(*args, **kwargs)
+
     
     class Meta:
         verbose_name_plural = 'Image'
@@ -80,6 +151,10 @@ class History(models.Model):
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
     user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', on_delete=models.PROTECT)
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
+    
+    coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,
+        # validators=[FileExtensionValidator(['pdf', ])],
+    )
 
     checked_at = models.DateTimeField(verbose_name='確認日時', default=datetime.now)
     updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)

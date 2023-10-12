@@ -11,6 +11,8 @@ from django.urls import reverse_lazy
 from django.views import generic
 from django import forms
 
+from django.core.paginator import Paginator
+from django.http import Http404
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -42,26 +44,32 @@ class InquiryView(generic.FormView):
 class AssetListView(LoginRequiredMixin, generic.ListView):
     model = Asset
     template_name = 'asset_list.html'
+    context_object_name = 'image_list'
 
     def get_queryset(self):
+        group = self.request.GET.get('group')  # フォームから選択されたグループ
+
         belong = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
-        images = None
-        if len(belong) >= 1:
-            images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
-            image_list  =[]
-            for b in belong:
-                print("fff", b.group)
-                image_list.append(images.filter(group=b.group))
-            print(image_list)
-            if len(image_list) <= 0:
-                images = None
-                pass
-            else:
-                images = image_list[0]
-                for i in image_list:
-                    images = images|i
-        print(images)
+        images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
+        
+        if group and group != 'all':  # 特定のグループが選択された場合
+            images = images.filter(group=group)
+        elif len(belong) >= 1:
+            user_groups = [group.group for group in belong]
+            images = images.filter(group__in=user_groups)
+
         return images
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        paginator = Paginator(context['image_list'], 3)
+        page = self.request.GET.get('page')
+        context['page_obj'] = paginator.get_page(page)
+
+        # フォームをユーザー情報とともにインスタンス化
+        context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
+
+        return context
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
     model = Asset
@@ -192,8 +200,8 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             image_add_form['front'].initial = True
             
             item_add_form = ItemAddForm(**self.get_form_kwargs())
-            item_add_form['group'].initial = assets.group
-            item_add_form['asset'].initial = assets
+            # item_add_form['group'].initial = assets.group
+            # item_add_form['asset'].initial = assets
             item_add_form['item_name'].initial = f"外枠"
             item_add_form['item_name'].field.widget = forms.HiddenInput()
             # item_add_form['finish'].field.widget = forms.HiddenInput()
@@ -242,12 +250,14 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
 
         ttts = re.findall(r'[^0-9]+', self.request.path)
         if ttts[0] == '/asset-create/image-add/':
-            item_form = ItemAddForm(self.request.POST)
+            item_form = ItemAddForm(self.request.POST).save(commit=False)
+            item_form.group = asset.group
+            item_form.asset = asset
             item_form.save()
-            item = item_form.instance
-        else:
+            # item = item_form.instance
+        # else:
             # item = History.objects.prefetch_related('item').order_by('-updated_at').first()
-            item = Item.objects.filter(outer_edge=True).get(asset=asset)
+        item = Item.objects.filter(outer_edge=True).get(asset=asset)
 
         history = History(group=asset.group, asset=asset, user=self.request.user, image=image)
         history.save()
@@ -298,7 +308,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         else:
             self.success_url = reverse_lazy(f'tracker:asset_check', kwargs={'id': self.id})
             messages.success(self.request, '写真を追加しました。')
-        return super().form_valid(form)
+        return redirect(self.success_url)
     
     def form_invalid(self, form):
         messages.error(self.request, "写真の登録に失敗しました。")
@@ -311,29 +321,33 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = ItemAddEXForm
     success_url = reverse_lazy('tracker:asset_list')
+    formset = forms.formset_factory(
+        form = ItemAddForm,
+        # extra = 1,
+        # max_num = items.__len__(),
+    )
+    # form_class = ItemAddForm
+    fields = ()
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
+
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
         result = Result.objects.get(history=history)
-        # print(self.id)
-        # print(Asset.objects.get(id=self.id))
-        # images = Image.objects.prefetch_related('group').prefetch_related('asset')
-        context['form'].fields['group'].initial = history.group
-        context['form'].fields['asset'].initial = history.asset
+
         extra = {
             "object": self.object,
             "image": history.image.image,
-            "box_x_min": round(result.box_x_min),
-            "box_y_min": round(result.box_y_min),
-            "box_x_max": round(result.box_x_max),
-            "box_y_max": round(result.box_y_max),
+            "box_x_min": result.box_x_min,
+            "box_y_min": result.box_y_min,
+            "box_x_max": result.box_x_max,
+            "box_y_max": result.box_y_max,
+            "formset": self.formset,
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
@@ -341,27 +355,29 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         return context
 
     def form_valid(self, form):
-        asset = form.save(commit=False)
-        asset.user = self.request.user
-        asset.save()
-        form_kwargs = self.get_form_kwargs()
-        # print("rrr", form_kwargs)
-        finish = form_kwargs['data']['finish']
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        if finish == '0':
-            print("true")
-            self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        else:
-            print("false")
+        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+
+        formset = self.formset(self.request.POST)
+
+        if formset.is_valid():
+            for forms in formset:
+                print(forms.data)
+                item = forms.save(commit=False)
+                item.group = history.group
+                item.asset = history.asset
+                item.save()
+
             self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
-        messages.success(self.request, 'アイテムを追加しました。')
-        return super().form_valid(form)
+            messages.success(self.request, 'アイテムを追加しました。')
+            return redirect(self.success_url)
+
+        else:
+            messages.error(self.request, "アイテムの追加に失敗しました。")
+            return super().form_invalid(form)
     
     def form_invalid(self, form):
-        # print("rrr", form.fields['finish'])
-        # print("aaa", form.fields['finish'].initial)
-        # print("aaa", form.fields['finish'].choices)
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
 
@@ -398,7 +414,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         # self.id = int(ttt[0])
         if ttts[0] == '/asset-check/':
             result_class = 0
-            results = Result.objects.filter(history=historys[1])
+            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('updated_at')[0])
         else:
             result_class = 1
             results = Result.objects.filter(history=historys[0])
@@ -534,7 +550,104 @@ def mypage(request):
 
 
 
+class TestPageView(LoginRequiredMixin, generic.CreateView):
+    model = Item
+    template_name = 'test_page.html'
+    # pk_field = 'asset.id'
+    pk_url_kwarg = 'id'
+    # slug_field = "asset_name" # モデルのフィールドの名前
+    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
+    success_url = reverse_lazy('tracker:asset_list')
+    formset = forms.formset_factory(
+        form = ItemAddForm,
+        # extra = 1,
+        # max_num = items.__len__(),
+    )
+    # form_class = ItemAddForm
+    fields = ()
 
+    # def get_form_kwargs(self) -> dict[str, Any]:
+    #     print()
+    #     print("super().get_form_kwargs():", super().get_form_kwargs())
+    #     print("type(super().get_form_kwargs()):", type(super().get_form_kwargs()))
+    #     # print("self.request.path:", self.request.path)
+    #     print()
+
+    #     return super().get_form_kwargs()
+
+    # get_context_dataをオーバーライド
+    def get_context_data(self, **kwargs):
+        # 既存のget_context_dataをコール
+        context = super().get_context_data(**kwargs)
+
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
+        result = Result.objects.get(history=history)
+        # print(self.id)
+        # print(Asset.objects.get(id=self.id))
+        # images = Image.objects.prefetch_related('group').prefetch_related('asset')
+        # context['form'].fields['group'].initial = history.group
+        # context['form'].fields['asset'].initial = history.asset
+        # self.get_form_kwargs
+        # context['form'].fields['item_name'].requied = False
+        extra = {
+            "object": self.object,
+            "image": history.image.image,
+            "box_x_min": result.box_x_min,
+            "box_y_min": result.box_y_min,
+            "box_x_max": result.box_x_max,
+            "box_y_max": result.box_y_max,
+            "formset": self.formset,
+        }
+        # print(self.success_url)
+        # コンテキスト情報のキーを追加
+        context.update(extra)
+        return context
+
+    def form_valid(self, form):
+        ttt = re.findall(r'\d+', self.request.path)
+        self.id = int(ttt[0])
+        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+
+        formset = self.formset(self.request.POST)
+
+        if formset.is_valid():
+            for forms in formset:
+                print(forms.data)
+                item = forms.save(commit=False)
+                item.group = history.group
+                item.asset = history.asset
+                item.save()
+
+            # return redirect(self.get_redirect_url())
+            self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+            messages.success(self.request, 'アイテムを追加しました。')
+            return redirect(self.success_url)
+
+        else:
+            # ctx["form"] = formset
+            # print("tttd", form)
+            messages.error(self.request, "アイテムの追加に失敗しました。")
+            return super().form_invalid(form)
+        # form_kwargs = self.get_form_kwargs()
+        # print("rrr", form_kwargs)
+        # finish = form_kwargs['data']['finish']
+        # ttt = re.findall(r'\d+', self.request.path)
+        # self.id = int(ttt[0])
+        # if finish == '0':
+        #     print("true")
+        #     self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+        # else:
+        #     print("false")
+        #     self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+        # self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+        # messages.success(self.request, 'アイテムを追加しました。')
+        # return super().form_valid(form)
+    
+    def form_invalid(self, form):
+        messages.error(self.request, "アイテムの追加に失敗しました。")
+        return super().form_invalid(form)
 
 
 

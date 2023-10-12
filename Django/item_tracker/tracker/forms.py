@@ -54,6 +54,18 @@ class InquiryForm(forms.Form):
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+class GroupFilterForm(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.none(),  # 最初は空のクエリセット
+        empty_label='すべてのグループ',
+        required=False,
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super(GroupFilterForm, self).__init__(*args, **kwargs)
+        # ユーザーが所属しているすべてのグループを取得し、クエリセットを設定
+        self.fields['group'].queryset = Group.objects.filter(groupmember__user=user)
+
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
@@ -68,11 +80,12 @@ class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
 class ImageAddForm(forms.ModelForm):
     class Meta:
         model = Image
-        fields = ['image', 'group', 'asset', 'user', 'taken_at', 'front']
+        fields = ['movie', 'image', 'group', 'asset', 'user', 'taken_at', 'front']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['image'].widget = forms.HiddenInput()
         self.fields['group'].widget = forms.HiddenInput()
         self.fields['asset'].widget = forms.HiddenInput()
         self.fields['front'].widget = forms.HiddenInput()
@@ -92,19 +105,26 @@ class ItemAddForm(forms.ModelForm):
 
     class Meta:
         model = Item
-        fields = ['group', 'asset', 'item_name', 'outer_edge']
+        fields = ['item_name', 'outer_edge']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['group'].widget = forms.HiddenInput()
+        # self.fields['asset'].widget = forms.HiddenInput()
         self.fields['outer_edge'].widget = forms.HiddenInput()
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
         # self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+
+    # def save(self):
+    #     obj = super.save(commit=False)
+    #     for name in item_list:
+    #         obj.item_name = name
+    #         obj.save()
+    #     return obj
 
 class ItemAddEXForm(forms.ModelForm):
     finish = forms.ChoiceField(
@@ -194,7 +214,7 @@ class ResultAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            # field.widget = forms.HiddenInput()
+            field.widget = forms.HiddenInput()
 
 # class HistoryMultiAddForm(MultiModelForm):
 

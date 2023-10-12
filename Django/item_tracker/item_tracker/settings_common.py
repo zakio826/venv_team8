@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'item_tracker.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'item_tracker',
+        'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': '',
@@ -166,7 +166,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 
 # ログイン/ログアウト後の遷移先を設定
-# LOGIN_REDIRECT_URL = 'tracker:asset_list'
+LOGIN_REDIRECT_URL = 'tracker:asset_list'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'tracker:index'
 
 # ログアウトリンクのクリック一発でログアウトする設定
