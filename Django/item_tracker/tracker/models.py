@@ -160,6 +160,12 @@ class History(models.Model):
     updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'coordinate'), exist_ok=True)
+        output_path = os.path.join(settings.MEDIA_ROOT, 'coordinate', self.image.image.name[6:])
+        coordinate_path = os.path.splitext(output_path)[0] + '.txt'
+        coordinate = open(coordinate_path, 'w')
+        coordinate.close()
+        self.coordinate.name = os.path.relpath(coordinate_path, settings.MEDIA_ROOT)
         auto_now = kwargs.pop('updated_at_auto_now', True)
         if auto_now:
             self.updated_at = datetime.now()

@@ -2,6 +2,7 @@ from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import BaseModelForm
 from django.shortcuts import redirect
+from django.conf import settings
 
 from django.http import HttpResponse, QueryDict
 
@@ -141,6 +142,47 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
     
 
+def chengeLabel(w_size, h_size, classNum, w_min, h_min, w_max, h_max):
+    """ラベル情報の出力 (YOLO)
+    """
+    # バウンディングボックスの座標を正規化座標に変換
+    x_min = float(w_min) / float(h_size)
+    y_min = float(h_min) / float(w_size)
+    x_max = float(w_max) / float(h_size)
+    y_max = float(h_max) / float(w_size)
+
+    # バウンディングボックスの中心座標とサイズを計算
+    x_center = (x_min + x_max) / 2.0
+    y_center = (y_min + y_max) / 2.0
+    box_width  = x_max - x_min
+    box_height = y_max - y_min
+
+    label = [str(classNum), str(x_center), str(y_center), str(box_width), str(box_height)]
+    return label
+
+def chengeBox(w_size, h_size, label):
+        """ラベル情報からバウンディングボックスを出力 (YOLO)
+        """
+        # バウンディングボックスの中心座標とサイズから頂点座標を算出
+        x_center   = float(label[1]) * 2.0
+        y_center   = float(label[2]) * 2.0
+        box_width  = float(label[3])
+        box_height = float(label[4])
+
+        x_max = (x_center + box_width) / 2.0
+        x_min = x_center - x_max
+        y_max = (y_center + box_height) / 2.0
+        y_min = y_center - y_max
+
+        # バウンディングボックスの座標をピクセルに変換
+        w_min = x_min * float(h_size)
+        h_min = y_min * float(w_size)
+        w_max = x_max * float(h_size)
+        h_max = y_max * float(w_size)
+
+        Bounding_box = [int(label[0]), w_min, h_min, w_max, h_max]
+        return Bounding_box
+
 class ImageAddView(LoginRequiredMixin, generic.CreateView):
     model = Image
     template_name = 'image_add.html'
@@ -227,6 +269,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         # コンテキスト情報のキーを追加
         context.update(extra)
         return context
+    
 
     def form_valid(self, form):
         print("ss", form.data)
@@ -239,6 +282,21 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         image_form.save()
         # print(image_form.instance)
         image = image_form.instance
+        # print()
+        # print("image.image.width: ", type(image.image.width))
+        # print("image.image.height:", type(image.image.height))
+        # print()
+        # print(' '.join(self.chengeLabel(
+        #             w_size = image.image.width,
+        #             h_size = image.image.height,
+        #             classNum = 0,
+        #             w_min = form.data['box_x_min'],
+        #             h_min = form.data['box_y_min'],
+        #             w_max = form.data['box_x_max'],
+        #             h_max = form.data['box_y_max']
+        #     ))
+        # )
+        # print()
 
         ttts = re.findall(r'[^0-9]+', self.request.path)
         if ttts[0] == '/asset-create/image-add/':
@@ -251,8 +309,23 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             # item = History.objects.prefetch_related('item').order_by('-updated_at').first()
         item = Item.objects.filter(outer_edge=True).get(asset=asset)
 
-        history = History(group=asset.group, asset=asset, user=self.request.user, image=image)
+        history = History(group=asset.group, asset=asset, user=self.request.user, image=image_form.instance)
         history.save()
+
+        coordinate_path = os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
+        history_coordinate = open(coordinate_path, 'w')
+        history_coordinate.write(
+            ' '.join(chengeLabel(
+                    w_size = history.image.image.width,
+                    h_size = history.image.image.height,
+                    classNum = 0,
+                    w_min = form.data['box_x_min'],
+                    h_min = form.data['box_y_min'],
+                    w_max = form.data['box_x_max'],
+                    h_max = form.data['box_y_max']
+            ))
+        )
+        history_coordinate.close()
         
         # print("ff", form.data['box_x_min'])
         # print("ff", type(form.data['box_x_min']))
@@ -269,21 +342,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             box_y_min = float(form.data['box_y_min']),
             box_x_max = float(form.data['box_x_max']),
             box_y_max = float(form.data['box_y_max']),
-            # data = self.request.POST,
-            # initial = {
-            #     'history': history,
-            #     'asset': asset,
-            #     'image': image,
-            #     'item': item,
-            # },
         )
-        # result(self.request.POST)
-        # result.fields['history'] = history
-        # result.fields['image'] = image
-        # result.fields['item'] = item
-        # result.instance.history = history
-        # result.instance.image = image
-        # result.instance.item = item
         result.save()
         # print("ff", result.)
 
@@ -441,6 +500,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
+        
+
         # image = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
         
         print("eee", form.data)
@@ -457,13 +518,51 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         formset = ttttt(self.request.POST)
         print("ttt0", formset.forms)
         if formset.is_valid():
-            for form in formset.forms:
+            coordinate_path = os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
+            history_coordinate = open(coordinate_path, 'a')
+            labelList = []
+            for i, form in enumerate(formset.forms):
                 result = form.save(commit=False)
                 # print("eeet", form)
                 result.history = history
                 result.save()
 
-            print("ttt4", formset)
+                print()
+                print("result_class:", form.data[f'form-{i}-result_class'])
+                print("type(result_class):", type(form.data[f'form-{i}-result_class']))
+                print()
+                if int(form.data[f'form-{i}-result_class']):
+                    labelList.append(chengeLabel(
+                            w_size = history.image.image.width,
+                            h_size = history.image.image.height,
+                            classNum = i + 1,
+                            w_min = form.data[f'form-{i}-box_x_min'],
+                            h_min = form.data[f'form-{i}-box_y_min'],
+                            w_max = form.data[f'form-{i}-box_x_max'],
+                            h_max = form.data[f'form-{i}-box_y_max']
+                    ))
+                    history_coordinate.write('\n')
+                    history_coordinate.write(
+                        ' '.join(chengeLabel(
+                                w_size = history.image.image.width,
+                                h_size = history.image.image.height,
+                                classNum = i + 1,
+                                w_min = form.data[f'form-{i}-box_x_min'],
+                                h_min = form.data[f'form-{i}-box_y_min'],
+                                w_max = form.data[f'form-{i}-box_x_max'],
+                                h_max = form.data[f'form-{i}-box_y_max']
+                        ))
+                    )
+            history_coordinate.close()
+
+            print()
+            for i in range(len(labelList)):
+                # print(labelList[i])
+                print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
+            print()
+
+
+            # print("ttt4", formset)
             messages.success(self.request, 'アイテムを追加しました。')
             return super().form_valid(form)
 
