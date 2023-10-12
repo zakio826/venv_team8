@@ -4,8 +4,7 @@ from django.forms.models import BaseModelForm
 from django.shortcuts import redirect
 from django.conf import settings
 
-from django.http import HttpResponse, QueryDict
-
+from django.http import HttpResponse, QueryDict, JsonResponse
 import logging
 
 from django.urls import reverse_lazy
@@ -25,6 +24,19 @@ logger = logging.getLogger(__name__)
 from django.contrib import messages
 
 import re
+
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+from googleapiclient.http import MediaFileUpload
+from google.oauth2.credentials import Credentials
+
+
+from httplib2 import Http
+from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client import file, client, tools
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+
 
 class IndexView(generic.TemplateView):
     template_name = "index.html"
@@ -62,6 +74,11 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
                 for i in image_list:
                     images = images|i
         print(images)
+        print()
+        print("images[1].image.path", images[1].image.path)
+        print()
+        print("images[1].image.name", os.path.basename(images[1].image.path))
+        print()
         return images
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
@@ -562,6 +579,65 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             print()
 
 
+            
+
+            # Google Drive APIを使用してファイルをアップロード
+            # file_path = self.object.file_field.path  # ファイルのパス
+
+            # Google Driveにアップロードするファイルパス
+            file_path_list = [
+                history.image.movie.path,
+                history.coordinate.path
+                # os.path.join(settings.MEDIA_ROOT, history.image.movie.name),
+                # os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
+            ]
+            # c = "client_secret_137758536878-8ds6irgsh1al72pbbu22u2dvlmucu19k.apps.googleusercontent.com"
+
+            for file_path in file_path_list:
+
+                credentials = service_account.Credentials.from_service_account_file(
+                    os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON),  # サービスアカウントキーのJSONファイルへのパス
+                    scopes=['https://www.googleapis.com/auth/drive.file'],
+                )
+                drive_service = build('drive', 'v3', credentials=credentials)
+
+                file_metadata = {
+                    'name': os.path.basename(file_path),  # アップロードされるファイルの名前
+                    'parents': ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy'],  # フォルダのID
+                }
+                media = MediaFileUpload(file_path, resumable=True)
+
+                uploaded_file = drive_service.files().create(
+                    body=file_metadata,
+                    media_body=media,
+                ).execute()
+
+
+
+
+
+                # # Google Drive APIを初期化
+                # creds = Credentials.from_authorized_user_file(os.path.join(settings.MEDIA_ROOT, 'credentials.json'))  # credentials.jsonはダウンロードしたファイルのパス
+                # service = build('drive', 'v3', credentials=creds)
+
+                # # ファイルをGoogle Driveにアップロード
+                # file_metadata = {
+                #     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
+                #     'parents': ['YOUR_FOLDER_ID'],  # 'toolkeeper'フォルダのIDを指定
+                # }
+                # media = MediaFileUpload(file_path, resumable=True)
+                # uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+
+
+
+                print()
+                print(JsonResponse({'file': uploaded_file}))
+                print(JsonResponse({'file': uploaded_file}).data)
+                print()
+
+
+
+
             # print("ttt4", formset)
             messages.success(self.request, 'アイテムを追加しました。')
             return super().form_valid(form)
@@ -670,11 +746,83 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
-
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
-        result = Result.objects.get(history=history)
+        result = Result.objects.get(history=history, result_class=9)
+
+
+        # file_path_list = [
+        #     .path,
+        #     .path
+        #     # os.path.join(settings.MEDIA_ROOT, history.image.movie.name),
+        #     # os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
+        # ]
+        # # c = "client_secret_137758536878-8ds6irgsh1al72pbbu22u2dvlmucu19k.apps.googleusercontent.com"
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        # gauth = GoogleAuth(os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON))
+        # gauth.LocalWebserverAuth()
+
+        # self.drive = GoogleDrive(gauth)
+
+        for file_path in [history.image.movie.path, history.coordinate.path]:
+            
+            # store = file.Storage('token.json')
+            # creds = store.get()
+            # if not creds or creds.invalid:
+            #     flow = client.flow_from_clientsecrets(os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON), SCOPES)
+            #     creds = tools.run_flow(flow, store)
+
+            # creds = service_account.Credentials.from_service_account_file(
+            #     os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON),  # サービスアカウントキーのJSONファイルへのパス
+            #     # scopes=['https://www.googleapis.com/auth/drive.file'],
+            # )
+            # drive_service = build('drive', 'v3', credentials=creds)
+            creds = ServiceAccountCredentials.from_json_keyfile_name(
+                os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON), SCOPES
+            )
+            # http_auth = creds.authorize(Http())
+            drive_service = build('drive', 'v3', credentials=creds)
+
+            file_metadata = {
+                'name': os.path.basename(file_path),  # アップロードされるファイルの名前
+                'parents': ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy'],  # フォルダのID
+            }
+            media = MediaFileUpload(file_path, resumable=True)
+
+            uploaded_file = drive_service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id'
+            ).execute()
+
+
+
+
+
+            # # Google Drive APIを初期化
+            # creds = Credentials.from_authorized_user_file(os.path.join(settings.MEDIA_ROOT, 'credentials.json'))  # credentials.jsonはダウンロードしたファイルのパス
+            # service = build('drive', 'v3', credentials=creds)
+
+            # # ファイルをGoogle Driveにアップロード
+            # file_metadata = {
+            #     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
+            #     'parents': ['YOUR_FOLDER_ID'],  # 'toolkeeper'フォルダのIDを指定
+            # }
+            # media = MediaFileUpload(file_path, resumable=True)
+            # uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+
+
+
+            print()
+            # print(JsonResponse({'file_id': uploaded_file.get('id')}))
+            # print(JsonResponse({'file_id': uploaded_file.get('id')}).data)
+            print()
+
+
+
+
+
         # print(self.id)
         # print(Asset.objects.get(id=self.id))
         # images = Image.objects.prefetch_related('group').prefetch_related('asset')

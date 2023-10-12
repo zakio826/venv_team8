@@ -45,6 +45,15 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'django_bootstrap5',
     'betterforms',
+
+    'google',
+    'google.api',
+    'google.api_core',
+    # 'google-api-python-client',
+    # 'google.auth',
+    'google_auth_httplib2',
+    'google_auth_oauthlib',
+    # 'googleapis-common-protos',
 ]
 
 MIDDLEWARE = [
@@ -192,3 +201,5 @@ DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 
 MEDIA_URL = '/media/'
+
+CREDENTIALS_JSON = 'tool-keeper-1a130098d074.json'
