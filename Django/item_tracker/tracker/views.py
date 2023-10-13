@@ -216,10 +216,10 @@ def chengeLabel(w_size, h_size, classNum, w_min, h_min, w_max, h_max):
     """ラベル情報の出力 (YOLO)
     """
     # バウンディングボックスの座標を正規化座標に変換
-    x_min = float(w_min) / float(h_size)
-    y_min = float(h_min) / float(w_size)
-    x_max = float(w_max) / float(h_size)
-    y_max = float(h_max) / float(w_size)
+    x_min = float(w_min) / float(w_size)
+    y_min = float(h_min) / float(h_size)
+    x_max = float(w_max) / float(w_size)
+    y_max = float(h_max) / float(h_size)
 
     # バウンディングボックスの中心座標とサイズを計算
     x_center = (x_min + x_max) / 2.0
@@ -245,10 +245,10 @@ def chengeBox(w_size, h_size, label):
     y_min = y_center - y_max
 
     # バウンディングボックスの座標をピクセルに変換
-    w_min = x_min * float(h_size)
-    h_min = y_min * float(w_size)
-    w_max = x_max * float(h_size)
-    h_max = y_max * float(w_size)
+    w_min = x_min * float(w_size)
+    h_min = y_min * float(h_size)
+    w_max = x_max * float(w_size)
+    h_max = y_max * float(h_size)
 
     Bounding_box = [int(label[0]), round(w_min, 6), round(h_min, 6), round(w_max, 6), round(h_max, 6)]
     return Bounding_box
@@ -735,174 +735,188 @@ def mypage(request):
 
 
 class TestPageView(LoginRequiredMixin, generic.CreateView):
-    model = Item
+    model = Image
     template_name = 'test_page.html'
-    # pk_field = 'asset.id'
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
+    form_class = ImageAddForm
+    # fields = ()
     success_url = reverse_lazy('tracker:asset_list')
-    formset = forms.formset_factory(
-        form = ItemAddForm,
-        # extra = 1,
-        # max_num = items.__len__(),
-    )
-    # form_class = ItemAddForm
-    fields = ()
-
-    # def get_form_kwargs(self) -> dict[str, Any]:
-    #     print()
-    #     print("super().get_form_kwargs():", super().get_form_kwargs())
-    #     print("type(super().get_form_kwargs()):", type(super().get_form_kwargs()))
-    #     # print("self.request.path:", self.request.path)
-    #     print()
-
-    #     return super().get_form_kwargs()
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
+        # print("aaa", self.get_success_url())
+        print(self.request.path)
+        # print(re.findall(r'\d+', self.request.path))
+        # print(self.get_slug_field())
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
-        result = Result.objects.get(history=history, result_class=9)
 
+        image_add_form = ImageAddForm(**self.get_form_kwargs())
+        result_add_form = ResultAddForm(**self.get_form_kwargs())
+        item_add_form = None
 
-        # file_path_list = [
-        #     .path,
-        #     .path
-        #     # os.path.join(settings.MEDIA_ROOT, history.image.movie.name),
-        #     # os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
-        # ]
-        # # c = "client_secret_137758536878-8ds6irgsh1al72pbbu22u2dvlmucu19k.apps.googleusercontent.com"
-        SCOPES = ['https://www.googleapis.com/auth/drive']
-        # gauth = GoogleAuth(os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON))
-        # gauth.LocalWebserverAuth()
-
-        # self.drive = GoogleDrive(gauth)
-
-        for file_path in [history.image.movie.path, history.coordinate.path]:
-            
-            # store = file.Storage('token.json')
-            # creds = store.get()
-            # if not creds or creds.invalid:
-            #     flow = client.flow_from_clientsecrets(os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON), SCOPES)
-            #     creds = tools.run_flow(flow, store)
-
-            # creds = service_account.Credentials.from_service_account_file(
-            #     os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON),  # サービスアカウントキーのJSONファイルへのパス
-            #     # scopes=['https://www.googleapis.com/auth/drive.file'],
-            # )
-            # drive_service = build('drive', 'v3', credentials=creds)
-            creds = ServiceAccountCredentials.from_json_keyfile_name(
-                os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON), SCOPES
-            )
-            # http_auth = creds.authorize(Http())
-            drive_service = build('drive', 'v3', credentials=creds)
-
-            file_metadata = {
-                'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                'parents': ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy'],  # フォルダのID
-            }
-            media = MediaFileUpload(file_path, resumable=True)
-
-            uploaded_file = drive_service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id'
-            ).execute()
-
-
-
-
-
-            # # Google Drive APIを初期化
-            # creds = Credentials.from_authorized_user_file(os.path.join(settings.MEDIA_ROOT, 'credentials.json'))  # credentials.jsonはダウンロードしたファイルのパス
-            # service = build('drive', 'v3', credentials=creds)
-
-            # # ファイルをGoogle Driveにアップロード
-            # file_metadata = {
-            #     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-            #     'parents': ['YOUR_FOLDER_ID'],  # 'toolkeeper'フォルダのIDを指定
-            # }
-            # media = MediaFileUpload(file_path, resumable=True)
-            # uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-
-
-            print()
-            # print(JsonResponse({'file_id': uploaded_file.get('id')}))
-            # print(JsonResponse({'file_id': uploaded_file.get('id')}).data)
-            print()
-
-
-
-
-
-        # print(self.id)
+        print(image_add_form['group'])
         # print(Asset.objects.get(id=self.id))
-        # images = Image.objects.prefetch_related('group').prefetch_related('asset')
-        # context['form'].fields['group'].initial = history.group
-        # context['form'].fields['asset'].initial = history.asset
-        # self.get_form_kwargs
-        # context['form'].fields['item_name'].requied = False
+
+        assets = Asset.objects.prefetch_related('group').get(id=self.id)
+
+        # print(assets.group)
+
+        image_add_form['group'].initial = assets.group
+        image_add_form['asset'].initial = assets
+        image_add_form['user'].initial = self.request.user
+
+
+        result_add_form['asset'].initial = assets
+        result_add_form['result_class'].initial = 9
+        result_add_form['asset'].field.widget = forms.HiddenInput()
+        result_add_form['item'].field.widget = forms.HiddenInput()
+        result_add_form['image'].field.widget = forms.HiddenInput()
+        result_add_form['result_class'].field.widget = forms.HiddenInput()
+        
+        ttts = re.findall(r'[^0-9]+', self.request.path)
+        print("ff", ttts)
+        if ttts[0] == '/asset-create/image-add/':
+            image_add_form['user'].field.widget = forms.HiddenInput()
+            image_add_form['front'].initial = True
+            
+            item_add_form = ItemAddForm(**self.get_form_kwargs())
+            # item_add_form['group'].initial = assets.group
+            # item_add_form['asset'].initial = assets
+            item_add_form['item_name'].initial = f"外枠"
+            item_add_form['item_name'].field.widget = forms.HiddenInput()
+            # item_add_form['finish'].field.widget = forms.HiddenInput()
+            item_add_form['outer_edge'].initial = True
+
+            submit = "登録"
+        else:
+            members = GroupMember.objects.prefetch_related('group').prefetch_related('user')
+            # users = CustomUser.objects.prefetch_related('group').prefetch_related('user')
+            # context['form'].fields['user'].initial = users.get(user=self.request.user)
+            user_li = []
+            for m in members.filter(group=assets.group):
+                user_li.append(CustomUser.objects.filter(id=m.user.id))
+            users = user_li[0]
+            if len(user_li) >= 2:
+                for u in user_li[1:]:
+                    users = users|u
+            print("uu", users)
+            image_add_form['user'].field.queryset = users
+            submit = "追加"
+
+        # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         extra = {
+            "submit": submit,
             "object": self.object,
-            "image": history.image.image,
-            "box_x_min": result.box_x_min,
-            "box_y_min": result.box_y_min,
-            "box_x_max": result.box_x_max,
-            "box_y_max": result.box_y_max,
-            "formset": self.formset,
+            "image_add_form": image_add_form,
+            "item_add_form": item_add_form,
+            "result_add_form": result_add_form,
         }
         # print(self.success_url)
         # コンテキスト情報のキーを追加
         context.update(extra)
         return context
+    
 
     def form_valid(self, form):
+        # print("ss", form.data)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+        # asset = Asset.objects.prefetch_related('group').get(id=self.id)
 
-        formset = self.formset(self.request.POST)
+        # image_form = ImageAddForm(self.request.POST, self.request.FILES)
+        image_form = form
+        image_form.save()
+        # print(image_form.instance)
+        # image = image_form.instance
+        # print()
+        # print("image.image.width: ", type(image.image.width))
+        # print("image.image.height:", type(image.image.height))
+        # print()
+        # print(' '.join(self.chengeLabel(
+        #             w_size = image.image.width,
+        #             h_size = image.image.height,
+        #             classNum = 0,
+        #             w_min = form.data['box_x_min'],
+        #             h_min = form.data['box_y_min'],
+        #             w_max = form.data['box_x_max'],
+        #             h_max = form.data['box_y_max']
+        #     ))
+        # )
+        # print()
 
-        if formset.is_valid():
-            for forms in formset:
-                print(forms.data)
-                item = forms.save(commit=False)
-                item.group = history.group
-                item.asset = history.asset
-                item.save()
+        # ttts = re.findall(r'[^0-9]+', self.request.path)
+        # if ttts[0] == '/asset-create/image-add/':
+        #     item_form = ItemAddForm(self.request.POST).save(commit=False)
+        #     item_form.group = asset.group
+        #     item_form.asset = asset
+        #     item_form.save()
+        #     # item = item_form.instance
+        # # else:
+        #     # item = History.objects.prefetch_related('item').order_by('-updated_at').first()
+        # item = Item.objects.filter(outer_edge=True).get(asset=asset)
 
-            # return redirect(self.get_redirect_url())
-            self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
-            messages.success(self.request, 'アイテムを追加しました。')
-            return redirect(self.success_url)
+        # history = History(group=asset.group, asset=asset, user=self.request.user, image=image_form.instance)
+        # history.save()
 
-        else:
-            # ctx["form"] = formset
-            # print("tttd", form)
-            messages.error(self.request, "アイテムの追加に失敗しました。")
-            return super().form_invalid(form)
-        # form_kwargs = self.get_form_kwargs()
-        # print("rrr", form_kwargs)
-        # finish = form_kwargs['data']['finish']
+        # coordinate_path = os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
+        # history_coordinate = open(coordinate_path, 'w')
+        # history_coordinate.write(
+        #     ' '.join(chengeLabel(
+        #             w_size = history.image.image.width,
+        #             h_size = history.image.image.height,
+        #             classNum = 0,
+        #             w_min = form.data['box_x_min'],
+        #             h_min = form.data['box_y_min'],
+        #             w_max = form.data['box_x_max'],
+        #             h_max = form.data['box_y_max']
+        #     ))
+        # )
+        # history_coordinate.close()
+        
+        # # print("ff", form.data['box_x_min'])
+        # # print("ff", type(form.data['box_x_min']))
+        # # print("ff", float(form.data['box_x_min']))
+        # # print("ff", type(float(form.data['box_x_min'])))
+
+        # result = Result(
+        #     history=history,
+        #     asset=asset,
+        #     image=image,
+        #     item=item,
+        #     result_class = int(form.data['result_class']),
+        #     box_x_min = float(form.data['box_x_min']),
+        #     box_y_min = float(form.data['box_y_min']),
+        #     box_x_max = float(form.data['box_x_max']),
+        #     box_y_max = float(form.data['box_y_max']),
+        # )
+        # result.save()
+        # print("ff", result.)
+
+
+        # image = form.save(commit=False)
+        # image.user = self.request.user
         # ttt = re.findall(r'\d+', self.request.path)
+        # print("f", ttts)
         # self.id = int(ttt[0])
-        # if finish == '0':
-        #     print("true")
+        # self.id = history.id
+        # if ttts[0] == '/asset-create/image-add/':
         #     self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
+        #     messages.success(self.request, '写真を登録しました。')
         # else:
-        #     print("false")
-        #     self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
-        # self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
-        # messages.success(self.request, 'アイテムを追加しました。')
-        # return super().form_valid(form)
+        #     self.success_url = reverse_lazy(f'tracker:asset_check', kwargs={'id': self.id})
+        #     messages.success(self.request, '写真を追加しました。')
+
+        self.success_url = reverse_lazy(f'tracker:test_page', kwargs={'id': self.id})
+        messages.success(self.request, '写真を追加しました。')
+        return redirect(self.success_url)
     
     def form_invalid(self, form):
-        messages.error(self.request, "アイテムの追加に失敗しました。")
+        messages.error(self.request, "写真の登録に失敗しました。")
         return super().form_invalid(form)
 
 
