@@ -202,4 +202,6 @@ EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 
 MEDIA_URL = '/media/'
 
-CREDENTIALS_JSON = 'tool-keeper-1a130098d074.json'
+SERVICE_ACCOUNT_KEY_NAME = 'tool-keeper-1a130098d074.json'
+
+GOOGLE_DRIVE_API_SCOPES = ['https://www.googleapis.com/auth/drive']

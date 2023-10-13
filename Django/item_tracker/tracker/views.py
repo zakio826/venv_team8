@@ -578,65 +578,29 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
             print()
 
-
-            
-
-            # Google Drive APIを使用してファイルをアップロード
             # file_path = self.object.file_field.path  # ファイルのパス
 
-            # Google Driveにアップロードするファイルパス
-            file_path_list = [
-                history.image.movie.path,
-                history.coordinate.path
-                # os.path.join(settings.MEDIA_ROOT, history.image.movie.name),
-                # os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
-            ]
-            # c = "client_secret_137758536878-8ds6irgsh1al72pbbu22u2dvlmucu19k.apps.googleusercontent.com"
-
-            for file_path in file_path_list:
-
-                credentials = service_account.Credentials.from_service_account_file(
-                    os.path.join(settings.MEDIA_ROOT, settings.CREDENTIALS_JSON),  # サービスアカウントキーのJSONファイルへのパス
-                    scopes=['https://www.googleapis.com/auth/drive.file'],
+            
+            # Google Drive APIを使用してファイルをアップロード
+            for file_path in [history.image.movie.path, history.coordinate.path]: # Google Driveにアップロードされるファイルのパス
+            
+                creds = ServiceAccountCredentials.from_json_keyfile_name(
+                    os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
+                    settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
                 )
-                drive_service = build('drive', 'v3', credentials=credentials)
+                drive_service = build('drive', 'v3', credentials=creds)
 
                 file_metadata = {
                     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                    'parents': ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy'],  # フォルダのID
+                    'parents': ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy'],  # アップロード先のGoogle DriveフォルダのID
                 }
                 media = MediaFileUpload(file_path, resumable=True)
 
                 uploaded_file = drive_service.files().create(
                     body=file_metadata,
                     media_body=media,
+                    fields='id'
                 ).execute()
-
-
-
-
-
-                # # Google Drive APIを初期化
-                # creds = Credentials.from_authorized_user_file(os.path.join(settings.MEDIA_ROOT, 'credentials.json'))  # credentials.jsonはダウンロードしたファイルのパス
-                # service = build('drive', 'v3', credentials=creds)
-
-                # # ファイルをGoogle Driveにアップロード
-                # file_metadata = {
-                #     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                #     'parents': ['YOUR_FOLDER_ID'],  # 'toolkeeper'フォルダのIDを指定
-                # }
-                # media = MediaFileUpload(file_path, resumable=True)
-                # uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-
-
-
-                print()
-                print(JsonResponse({'file': uploaded_file}))
-                print(JsonResponse({'file': uploaded_file}).data)
-                print()
-
-
-
 
             # print("ttt4", formset)
             messages.success(self.request, 'アイテムを追加しました。')
