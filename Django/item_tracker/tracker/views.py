@@ -36,6 +36,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from oauth2client import file, client, tools
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from googleapiclient.http import MediaIoBaseDownload
 
 
 class IndexView(generic.TemplateView):
@@ -75,10 +76,11 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
                     images = images|i
         print(images)
         print()
-        print("images[1].image.path", images[1].image.path)
+        print(0.855967)
+        print(round(0.8559670781893004, 6))
         print()
-        print("images[1].image.name", os.path.basename(images[1].image.path))
-        print()
+        # print("images[1].image.name", os.path.basename(images[1].image.path))
+        # print()
         return images
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
@@ -88,6 +90,25 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
 
+
+    def download_file(self, file_id, file_name):
+
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
+            settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+        )
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        request = drive_service.files().get_media(fileId=file_id)
+        fh = open(os.path.join(settings.MEDIA_ROOT, 'learning', file_name), 'wb')
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+
+        while done is False:
+            status, done = downloader.next_chunk()
+            print(f'Download {file_name} {int(status.progress() * 100)}%')
+
+
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
@@ -95,6 +116,38 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
+        asset = Asset.objects.get(id=self.object.id)
+        historys = History.objects.prefetch_related('image').filter(asset=asset).order_by('-updated_at')
+
+        # creds = ServiceAccountCredentials.from_json_keyfile_name(
+        #     os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
+        #     settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+        # )
+        # drive_service = build('drive', 'v3', credentials=creds)
+
+        # query = f"'{settings.GOOGLE_DRIVE_FOLDER_ID}' in parents"
+        # results = drive_service.files().list(q=query).execute()
+        # files = results.get('files', [])
+    
+        # for file in files:
+        #     file_id = file['id']
+        #     file_name = file['name']
+        #     # ext = os.path.splitext(file_name)[1]
+        #     pt_file_name = os.path.splitext(historys[0].image.movie.name[6:])[0] + '.pt'
+        #     if file_name == pt_file_name:
+        #         # return os.path.splitext(file_name)[0]
+        #         self.download_file(file_id, file_name)
+        #         break
+
+        # # # ダウンロード
+        # # if mp4_folder_name:
+
+        # #     # 特定の単語が含まれるフォルダを削除
+        # #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
+        # else:
+        #     print("ptファイルがないか処理の途中でエラーが発生しています。")
+
+
         extra = {
             "object": self.object,
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
@@ -178,27 +231,27 @@ def chengeLabel(w_size, h_size, classNum, w_min, h_min, w_max, h_max):
     return label
 
 def chengeBox(w_size, h_size, label):
-        """ラベル情報からバウンディングボックスを出力 (YOLO)
-        """
-        # バウンディングボックスの中心座標とサイズから頂点座標を算出
-        x_center   = float(label[1]) * 2.0
-        y_center   = float(label[2]) * 2.0
-        box_width  = float(label[3])
-        box_height = float(label[4])
+    """ラベル情報からバウンディングボックスを出力 (YOLO)
+    """
+    # バウンディングボックスの中心座標とサイズから頂点座標を算出
+    x_center   = float(label[1]) * 2.0
+    y_center   = float(label[2]) * 2.0
+    box_width  = float(label[3])
+    box_height = float(label[4])
 
-        x_max = (x_center + box_width) / 2.0
-        x_min = x_center - x_max
-        y_max = (y_center + box_height) / 2.0
-        y_min = y_center - y_max
+    x_max = (x_center + box_width) / 2.0
+    x_min = x_center - x_max
+    y_max = (y_center + box_height) / 2.0
+    y_min = y_center - y_max
 
-        # バウンディングボックスの座標をピクセルに変換
-        w_min = x_min * float(h_size)
-        h_min = y_min * float(w_size)
-        w_max = x_max * float(h_size)
-        h_max = y_max * float(w_size)
+    # バウンディングボックスの座標をピクセルに変換
+    w_min = x_min * float(h_size)
+    h_min = y_min * float(w_size)
+    w_max = x_max * float(h_size)
+    h_max = y_max * float(w_size)
 
-        Bounding_box = [int(label[0]), w_min, h_min, w_max, h_max]
-        return Bounding_box
+    Bounding_box = [int(label[0]), round(w_min, 6), round(h_min, 6), round(w_max, 6), round(h_max, 6)]
+    return Bounding_box
 
 class ImageAddView(LoginRequiredMixin, generic.CreateView):
     model = Image
@@ -592,7 +645,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
                 file_metadata = {
                     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                    'parents': ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy'],  # アップロード先のGoogle DriveフォルダのID
+                    'parents': settings.GOOGLE_DRIVE_FOLDER_ID,  # アップロード先のGoogle DriveフォルダのID
                 }
                 media = MediaFileUpload(file_path, resumable=True)
 

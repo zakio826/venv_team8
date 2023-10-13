@@ -35,7 +35,7 @@
                 {{ item_add_form.as_table }}
                 {{ result_add_form.as_table }}
             </table>
-            <button class="btn btn-primary" type="submit" id="submit" disabled>{{ submit }}</button>
+            <button class="btn btn-primary" type="submit" id="submit">{{ submit }}</button>
         </form>
     </div>
     
@@ -60,7 +60,10 @@
     // const box_in = document.getElementsByName("box");
     const box = document.getElementById("box");
     // const finish = document.getElementById("finish");
+
     const submit = document.getElementById("submit");
+    submit.disabled = true;
+
     // const box_list = document.getElementById("box_list");
     // const create = document.getElementById("create").innerText;
     const image_get = document.getElementById("id_image");

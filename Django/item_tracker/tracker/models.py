@@ -55,6 +55,13 @@ class Asset(models.Model):
     
     def __str__(self):
         return self.group.group_name + "_" + self.asset_name
+    
+    def save(self, *args, **kwargs):
+        
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'learning'), exist_ok=True)
+        
+        # 親クラスのsaveメソッドを呼び出す
+        super().save(*args, **kwargs)
 
 class Item(models.Model):
     """アイテムモデル"""
@@ -89,6 +96,9 @@ class Image(models.Model):
 
     def save(self, *args, **kwargs):
         
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'movie'), exist_ok=True)
+        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'image'), exist_ok=True)
+        
         # 親クラスのsaveメソッドを呼び出す
         super().save(*args, **kwargs)
 
@@ -110,12 +120,29 @@ class Image(models.Model):
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 使用するコーデックを指定
         out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))  # 出力ファイルの設定
         
+        print("cap_frame:", cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        print("out_frame:", out.get(cv2.CAP_PROP_FRAME_COUNT))
+        print()
+        
+        cnt = 0
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
             # フレームを書き込む
             out.write(frame)
+            cv2.waitKey(1)
+
+            print("frame_num:", cnt)
+            # print()
+            cnt+=1
+            # print("out_frame:", out.get(cv2.CAP_PROP_FRAME_COUNT))
+            # print()
+
+        print("out_frame:", out.get(cv2.CAP_PROP_FRAME_COUNT))
+        print()
+        # print("frame:", frame)
+        # print()
         
         cap.release()
         out.release()
@@ -126,7 +153,6 @@ class Image(models.Model):
         # 先頭の1フレームを取得してImageFieldに保存
         cap = cv2.VideoCapture(output_path)
         ret, frame = cap.read()
-        os.makedirs(os.path.join(settings.MEDIA_ROOT, 'image'), exist_ok=True)
         if ret:
             output_path = os.path.join(settings.MEDIA_ROOT, 'image', self.movie.name[6:])
             image_path = os.path.splitext(output_path)[0] + '.jpg'
