@@ -37,6 +37,7 @@ from oauth2client import file, client, tools
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from googleapiclient.http import MediaIoBaseDownload
+import shutil
 
 
 class IndexView(generic.TemplateView):
@@ -92,14 +93,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
 
 
     def download_file(self, file_id, file_name):
-
-        creds = ServiceAccountCredentials.from_json_keyfile_name(
-            os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
-            settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
-        )
-        drive_service = build('drive', 'v3', credentials=creds)
-
-        request = drive_service.files().get_media(fileId=file_id)
+        request = self.drive_service.files().get_media(fileId=file_id)
         fh = open(os.path.join(settings.MEDIA_ROOT, 'learning', file_name), 'wb')
         downloader = MediaIoBaseDownload(fh, request)
         done = False
@@ -108,6 +102,54 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             status, done = downloader.next_chunk()
             print(f'Download {file_name} {int(status.progress() * 100)}%')
 
+    #Drive上のサブディレクトリの中身を参照しフォルダごとダウンロード(条件あり)
+    def download_folder(self, folder_id, target_folder_name):
+        query = f"'{folder_id}' in parents"
+        results = self.drive_service.files().list(q=query).execute()
+        files = results.get('files', [])
+    
+        for file in files:
+            if file['mimeType'] == 'application/vnd.google-apps.folder':
+                subfolder_id = file['id']
+                subfolder_name = file['name']
+                subfolder_path = os.path.join(os.path.join(os.path.join(settings.MEDIA_ROOT, 'learning'), target_folder_name), subfolder_name)
+                os.makedirs(subfolder_path, exist_ok=True)
+                self.download_folder(subfolder_id, target_folder_name)
+            else:
+                file_id = file['id']
+                file_name = file['name']
+                # ext = os.path.splitext(file_name)[1]
+                pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
+                if file_name == pt_file_name:
+                    # return os.path.splitext(file_name)[0]
+                    self.download_file(file_id, file_name)
+
+    # .ptファイルの名前を取得し、ローカル上で作成されるフォルダ名に使用
+    def get_pt_folder_name(self):
+        # query_list = [
+        #     f"'{settings.GOOGLE_DRIVE_FOLDER_ID}' in parents",
+        #     "mimeType = 'application/vnd.pt'"
+        #     # "(name contains '.pt')"
+        # ]
+        # query = " and ".join(query_list)
+        query = f"'{settings.GOOGLE_DRIVE_FOLDER_ID}' in parents"
+        results = self.drive_service.files().list(q=query).execute()
+        # folder_id = settings.GOOGLE_DRIVE_FOLDER_ID
+        # query = f"'{folder_id}' in parents and mimeType = 'application/vnd.pt'"
+        # query = query = f"'{folder_id}' in parents and mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'"
+        # results = self.drive_service.files().list(
+        #     q = query,
+        #     fields = "files(id, name)",
+        #     # fields = "nextPageToken, files(id, name)",
+        #     # pageSize = 100,
+        # ).execute()
+        files = results.get('files', [])
+
+        for file in files:
+            file_name = file['name']
+            ext = os.path.splitext(file_name)[1]
+            if ext == '.pt':
+                return os.path.splitext(file_name)[0]
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -117,17 +159,23 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
         asset = Asset.objects.get(id=self.object.id)
-        historys = History.objects.prefetch_related('image').filter(asset=asset).order_by('-updated_at')
+        self.historys = History.objects.prefetch_related('image').filter(asset=asset).order_by('-updated_at')
 
-        # creds = ServiceAccountCredentials.from_json_keyfile_name(
-        #     os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
-        #     settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
-        # )
-        # drive_service = build('drive', 'v3', credentials=creds)
+        service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
+        creds = service_account.Credentials.from_service_account_file(
+            service_account_key_path, # サービスアカウントキーのJSONファイルへのパス
+            scopes = settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+        )
+        # http_auth = creds.authorize(Http())
+        # self.drive_service = build('drive', 'v3', http=http_auth)
+        self.drive_service = build('drive', 'v3', credentials=creds)
 
-        # query = f"'{settings.GOOGLE_DRIVE_FOLDER_ID}' in parents"
-        # results = drive_service.files().list(q=query).execute()
-        # files = results.get('files', [])
+        # .pt フォルダ名を取得
+        pt_folder_name = self.get_pt_folder_name()
+
+        # ダウンロード
+        if pt_folder_name:
+            self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
     
         # for file in files:
         #     file_id = file['id']
@@ -139,13 +187,13 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         #         self.download_file(file_id, file_name)
         #         break
 
-        # # # ダウンロード
-        # # if mp4_folder_name:
+        # # ダウンロード
+        # if mp4_folder_name:
 
-        # #     # 特定の単語が含まれるフォルダを削除
-        # #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
-        # else:
-        #     print("ptファイルがないか処理の途中でエラーが発生しています。")
+        #     # 特定の単語が含まれるフォルダを削除
+        #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
+        else:
+            print("ptファイルがないか処理の途中でエラーが発生しています。")
 
 
         extra = {
@@ -645,7 +693,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
                 file_metadata = {
                     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                    'parents': settings.GOOGLE_DRIVE_FOLDER_ID,  # アップロード先のGoogle DriveフォルダのID
+                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],  # アップロード先のGoogle DriveフォルダのID
                 }
                 media = MediaFileUpload(file_path, resumable=True)
 
@@ -657,7 +705,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
             # print("ttt4", formset)
             messages.success(self.request, 'アイテムを追加しました。')
-            return super().form_valid(form)
+            return redirect(self.success_url)
+            # return super().form_valid(form)
 
             # return redirect(self.get_redirect_url())
         else:
