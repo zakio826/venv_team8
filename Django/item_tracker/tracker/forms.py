@@ -67,19 +67,68 @@ class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
         self.fields['group'].widget.attrs['class'] = 'form-control'
         self.fields['asset_name'].widget.attrs['class'] = 'form-control'
 
+class ItemAddForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = ['item_name']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # self.fields['group'].widget = forms.HiddenInput()
+        # self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['outer_edge'].widget = forms.HiddenInput()
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+    
+    # def save(self):
+    #     obj = super.save(commit=False)
+    #     if obj.outer_edge:
+    #         obj.item_name = "外枠"
+    #     obj.save()
+    #     return obj
+
+# class ItemAddEXForm(forms.ModelForm):
+#     finish = forms.ChoiceField(
+#         label='続ける',
+#         required=False,
+#         # disabled=False,
+#         initial=[0],
+#         choices=[(0, 'はい、続けます。'), (1, 'いいえ、終了します。')],
+#         widget=forms.RadioSelect()
+#     )
+    
+#     class Meta:
+#         model = Item
+#         fields = ['group', 'asset', 'item_name', 'outer_edge']
+        
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+
+#         self.fields['group'].widget = forms.HiddenInput()
+#         self.fields['asset'].widget = forms.HiddenInput()
+#         # self.fields['item_list'].widget = forms.HiddenInput()
+#         self.fields['outer_edge'].widget = forms.HiddenInput()
+
+#         for field in self.fields.values():
+#             field.widget.attrs['class'] = 'form-control'
+        
+#         self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
+    
 class ImageAddForm(forms.ModelForm):
     class Meta:
         model = Image
-        fields = ['movie', 'image', 'group', 'asset', 'user', 'taken_at', 'front']
+        fields = ['movie', 'user', 'taken_at']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.fields['movie'].widget.attrs['accept'] = ".mp4"
-        self.fields['image'].widget = forms.HiddenInput()
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
-        self.fields['front'].widget = forms.HiddenInput()
+        # self.fields['image'].widget = forms.HiddenInput()
+        # self.fields['group'].widget = forms.HiddenInput()
+        # self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['front'].widget = forms.HiddenInput()
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
@@ -90,93 +139,11 @@ class ImageAddForm(forms.ModelForm):
         if not extension.lower() in settings.VALID_EXTENSIONS:
             raise forms.ValidationError('mp4ファイルを選択してください！')
         
-    # def save(self, group=None, asset=None):
-    #     obj = super.save(commit=False)
-    #     if group and asset:
-    #         obj.group = group
-    #         obj.asset = asset
-    #     obj.save()
-    #     return obj
-
-class ItemAddForm(forms.ModelForm):
-
-    class Meta:
-        model = Item
-        fields = ['item_name', 'outer_edge']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # self.fields['group'].widget = forms.HiddenInput()
-        # self.fields['asset'].widget = forms.HiddenInput()
-        self.fields['outer_edge'].widget = forms.HiddenInput()
-
-        for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-control'
-
-        # self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
-
-    # def save(self):
-    #     obj = super.save(commit=False)
-    #     for name in item_list:
-    #         obj.item_name = name
-    #         obj.save()
-    #     return obj
-
-class ItemAddEXForm(forms.ModelForm):
-    finish = forms.ChoiceField(
-        label='続ける',
-        required=False,
-        # disabled=False,
-        initial=[0],
-        choices=[(0, 'はい、続けます。'), (1, 'いいえ、終了します。')],
-        widget=forms.RadioSelect()
-    )
-    
-    class Meta:
-        model = Item
-        fields = ['group', 'asset', 'item_name', 'outer_edge']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.fields['group'].widget = forms.HiddenInput()
-        self.fields['asset'].widget = forms.HiddenInput()
-        # self.fields['item_list'].widget = forms.HiddenInput()
-        self.fields['outer_edge'].widget = forms.HiddenInput()
-
-        for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-control'
-        
-        self.fields['finish'].widget.attrs['class'] = 'form-choice-input'
-    
-    # def save(self, group=None, asset=None, item_list=None):
-    #     obj = super.save(commit=False)
-    #     if group and asset and item_list:
-    #         obj.item_list = item_list
-    #         obj.group = group
-    #         obj.asset = asset
-    #         for name in obj.item_list:
-    #             obj.item_name = name
-    #             obj.save()
-    #     else:
-    #         for name in obj.item_list:
-    #             obj.item_name = name
-    #             obj.save()
-    #     return obj
-    
-    # def save(self, group, asset, item_list):
-    #     obj = super.save(commit=False)
-    #     for name in item_list:
-    #         obj.item_name = name
-    #         obj.save()
-    #     return obj
-
 class HistoryAddForm(forms.ModelForm):
 
     class Meta:
         model = History
-        fields = ['group', 'asset', 'user', 'image']
+        fields = ['user']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -189,20 +156,20 @@ class HistoryAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            field.widget = forms.HiddenInput()
+            # field.widget = forms.HiddenInput()
 
 class ResultAddForm(forms.ModelForm):
 
     class Meta:
         model = Result
-        fields = ['asset', 'item', 'image', 'result_class', 'box_x_min', 'box_y_min', 'box_x_max', 'box_y_max']
+        fields = ['result_class', 'box_x_min', 'box_y_min', 'box_x_max', 'box_y_max']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['asset'].widget = forms.HiddenInput()
+        # self.fields['asset'].widget = forms.HiddenInput()
         # self.fields['item'].widget = forms.HiddenInput()
-        self.fields['image'].widget = forms.HiddenInput()
+        # self.fields['image'].widget = forms.HiddenInput()
         self.fields['result_class'].widget = forms.HiddenInput()
         # self.fields['box_x_min'].widget = forms.HiddenInput()
         # self.fields['box_y_min'].widget = forms.HiddenInput()
@@ -245,7 +212,7 @@ class AssetMultiCreateForm(MultiModelForm):
     form_classes = {
         "asset_create_form": AssetCreateForm,
         "image_add_form": ImageAddForm,
-        "item_add_form": ItemAddEXForm,
+        # "item_add_form": ItemAddEXForm,
     }
 
     # def save(self, group=None, asset=None, item_list=None):

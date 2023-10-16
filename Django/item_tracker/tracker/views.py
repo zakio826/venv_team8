@@ -63,7 +63,7 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
         images = None
         if len(belong) >= 1:
             images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
-            image_list  =[]
+            image_list = []
             for b in belong:
                 print("fff", b.group)
                 image_list.append(images.filter(group=b.group))
@@ -119,8 +119,8 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
                 file_id = file['id']
                 file_name = file['name']
                 # ext = os.path.splitext(file_name)[1]
-                pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
-                if file_name == pt_file_name:
+                self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
+                if file_name == self.pt_file_name:
                     # return os.path.splitext(file_name)[0]
                     self.download_file(file_id, file_name)
 
@@ -178,6 +178,9 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
         #     # 特定の単語が含まれるフォルダを削除
         #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
+            asset = Asset.objects.get(id=self.object.id)
+            asset.learning_model.name = self.pt_file_name
+            asset.save()
         else:
             print("ptファイルがないか処理の途中でエラーが発生しています。")
 
@@ -234,7 +237,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
 
     def form_valid(self, form):
         asset = form.save(commit=False)
-        asset.user = self.request.user
+        # asset.user = self.request.user
         asset.save()
         # print("ddd", asset.id)
         self.success_url = reverse_lazy(f'tracker:image_add', kwargs={'id': asset.id})
@@ -293,8 +296,12 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     # slug_field = "asset_name" # モデルのフィールドの名前
     # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
-    form_class = ImageAddForm
-    # fields = ()
+    # form_class = ImageAddForm
+    fields = ()
+    item_add_form = ItemAddForm
+    image_add_form = ImageAddForm
+    history_add_form = HistoryAddForm
+    result_add_form = ResultAddForm
     success_url = reverse_lazy('tracker:asset_list')
 
     # get_context_dataをオーバーライド
@@ -308,42 +315,46 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
 
-        image_add_form = ImageAddForm(**self.get_form_kwargs())
-        result_add_form = ResultAddForm(**self.get_form_kwargs())
+        image_add_form = self.image_add_form(**self.get_form_kwargs())
+        history_add_form = self.history_add_form(**self.get_form_kwargs())
+        result_add_form = self.result_add_form(**self.get_form_kwargs())
         item_add_form = None
 
-        print(image_add_form['group'])
+        # print(image_add_form['group'])
         # print(Asset.objects.get(id=self.id))
 
         assets = Asset.objects.prefetch_related('group').get(id=self.id)
 
         # print(assets.group)
 
-        image_add_form['group'].initial = assets.group
-        image_add_form['asset'].initial = assets
+        # image_add_form['group'].initial = assets.group
+        # image_add_form['asset'].initial = assets
         image_add_form['user'].initial = self.request.user
 
+        history_add_form['user'].initial = self.request.user
+        history_add_form['user'].field.widget = forms.HiddenInput()
 
-        result_add_form['asset'].initial = assets
+
+        # result_add_form['asset'].initial = assets
         result_add_form['result_class'].initial = 9
-        result_add_form['asset'].field.widget = forms.HiddenInput()
-        result_add_form['item'].field.widget = forms.HiddenInput()
-        result_add_form['image'].field.widget = forms.HiddenInput()
+        # result_add_form['asset'].field.widget = forms.HiddenInput()
+        # result_add_form['item'].field.widget = forms.HiddenInput()
+        # result_add_form['image'].field.widget = forms.HiddenInput()
         result_add_form['result_class'].field.widget = forms.HiddenInput()
         
         ttts = re.findall(r'[^0-9]+', self.request.path)
         print("ff", ttts)
         if ttts[0] == '/asset-create/image-add/':
             image_add_form['user'].field.widget = forms.HiddenInput()
-            image_add_form['front'].initial = True
+            # image_add_form['front'].initial = True
             
-            item_add_form = ItemAddForm(**self.get_form_kwargs())
+            item_add_form = self.item_add_form(**self.get_form_kwargs())
             # item_add_form['group'].initial = assets.group
             # item_add_form['asset'].initial = assets
             item_add_form['item_name'].initial = f"外枠"
             item_add_form['item_name'].field.widget = forms.HiddenInput()
             # item_add_form['finish'].field.widget = forms.HiddenInput()
-            item_add_form['outer_edge'].initial = True
+            # item_add_form['outer_edge'].initial = True
 
             submit = "登録"
         else:
@@ -381,11 +392,18 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         self.id = int(ttt[0])
         asset = Asset.objects.prefetch_related('group').get(id=self.id)
 
-        # image_form = ImageAddForm(self.request.POST, self.request.FILES)
-        image_form = form
+        image_form = self.image_add_form(self.request.POST, self.request.FILES)
+        image_form = image_form.save(commit=False)
+        # image_form = form.save(commit=False)
+        image_form.group = asset.group
+        image_form.asset = asset
+        image_form.user = self.request.user
+        image_form.front = True
         image_form.save()
+
+        image = Image.objects.filter(front=True).get(asset=asset)
         # print(image_form.instance)
-        image = image_form.instance
+        # image = image_form.instance
         # print()
         # print("image.image.width: ", type(image.image.width))
         # print("image.image.height:", type(image.image.height))
@@ -404,24 +422,33 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
 
         ttts = re.findall(r'[^0-9]+', self.request.path)
         if ttts[0] == '/asset-create/image-add/':
-            item_form = ItemAddForm(self.request.POST).save(commit=False)
-            item_form.group = asset.group
+            item_form = self.item_add_form(self.request.POST)
+            item_form = item_form.save(commit=False)
+            # item_form.group = asset.group
             item_form.asset = asset
+            item_form.outer_edge = True
             item_form.save()
             # item = item_form.instance
         # else:
             # item = History.objects.prefetch_related('item').order_by('-updated_at').first()
         item = Item.objects.filter(outer_edge=True).get(asset=asset)
 
-        history = History(group=asset.group, asset=asset, user=self.request.user, image=image_form.instance)
+        
+        # history = History(group=asset.group, asset=asset, user=self.request.user, image=form.instance)
+        history = self.history_add_form(self.request.POST)
+        history = history.save(commit=False)
+        history.group = asset.group
+        history.asset = asset
+        history.user = self.request.user
+        history.image = image
         history.save()
 
         coordinate_path = os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
         history_coordinate = open(coordinate_path, 'w')
         history_coordinate.write(
             ' '.join(chengeLabel(
-                    w_size = history.image.image.width,
-                    h_size = history.image.image.height,
+                    w_size = image.image.width,
+                    h_size = image.image.height,
                     classNum = 0,
                     w_min = form.data['box_x_min'],
                     h_min = form.data['box_y_min'],
@@ -436,18 +463,24 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         # print("ff", float(form.data['box_x_min']))
         # print("ff", type(float(form.data['box_x_min'])))
 
-        result = Result(
-            history=history,
-            asset=asset,
-            image=image,
-            item=item,
-            result_class = int(form.data['result_class']),
-            box_x_min = float(form.data['box_x_min']),
-            box_y_min = float(form.data['box_y_min']),
-            box_x_max = float(form.data['box_x_max']),
-            box_y_max = float(form.data['box_y_max']),
-        )
+        result = self.result_add_form(self.request.POST).save(commit=False)
+        result.history = history
+        result.item = item
+        result.result_class = 9
         result.save()
+
+        # result = Result(
+        #     history=history,
+        #     asset=asset,
+        #     image=image,
+        #     item=item,
+        #     result_class = int(form.data['result_class']),
+        #     box_x_min = float(form.data['box_x_min']),
+        #     box_y_min = float(form.data['box_y_min']),
+        #     box_x_max = float(form.data['box_x_max']),
+        #     box_y_max = float(form.data['box_y_max']),
+        # )
+        # result.save()
         # print("ff", result.)
 
 
@@ -484,6 +517,7 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
     )
     # form_class = ItemAddForm
     fields = ()
+    # form_class = formset
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -520,7 +554,7 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
             for forms in formset:
                 print(forms.data)
                 item = forms.save(commit=False)
-                item.group = history.group
+                # item.group = history.group
                 item.asset = history.asset
                 item.save()
 
@@ -626,9 +660,11 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             history_coordinate = open(coordinate_path, 'a')
             labelList = []
             for i, form in enumerate(formset.forms):
+
                 result = form.save(commit=False)
                 # print("eeet", form)
                 result.history = history
+                result.item = items[i]
                 result.save()
 
                 print()

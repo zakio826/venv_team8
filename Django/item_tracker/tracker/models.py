@@ -28,8 +28,8 @@ class Group(models.Model):
 class GroupMember(models.Model):
     """グループメンバーモデル"""
     
-    user = models.ForeignKey(CustomUser, verbose_name='メンバー', on_delete=models.PROTECT)
-    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
+    user = models.ForeignKey(CustomUser, verbose_name='メンバー', on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.CASCADE)
     
     class Meta:
         verbose_name_plural = 'GroupMember'
@@ -40,7 +40,7 @@ class GroupMember(models.Model):
 class Asset(models.Model):
     """管理項目モデル"""
     
-    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
+    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.CASCADE)
     asset_name = models.CharField(verbose_name='管理名', max_length=40)
 
     learning_model = models.FileField(
@@ -65,11 +65,21 @@ class Asset(models.Model):
 class Item(models.Model):
     """アイテムモデル"""
     
-    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
-    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
+    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
 
     item_name = models.CharField(verbose_name='アイテム名', max_length=40)
     outer_edge = models.BooleanField(verbose_name='外枠', default=False)
+    
+    def save(self, *args, **kwargs):
+
+        # 親クラスのsaveメソッドを呼び出す
+        super().save(*args, **kwargs)
+
+        if self.outer_edge:
+            self.item_name = "外枠"
+
+        # 最終的に保存
+        super().save(*args, **kwargs)
     
     class Meta:
         verbose_name_plural = 'Item'
@@ -80,9 +90,10 @@ class Item(models.Model):
 class Image(models.Model):
     """画像モデル"""
     
-    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
-    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
-    user = models.ForeignKey(CustomUser, verbose_name='撮影ユーザー', on_delete=models.PROTECT)
+    # history = models.ForeignKey(History, verbose_name='履歴', on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.DO_NOTHING)
+    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, verbose_name='撮影ユーザー', null=True, on_delete=models.SET_NULL)
 
     movie = models.FileField(
         upload_to='movie/',
@@ -130,9 +141,9 @@ class Image(models.Model):
 class History(models.Model):
     """履歴モデル"""
     
-    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.PROTECT)
-    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
-    user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', on_delete=models.PROTECT)
+    group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.DO_NOTHING)
+    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', null=True, on_delete=models.SET_NULL)
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
     
     coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,
@@ -167,10 +178,8 @@ class History(models.Model):
 class Result(models.Model):
     """アイテム別履歴モデル"""
     
-    history = models.ForeignKey(History, verbose_name='履歴', on_delete=models.PROTECT)
-    asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.PROTECT)
-    item = models.ForeignKey(Item, verbose_name='アイテム', on_delete=models.PROTECT)
-    image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
+    history = models.ForeignKey(History, verbose_name='履歴', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, verbose_name='アイテム', on_delete=models.CASCADE)
 
     result_class = models.IntegerField(verbose_name='詳細結果', validators=[MinValueValidator(0), MaxValueValidator(9)])
     # result_class = {0: '無し', 1: '手動確認', 9: '外枠'}
@@ -183,4 +192,4 @@ class Result(models.Model):
         verbose_name_plural = 'Result'
     
     def __str__(self):
-        return self.asset.asset_name + "_" + self.item.item_name + "_" + self.history.updated_at.astimezone(tz=None).strftime('%Y-%m-%d %H:%M:%S')
+        return self.history.asset.asset_name + "_" + self.item.item_name + "_" + self.history.updated_at.astimezone(tz=None).strftime('%Y-%m-%d %H:%M:%S')
