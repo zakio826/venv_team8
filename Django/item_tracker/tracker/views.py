@@ -119,7 +119,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
                 file_id = file['id']
                 file_name = file['name']
                 # ext = os.path.splitext(file_name)[1]
-                self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
+                # self.pt_file_name = self.file_name + '.pt'
                 if file_name == self.pt_file_name:
                     # return os.path.splitext(file_name)[0]
                     self.download_file(file_id, file_name)
@@ -148,7 +148,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         for file in files:
             file_name = file['name']
             ext = os.path.splitext(file_name)[1]
-            if ext == '.pt':
+            if ext == '.pt' and file_name != self.pt_file_name:
                 return os.path.splitext(file_name)[0]
 
     # get_context_dataをオーバーライド
@@ -158,8 +158,9 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        asset = Asset.objects.get(id=self.object.id)
-        self.historys = History.objects.prefetch_related('image').filter(asset=asset).order_by('-updated_at')
+        self.asset = Asset.objects.get(id=self.object.id)
+        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
+        self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
 
         service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
         creds = service_account.Credentials.from_service_account_file(
@@ -178,9 +179,8 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
         #     # 特定の単語が含まれるフォルダを削除
         #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
-            asset = Asset.objects.get(id=self.object.id)
-            asset.learning_model.name = self.pt_file_name
-            asset.save()
+            self.asset.learning_model.name = self.pt_file_name
+            self.asset.save()
         else:
             print("ptファイルがないか処理の途中でエラーが発生しています。")
 
