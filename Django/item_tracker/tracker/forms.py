@@ -6,6 +6,8 @@ from betterforms.multiform import MultiModelForm
 from django import forms
 from django.core.mail import EmailMessage
 
+from django.conf import settings
+
 from accounts.models import CustomUser
 from .models import Group, GroupMember, Asset, Item, Image, History, Result
 
@@ -73,6 +75,7 @@ class ImageAddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.fields['movie'].widget.attrs['accept'] = ".mp4"
         self.fields['image'].widget = forms.HiddenInput()
         self.fields['group'].widget = forms.HiddenInput()
         self.fields['asset'].widget = forms.HiddenInput()
@@ -80,6 +83,12 @@ class ImageAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+    def clean_file(self):
+        file = self.cleaned_data['file']
+        extension = os.path.splitext(file.name)[1] # 拡張子を取得
+        if not extension.lower() in settings.VALID_EXTENSIONS:
+            raise forms.ValidationError('mp4ファイルを選択してください！')
         
     # def save(self, group=None, asset=None):
     #     obj = super.save(commit=False)

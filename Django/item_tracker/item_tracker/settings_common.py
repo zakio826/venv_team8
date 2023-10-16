@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'google_auth_httplib2',
     'google_auth_oauthlib',
     # 'googleapis-common-protos',
+
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
@@ -207,3 +209,5 @@ SERVICE_ACCOUNT_KEY_NAME = 'tool-keeper-1a130098d074.json'
 GOOGLE_DRIVE_API_SCOPES = ['https://www.googleapis.com/auth/drive']
 
 GOOGLE_DRIVE_FOLDER_ID = ['13BVYOAz2jLU8s-qVutGMKuvzM3JgX0Cy']
+
+VALID_EXTENSIONS = ['.mp4']
