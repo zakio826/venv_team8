@@ -176,20 +176,6 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         # ダウンロード
         if pt_folder_name:
             self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
-    
-        # for file in files:
-        #     file_id = file['id']
-        #     file_name = file['name']
-        #     # ext = os.path.splitext(file_name)[1]
-        #     pt_file_name = os.path.splitext(historys[0].image.movie.name[6:])[0] + '.pt'
-        #     if file_name == pt_file_name:
-        #         # return os.path.splitext(file_name)[0]
-        #         self.download_file(file_id, file_name)
-        #         break
-
-        # # ダウンロード
-        # if mp4_folder_name:
-
         #     # 特定の単語が含まれるフォルダを削除
         #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
         else:
