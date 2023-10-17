@@ -28,11 +28,13 @@
                         <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
                         <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
                         <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                        <span id="model_check" style="display: none;">{{ result.model_check }}</span>
                     {% else %}
                         <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
                         <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
                         <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
                         <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                        <span id="item_{{ forloop.counter0 }}_conf" style="display: none;">{{ result.conf }}</span>
                     {% endif %}
                 {% endfor %}
             </div>
@@ -96,6 +98,7 @@
     const box_y_max = Number(document.getElementById("box_y_max").innerText);
     
     const item_box = Number(document.getElementById("item_box").innerText);
+    const model_check = document.getElementById("model_check").innerText;
 
     // const item_x_min = document.getElementById("item_x_min").innerText;
     // const item_y_min = document.getElementById("item_y_min").innerText;
@@ -137,9 +140,11 @@
                 Number(document.getElementById(`item_${i+1}_y_min`).innerText) - box_y_min,
                 Number(document.getElementById(`item_${i+1}_x_max`).innerText) - box_x_min,
                 Number(document.getElementById(`item_${i+1}_y_max`).innerText) - box_y_min,
+                Number(document.getElementById(`item_${i+1}_conf`).innerText),
             ];
+            if (model_check == "False") box_li[i][4] = 1;
             // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
-        } else box_li[i] = [0,0,0,0];
+        } else box_li[i] = [0,0,0,0,1];
         // console.log(item_x_min);
         // console.log(item_y_min[i]);
         // console.log(item_x_max[i]);
@@ -243,15 +248,26 @@
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
                 console.log(box_li[i]);
 
-                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
-                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
-                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
-                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
+                if (box_li[i][4] > 0) {
+                    document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                    document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                    document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                    document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
+                    
+                    if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+
+                    box_in[i].checked = true;
+                    check[i].checked = true;
+                    checked[i].innerText = "チェック済み";
+                }
 
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
                 box_li[i][2] *= x_fit;
                 box_li[i][3] *= y_fit;
+
+                if (box_li[i][4] > 0) ctx.strokeStyle = "blue"; // 青い線で描画
+                else ctx.strokeStyle = "red"; // 青い線で描画
 
                 ctx.strokeRect(
                     box_li[i][0],
@@ -260,12 +276,6 @@
                     box_li[i][3] - box_li[i][1],
                 );
                 
-                
-                if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
-
-                box_in[i].checked = true;
-                check[i].checked = true;
-                checked[i].innerText = "チェック済み";
             }
         }
         // auto_fit();
@@ -283,6 +293,9 @@
         for (let i = 0; i < set.length; i++) {
             if (i == order) ctx.lineWidth = 2;
             else ctx.lineWidth = 1;
+
+            if (box_li[i][4] > 0) ctx.strokeStyle = "blue"; // 青い線で描画
+            else ctx.strokeStyle = "red"; // 青い線で描画
 
             ctx.strokeRect(
                 box_li[i][0],
@@ -365,7 +378,8 @@
                     x_min,
                     y_min,
                     x_max,
-                    y_max
+                    y_max,
+                    1
                 ];
 
                 // document.getElementById(`id_form-${i}-box_x_min`).value = x_min + box_x_min;
@@ -414,7 +428,7 @@
     // 選択したバウンディングボックスを削除
     function del_box(i) {
         if (check[i].checked) {
-            box_li[i] = [0,0,0,0];
+            box_li[i] = [0,0,0,0,1];
             // check[i].checked = false;
             checked[i].innerText = "チェック";
             box_in[i].checked = false;

@@ -588,6 +588,40 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     fields = ()
     success_url = reverse_lazy('tracker:asset_list')
 
+    def model_check(self, asset, image):
+        
+        output_path = os.path.join(settings.MEDIA_ROOT, 'model_check', asset.learning_model.name[8:-3])
+        os.makedirs(output_path, exist_ok=True)
+
+        # YOLOモデルの読み込み
+        model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
+
+        # 物体検出の実行
+        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.50)
+
+        classDict = results1[0].names
+        classNums = results1[0].boxes.cls.__array__().tolist()
+        confs = results1[0].boxes.conf.__array__().tolist()
+        boxes = results1[0].boxes.xyxy.__array__().tolist()
+
+        print()
+        for i in range(len(results1[0].boxes.cls)):
+            if round(classNums[i]) and self.box[round(classNums[i])]['conf'] < confs[i]:
+                self.box[round(classNums[i])]['box_x_min'] = boxes[i][0]
+                self.box[round(classNums[i])]['box_y_min'] = boxes[i][1]
+                self.box[round(classNums[i])]['box_x_max'] = boxes[i][2]
+                self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
+                self.box[round(classNums[i])]['conf'] = confs[i]
+
+            # print(f"{round(classNums[i])}:", classDict[classNums[i]])
+            # print(f"  x_min = {boxes[i][0]:>20} px")
+            # print(f"  y_min = {boxes[i][1]:>20} px")
+            # print(f"  x_max = {boxes[i][2]:>20} px")
+            # print(f"  y_max = {boxes[i][3]:>20} px")
+            # print(f"  conf  = {confs[i]:>20} %")
+        # print("len", len(results1[0].boxes.cls))
+        # print()
+
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
@@ -613,11 +647,12 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         print("f", ttts)
         # self.id = int(ttt[0])
         result = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
-        box = [{
+        self.box = [{
             "box_x_min": result.box_x_min,
             "box_y_min": result.box_y_min,
             "box_x_max": result.box_x_max,
             "box_y_max": result.box_y_max,
+            "model_check": False,
         }]
         if ttts[0] == '/asset-check/':
             result_class = 0
@@ -637,12 +672,21 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 else:
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
-                    box.append({
+                    self.box.append({
                         "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit) + result.box_x_min,
                         "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
                         "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
                         "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                        "conf": 0,
                     })
+            
+            if history.asset.learning_model:
+                # self.box = []
+                # for i in Item.objects.filter(history=history):
+                #     self.box
+                self.box[0]['model_check'] = True
+                print()
+                self.model_check(history.asset, history.image)
         else:
             result_class = 1
             # results = Result.objects.filter(history=historys[0])
@@ -652,7 +696,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "create": result_class,
             "image": history.image.image,
             "items": items.order_by('-id'),
-            "results": box,
+            "results": self.box,
             # "box_x_min": round(result.box_x_min),
             # "box_y_min": round(result.box_y_min),
             # "box_x_max": round(result.box_x_max),
@@ -994,6 +1038,10 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
                     "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
                     "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
                     "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                    # "box_x_min": r.box_x_min,
+                    # "box_y_min": r.box_y_min,
+                    # "box_x_max": r.box_x_max,
+                    # "box_y_max": r.box_y_max,
                     "conf": 0,
                 })
         
