@@ -17,10 +17,10 @@
                 <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
                 <span id="create" style="display: none;">{{ create }}</span>
 
-                <span id="result_box_x_min" style="display: none;">{{ box_x_min }}</span>
+                <!-- <span id="result_box_x_min" style="display: none;">{{ box_x_min }}</span>
                 <span id="result_box_y_min" style="display: none;">{{ box_y_min }}</span>
                 <span id="result_box_x_max" style="display: none;">{{ box_x_max }}</span>
-                <span id="result_box_y_max" style="display: none;">{{ box_y_max }}</span>
+                <span id="result_box_y_max" style="display: none;">{{ box_y_max }}</span> -->
                 {% for result in results %}
                     {% if forloop.first %}
                         <span id="item_box" style="display: none;">{{ results|length }}</span>
@@ -85,10 +85,10 @@
 
     const check_list = document.getElementById("check_list");
     
-    const result_box_x_min = Number(document.getElementById("result_box_x_min").innerText);
-    const result_box_y_min = Number(document.getElementById("result_box_y_min").innerText);
-    const result_box_x_max = Number(document.getElementById("result_box_x_max").innerText);
-    const result_box_y_max = Number(document.getElementById("result_box_y_max").innerText);
+    // const result_box_x_min = Number(document.getElementById("result_box_x_min").innerText);
+    // const result_box_y_min = Number(document.getElementById("result_box_y_min").innerText);
+    // const result_box_x_max = Number(document.getElementById("result_box_x_max").innerText);
+    // const result_box_y_max = Number(document.getElementById("result_box_y_max").innerText);
 
     const box_x_min = Number(document.getElementById("box_x_min").innerText);
     const box_y_min = Number(document.getElementById("box_y_min").innerText);
@@ -109,8 +109,8 @@
     let isDrawing = false;
     let startX, startY, width, height;
 
-    const x_fix = result_box_x_max - result_box_x_min;
-    const y_fix = result_box_y_max - result_box_y_min;
+    const x_fix = box_x_max - box_x_min;
+    const y_fix = box_y_max - box_y_min;
 
     canvas.width = x_fix;
     canvas.height = y_fix;
@@ -118,8 +118,8 @@
     let x_fit = canvas.width / x_fix;
     let y_fit = canvas.height / y_fix;
 
-    let x_min_fit = result_box_x_min;
-    let y_min_fit = result_box_y_min;
+    let x_min_fit = box_x_min;
+    let y_min_fit = box_y_min;
 
 
     // バウンディングボックスの座標を初期化
@@ -157,10 +157,10 @@
         let w = x_fix / canvas.width;
         let h = y_fix / canvas.height;
         
-        document.getElementById(`id_form-${i}-box_x_min`).value = (box_li[i][0] * w) + result_box_x_min;
-        document.getElementById(`id_form-${i}-box_y_min`).value = (box_li[i][1] * h) + result_box_y_min;
-        document.getElementById(`id_form-${i}-box_x_max`).value = (box_li[i][2] * w) + result_box_x_min;
-        document.getElementById(`id_form-${i}-box_y_max`).value = (box_li[i][3] * h) + result_box_y_min;
+        document.getElementById(`id_form-${i}-box_x_min`).value = (box_li[i][0] * w) + box_x_min;
+        document.getElementById(`id_form-${i}-box_y_min`).value = (box_li[i][1] * h) + box_y_min;
+        document.getElementById(`id_form-${i}-box_x_max`).value = (box_li[i][2] * w) + box_x_min;
+        document.getElementById(`id_form-${i}-box_y_max`).value = (box_li[i][3] * h) + box_y_min;
     }
 
     function auto_fit() {
@@ -219,8 +219,8 @@
         // canvas.height = image.height;
         // ctx.drawImage(image, 0, 0);
 
-        const x_fix = result_box_x_max - result_box_x_min;
-        const y_fix = result_box_y_max - result_box_y_min;
+        const x_fix = box_x_max - box_x_min;
+        const y_fix = box_y_max - box_y_min;
 
         canvas.width = preview.getBoundingClientRect().width.toFixed();
         canvas.height = canvas.width * (y_fix / x_fix);
@@ -228,12 +228,12 @@
         let x_fit = canvas.width / x_fix;
         let y_fit = canvas.height / y_fix;
 
-        let x_min_fit = result_box_x_min * x_fit;
-        let y_min_fit = result_box_y_min * y_fit;
+        let x_min_fit = box_x_min * x_fit;
+        let y_min_fit = box_y_min * y_fit;
 
         check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
 
-        ctx.drawImage(image, result_box_x_min, result_box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
 
         ctx.strokeStyle = "blue"; // 青い線で描画
         ctx.lineWidth = 2;
@@ -243,10 +243,10 @@
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
                 console.log(box_li[i]);
 
-                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + result_box_x_min;
-                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + result_box_y_min;
-                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + result_box_x_min;
-                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + result_box_y_min;
+                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
 
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
@@ -276,7 +276,7 @@
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // ctx.drawImage(image, 0, 0);
-        ctx.drawImage(image, result_box_x_min, result_box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         // console.log(order);
         ctx.strokeStyle = "blue"; // 青い線で描画
         
@@ -404,7 +404,7 @@
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // ctx.drawImage(image, 0, 0);
-        ctx.drawImage(image, result_box_x_min, result_box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) draw_box(i); // バウンディングボックスの描画
         }

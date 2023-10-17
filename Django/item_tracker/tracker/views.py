@@ -102,6 +102,9 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             status, done = downloader.next_chunk()
             print(f'Download {file_name} {int(status.progress() * 100)}%')
 
+        self.asset.learning_model.name = os.path.join('learning', self.pt_file_name)
+        self.asset.save()
+
     #Drive上のサブディレクトリの中身を参照しフォルダごとダウンロード(条件あり)
     def download_folder(self, folder_id, target_folder_name):
         query = f"'{folder_id}' in parents"
@@ -148,7 +151,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         for file in files:
             file_name = file['name']
             ext = os.path.splitext(file_name)[1]
-            if ext == '.pt' and file_name != self.pt_file_name:
+            if ext == '.pt' and file_name == self.pt_file_name:
                 return os.path.splitext(file_name)[0]
 
     # get_context_dataをオーバーライド
@@ -161,28 +164,28 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         self.asset = Asset.objects.get(id=self.object.id)
         self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
         self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
+        
+        if self.asset.learning_model.name[8:] != self.pt_file_name:
+            service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
+            creds = service_account.Credentials.from_service_account_file(
+                service_account_key_path, # サービスアカウントキーのJSONファイルへのパス
+                scopes = settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+            )
+            # http_auth = creds.authorize(Http())
+            # self.drive_service = build('drive', 'v3', http=http_auth)
+            self.drive_service = build('drive', 'v3', credentials=creds)
 
-        service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
-        creds = service_account.Credentials.from_service_account_file(
-            service_account_key_path, # サービスアカウントキーのJSONファイルへのパス
-            scopes = settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
-        )
-        # http_auth = creds.authorize(Http())
-        # self.drive_service = build('drive', 'v3', http=http_auth)
-        self.drive_service = build('drive', 'v3', credentials=creds)
+            # .pt フォルダ名を取得
+            pt_folder_name = self.get_pt_folder_name()
 
-        # .pt フォルダ名を取得
-        pt_folder_name = self.get_pt_folder_name()
-
-        # ダウンロード
-        if pt_folder_name:
-            self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
-        #     # 特定の単語が含まれるフォルダを削除
-        #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
-            self.asset.learning_model.name = self.pt_file_name
-            self.asset.save()
-        else:
-            print("ptファイルがないか処理の途中でエラーが発生しています。")
+            # ダウンロード
+            if pt_folder_name:
+                self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
+            #     # 特定の単語が含まれるフォルダを削除 8
+            #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
+                
+            else:
+                print("ptファイルがないか処理の途中でエラーが発生しています。")
 
 
         extra = {
@@ -605,23 +608,51 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         ttts = re.findall(r'[^0-9]+', self.request.path)
         print("f", ttts)
         # self.id = int(ttt[0])
-        result = Result.objects.filter(history=history).get(result_class=9)
+        result = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
+        box = [{
+            "box_x_min": result.box_x_min,
+            "box_y_min": result.box_y_min,
+            "box_x_max": result.box_x_max,
+            "box_y_max": result.box_y_max,
+        }]
         if ttts[0] == '/asset-check/':
             result_class = 0
-            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('updated_at')[0])#.exclude(result_class=9)
+
+            result_history = historys.get(id=result.history.id)
+            box_x_fix = (result.box_x_max - result.box_x_min) / result_history.image.image.width
+            box_y_fix = (result.box_y_max - result.box_y_min) / result_history.image.image.height
+
+            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])#.exclude(result_class=9)
+            for i, r in enumerate(results):
+                result_history = historys.get(id=r.history.id)
+                if not i:
+                    item_x_fix = (r.box_x_max - r.box_x_min) / result_history.image.image.width
+                    item_y_fix = (r.box_y_max - r.box_y_min) / result_history.image.image.height
+                    item_x_min = r.box_x_min
+                    item_y_min = r.box_y_min
+                else:
+                    item_x_fit = box_x_fix / item_x_fix
+                    item_y_fit = box_y_fix / item_y_fix
+                    box.append({
+                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit) + result.box_x_min,
+                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
+                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
+                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                    })
         else:
             result_class = 1
-            results = Result.objects.filter(history=historys[0])
+            # results = Result.objects.filter(history=historys[0])
         
+
         extra = {
             "create": result_class,
             "image": history.image.image,
             "items": items.order_by('-id'),
-            "results": results,
-            "box_x_min": round(result.box_x_min),
-            "box_y_min": round(result.box_y_min),
-            "box_x_max": round(result.box_x_max),
-            "box_y_max": round(result.box_y_max),
+            "results": box,
+            # "box_x_min": round(result.box_x_min),
+            # "box_y_min": round(result.box_y_min),
+            # "box_x_max": round(result.box_x_max),
+            # "box_y_max": round(result.box_y_max),
             "result_add_form": result_add_form(
                 initial = [
                     {
@@ -842,23 +873,54 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
         ttts = re.findall(r'[^0-9]+', self.request.path)
         print("f", ttts)
         # self.id = int(ttt[0])
-        result = Result.objects.filter(history=historys[0])
-        result_class = 0
-        results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('updated_at')[0])
+        # result = Result.objects.filter(history=historys[0])
+        # result_class = 0
+        # results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('updated_at')[0])
         # if ttts[0] == '/asset-check/':
         # else:
         #     result_class = 1
         #     results = Result.objects.filter(history=historys[0])
+        result = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
+        box = [{
+            "box_x_min": result.box_x_min,
+            "box_y_min": result.box_y_min,
+            "box_x_max": result.box_x_max,
+            "box_y_max": result.box_y_max,
+        }]
+        result_class = 0
+
+        result_history = historys.get(id=result.history.id)
+        box_x_fix = (result.box_x_max - result.box_x_min) / result_history.image.image.width
+        box_y_fix = (result.box_y_max - result.box_y_min) / result_history.image.image.height
+
+        results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])#.exclude(result_class=9)
+        for i, r in enumerate(results):
+            result_history = historys.get(id=r.history.id)
+            if not i:
+                item_x_fix = (r.box_x_max - r.box_x_min) / result_history.image.image.width
+                item_y_fix = (r.box_y_max - r.box_y_min) / result_history.image.image.height
+                item_x_min = r.box_x_min
+                item_y_min = r.box_y_min
+            else:
+                item_x_fit = box_x_fix / item_x_fix
+                item_y_fit = box_y_fix / item_y_fix
+                box.append({
+                    "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit) + result.box_x_min,
+                    "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
+                    "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
+                    "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                })
         
+
         extra = {
             "create": result_class,
             "image": history.image.image,
             "items": items.order_by('-id'),
-            "results": results,
-            "box_x_min": round(result.box_x_min),
-            "box_y_min": round(result.box_y_min),
-            "box_x_max": round(result.box_x_max),
-            "box_y_max": round(result.box_y_max),
+            "results": box,
+            # "box_x_min": round(result.box_x_min),
+            # "box_y_min": round(result.box_y_min),
+            # "box_x_max": round(result.box_x_max),
+            # "box_y_max": round(result.box_y_max),
             "result_add_form": result_add_form(
                 initial = [
                     {

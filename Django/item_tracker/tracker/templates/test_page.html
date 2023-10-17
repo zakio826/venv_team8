@@ -17,18 +17,23 @@
                 <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
                 <span id="create" style="display: none;">{{ create }}</span>
 
-                <span id="box_x_min" style="display: none;">{{ box_x_min }}</span>
-                <span id="box_y_min" style="display: none;">{{ box_y_min }}</span>
-                <span id="box_x_max" style="display: none;">{{ box_x_max }}</span>
-                <span id="box_y_max" style="display: none;">{{ box_y_max }}</span>
+                <!-- <span id="result_box_x_min" style="display: none;">{{ box_x_min }}</span>
+                <span id="result_box_y_min" style="display: none;">{{ box_y_min }}</span>
+                <span id="result_box_x_max" style="display: none;">{{ box_x_max }}</span>
+                <span id="result_box_y_max" style="display: none;">{{ box_y_max }}</span> -->
                 {% for result in results %}
                     {% if forloop.first %}
                         <span id="item_box" style="display: none;">{{ results|length }}</span>
+                        <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                        <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                        <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                        <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                    {% else %}
+                        <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                        <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                        <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                        <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
                     {% endif %}
-                    <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
-                    <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
-                    <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
-                    <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
                 {% endfor %}
             </div>
         </div>
@@ -80,6 +85,11 @@
 
     const check_list = document.getElementById("check_list");
     
+    // const result_box_x_min = Number(document.getElementById("result_box_x_min").innerText);
+    // const result_box_y_min = Number(document.getElementById("result_box_y_min").innerText);
+    // const result_box_x_max = Number(document.getElementById("result_box_x_max").innerText);
+    // const result_box_y_max = Number(document.getElementById("result_box_y_max").innerText);
+
     const box_x_min = Number(document.getElementById("box_x_min").innerText);
     const box_y_min = Number(document.getElementById("box_y_min").innerText);
     const box_x_max = Number(document.getElementById("box_x_max").innerText);
@@ -99,6 +109,19 @@
     let isDrawing = false;
     let startX, startY, width, height;
 
+    const x_fix = box_x_max - box_x_min;
+    const y_fix = box_y_max - box_y_min;
+
+    canvas.width = x_fix;
+    canvas.height = y_fix;
+
+    let x_fit = canvas.width / x_fix;
+    let y_fit = canvas.height / y_fix;
+
+    let x_min_fit = box_x_min;
+    let y_min_fit = box_y_min;
+
+
     // バウンディングボックスの座標を初期化
     let x_min, x_max, y_min, y_max;
     let box_li = [];
@@ -108,12 +131,12 @@
         // console.log(document.getElementById(`item_${i+1}_x_max`).innerText);
         // console.log(document.getElementById(`item_${i+1}_y_max`).innerText);
         // if (item_x_min[i]!=null && item_y_min[i]!=null && item_x_max[i]!=null && item_y_max[i]!=null) {
-        if (item_box >= 2 && document.getElementById(`item_${i}_x_min`).innerText != "None") {
+        if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
             box_li[i] = [
-                Number(document.getElementById(`item_${i}_x_min`).innerText) - box_x_min,
-                Number(document.getElementById(`item_${i}_y_min`).innerText) - box_y_min,
-                Number(document.getElementById(`item_${i}_x_max`).innerText) - box_x_min,
-                Number(document.getElementById(`item_${i}_y_max`).innerText) - box_y_min,
+                Number(document.getElementById(`item_${i+1}_x_min`).innerText) - box_x_min,
+                Number(document.getElementById(`item_${i+1}_y_min`).innerText) - box_y_min,
+                Number(document.getElementById(`item_${i+1}_x_max`).innerText) - box_x_min,
+                Number(document.getElementById(`item_${i+1}_y_max`).innerText) - box_y_min,
             ];
             // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
         } else box_li[i] = [0,0,0,0];
@@ -128,17 +151,7 @@
     // canvas.width = image.width;
     // canvas.height = image.height;
     
-    const x_fix = box_x_max - box_x_min;
-    const y_fix = box_y_max - box_y_min;
-
-    canvas.width = x_fix;
-    canvas.height = y_fix;
-
-    let x_fit = canvas.width / x_fix;
-    let y_fit = canvas.height / y_fix;
-
-    let x_min_fit = box_x_min;
-    let y_min_fit = box_y_min;
+    
     
     function auto_set_box(i) {
         let w = x_fix / canvas.width;
@@ -169,15 +182,15 @@
             x_fit = canvas.width / x_fix;
             y_fit = canvas.height / y_fix;
 
-            x_min_fit = box_x_min * x_fit;
-            y_min_fit = box_y_min * y_fit;
+            x_min_fit = result_box_x_min * x_fit;
+            y_min_fit = result_box_y_min * y_fit;
 
             // image.width *= canvas.width / x_fix;
             // image.height *= canvas.height / y_fix;
 
             
             check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
-            ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
+            ctx.drawImage(image, result_box_x_min, result_box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
 
             // image.width = canvas.width;
             // image.height = canvas.height;
@@ -227,7 +240,7 @@
         // if (item_x_min[i] && item_y_min[i] && item_x_max[i] && item_y_max[i]) {
         for (let i = 0; i < set.length; i++) {
             
-            if (item_box >= 2 && document.getElementById(`item_${i}_x_min`).innerText != "None") {
+            if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
                 console.log(box_li[i]);
 
                 document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
@@ -397,21 +410,6 @@
         }
     };
 
-    // 選択したバウンディングボックスの座標を追加
-    function set_box() {
-        for (let i = 0; i < set.length; i++) {
-            if (set[i].checked) {
-                box_li[i] = [
-                    x_min.toFixed(),
-                    y_min.toFixed(),
-                    x_max.toFixed(),
-                    y_max.toFixed()
-                ];
-                console.log(box_li[i]);
-            }
-        }
-        out_box();
-    };
 
     // 選択したバウンディングボックスを削除
     function del_box(i) {
