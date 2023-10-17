@@ -182,15 +182,15 @@
             x_fit = canvas.width / x_fix;
             y_fit = canvas.height / y_fix;
 
-            x_min_fit = result_box_x_min * x_fit;
-            y_min_fit = result_box_y_min * y_fit;
+            x_min_fit = box_x_min * x_fit;
+            y_min_fit = box_y_min * y_fit;
 
             // image.width *= canvas.width / x_fix;
             // image.height *= canvas.height / y_fix;
 
             
             check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
-            ctx.drawImage(image, result_box_x_min, result_box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
+            ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
 
             // image.width = canvas.width;
             // image.height = canvas.height;

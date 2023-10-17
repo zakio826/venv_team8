@@ -39,6 +39,8 @@ from pydrive.drive import GoogleDrive
 from googleapiclient.http import MediaIoBaseDownload
 import shutil
 
+from ultralytics import YOLO
+
 
 class IndexView(generic.TemplateView):
     template_name = "index.html"
@@ -77,10 +79,10 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
                     images = images|i
         print(images)
         print()
-        print(0.855967)
-        print(round(0.8559670781893004, 6))
-        print()
-        # print("images[1].image.name", os.path.basename(images[1].image.path))
+        # print(0.855967)
+        # print(round(0.8559670781893004, 6))
+        # print()
+        # print("images[1].image.path", images[1].movie.path)
         # print()
         return images
 
@@ -102,6 +104,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             status, done = downloader.next_chunk()
             print(f'Download {file_name} {int(status.progress() * 100)}%')
 
+        # self.asset.learning_model = os.path.join(settings.MEDIA_ROOT, 'learning', self.pt_file_name)
         self.asset.learning_model.name = os.path.join('learning', self.pt_file_name)
         self.asset.save()
 
@@ -187,7 +190,8 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             else:
                 print("ptファイルがないか処理の途中でエラーが発生しています。")
 
-
+        # print("self.asset.learning_model.name:", self.asset.learning_model.name)
+        # print("self.asset.learning_model.path:", self.asset.learning_model.path)
         extra = {
             "object": self.object,
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
@@ -848,6 +852,84 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
     fields = ()
     success_url = reverse_lazy('tracker:asset_list')
 
+    def model_check(self, asset, image):
+        
+        output_path = os.path.join(settings.MEDIA_ROOT, 'model_check', asset.learning_model.name[8:-3])
+        os.makedirs(output_path, exist_ok=True)
+
+        # YOLOモデルの読み込み
+        model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
+        # print("model: ", model, end="\n\n")
+        # print("type(model): ", type(model), end="\n\n")
+
+        # 物体検出の実行
+        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.50)
+        # results1 = model.predict(
+        #     source = os.path.join(settings.MEDIA_ROOT, image.image.name),
+        #     save = True,
+        #     save_txt = True,
+        #     save_conf = True,
+        #     conf = 0.50
+        # )
+        # results2 = model('23.JPG',save=True,save_txt=True,save_conf=True) #当日
+
+        print()
+        print("前日")
+        
+        print()
+        print(results1[0])
+        # print()
+        # print(results1[0].names)
+        # print()
+        # print(results1[0].boxes)
+        # print()
+        # print()
+        # print(results1[0].boxes.cls.__array__().tolist())
+        # print(results1[0].boxes.xyxy.__array__().tolist())
+        classDict = results1[0].names
+        classNums = results1[0].boxes.cls.__array__().tolist()
+        confs = results1[0].boxes.conf.__array__().tolist()
+        boxes = results1[0].boxes.xyxy.__array__().tolist()
+
+        # print()
+        # print("type", type(results1[0].boxes.cls[0].__array__()))
+
+
+        print()
+        for i in range(len(results1[0].boxes.cls)):
+            if round(classNums[i]) and self.box[round(classNums[i])]['conf'] < confs[i]:
+                self.box[round(classNums[i])]['box_x_min'] = boxes[i][0]
+                self.box[round(classNums[i])]['box_y_min'] = boxes[i][1]
+                self.box[round(classNums[i])]['box_x_max'] = boxes[i][2]
+                self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
+                self.box[round(classNums[i])]['conf'] = confs[i]
+
+            print(f"{round(classNums[i])}:", classDict[classNums[i]])
+            print(f"  x_min = {boxes[i][0]:>20} px")
+            print(f"  y_min = {boxes[i][1]:>20} px")
+            print(f"  x_max = {boxes[i][2]:>20} px")
+            print(f"  y_max = {boxes[i][3]:>20} px")
+            # print(f"  y_max = {boxes[i][3]:>20} px")
+            print(f"  conf  = {confs[i]:>20} %")
+        # print("len", len(results1[0].boxes.cls))
+        print()
+        # print("当日")
+        # print(results2)
+        # print("type", type(results2))
+
+        # results1.img.save(os.path.join(output_path, "output_image.jpg"))
+
+        # with open(os.path.join(output_path, "output.txt"), "w") as txt_file:
+        #     for i in range(len(results1[0].names)):
+        #         txt_file.write(f"{results1[0].names[i]} {results1[0].boxes.xyxy[i]} {results1[0].boxes.conf[i]}\n")
+
+        # with open(os.path.join(output_path, "confidence.txt"), "w") as txt_file:
+        #     for conf in results1[0].boxes.conf:
+        #         txt_file.write(f"{conf}\n")
+
+
+
+
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
@@ -858,6 +940,7 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
         historys = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').filter(asset=asset).order_by('-updated_at')
         history = historys[0]
         print(historys[0].id)
+
         # last_history = historys.get(id)
         results = Result.objects.filter(history=historys[0])
         # results = Result.objects.prefetch_related('history').filter(asset=history.asset)
@@ -881,12 +964,14 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
         #     result_class = 1
         #     results = Result.objects.filter(history=historys[0])
         result = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
-        box = [{
+        self.box = [{
             "box_x_min": result.box_x_min,
             "box_y_min": result.box_y_min,
             "box_x_max": result.box_x_max,
             "box_y_max": result.box_y_max,
+            "model_check": False,
         }]
+
         result_class = 0
 
         result_history = historys.get(id=result.history.id)
@@ -904,19 +989,27 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
             else:
                 item_x_fit = box_x_fix / item_x_fix
                 item_y_fit = box_y_fix / item_y_fix
-                box.append({
+                self.box.append({
                     "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit) + result.box_x_min,
                     "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
                     "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
                     "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                    "conf": 0,
                 })
         
+        if history.asset.learning_model:
+            # self.box = []
+            # for i in Item.objects.filter(history=history):
+            #     self.box
+            self.box[0]['model_check'] = True
+            print()
+            self.model_check(history.asset, history.image)
 
         extra = {
             "create": result_class,
             "image": history.image.image,
             "items": items.order_by('-id'),
-            "results": box,
+            "results": self.box,
             # "box_x_min": round(result.box_x_min),
             # "box_y_min": round(result.box_y_min),
             # "box_x_max": round(result.box_x_max),

@@ -126,6 +126,7 @@ class Image(models.Model):
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
 
+            # self.image.path = image_path
             self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)
         
         # 最終的に保存
