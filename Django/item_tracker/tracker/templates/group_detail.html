@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+
+<h4>{{ group.group_name }}（ホスト: {% if group.user == request.user %} あなた） {% else %} {{ group.user.username }}） {% endif %}</h4>
+
+<ul>
+    {% for member in group.groupmember_set.all %}
+    <li>{% if member.user == request.user %} <strong><u><font color="green">{{ member.user.username }}</font></u></strong> {% else %} {{ member.user.username }} {% endif %}</li>
+    {% endfor %}
+</ul>
+<button><a href="{% url 'tracker:mypage' %}">グループ一覧に戻る</a></button>
+
+{% endblock %}

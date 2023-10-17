@@ -1,4 +1,4 @@
 /prototype
 /tmp
-/lib/*
 /Django/item_tracker/media/*
+**/lib/*
