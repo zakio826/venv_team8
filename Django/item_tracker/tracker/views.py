@@ -138,7 +138,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         #     # "(name contains '.pt')"
         # ]
         # query = " and ".join(query_list)
-        query = f"'{settings.GOOGLE_DRIVE_FOLDER_ID}' in parents"
+        query = f"'{self.asset.drive_folder_id}' in parents"
         results = self.drive_service.files().list(q=query).execute()
         # folder_id = settings.GOOGLE_DRIVE_FOLDER_ID
         # query = f"'{folder_id}' in parents and mimeType = 'application/vnd.pt'"
@@ -154,7 +154,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         for file in files:
             file_name = file['name']
             ext = os.path.splitext(file_name)[1]
-            if ext == '.pt' and file_name == self.pt_file_name:
+            if ext == '.pt':
                 return os.path.splitext(file_name)[0]
 
     # get_context_dataをオーバーライド
@@ -168,7 +168,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
         self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
         
-        if self.asset.learning_model.name[8:] != self.pt_file_name:
+        if self.asset.drive_folder_id:
             service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
             creds = service_account.Credentials.from_service_account_file(
                 service_account_key_path, # サービスアカウントキーのJSONファイルへのパス
@@ -183,7 +183,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
 
             # ダウンロード
             if pt_folder_name:
-                self.download_folder(settings.GOOGLE_DRIVE_FOLDER_ID, pt_folder_name)
+                self.download_folder(self.asset.drive_folder_id, pt_folder_name)
             #     # 特定の単語が含まれるフォルダを削除 8
             #     delete_folders_with_keywords(DOWNLOAD_DIR, ["json", "motion", "tex","trace"])
                 
@@ -799,7 +799,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
                 # フォルダを作成
                 folder_metadata = {
-                    'name': 'file_folder',
+                    'name': asset.asset_name,
                     'mimeType': 'application/vnd.google-apps.folder',
                     'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],  # アップロード先のGoogle DriveフォルダのID
                 }
