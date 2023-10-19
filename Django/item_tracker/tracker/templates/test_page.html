@@ -37,11 +37,12 @@
                         <span id="item_{{ forloop.counter0 }}_conf" style="display: none;">{{ result.conf }}</span>
                     {% endif %}
                 {% endfor %}
+                <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
             </div>
         </div>
         <div class="col" id="check_list" style="overflow-y: scroll;">
             {% include 'common_history_add.html' %}
-            <div class="row my-5">ダミー</div>
+            <!-- <div class="row my-5">ダミー</div> -->
         </div>
     </div>
 
@@ -100,6 +101,8 @@
     const item_box = Number(document.getElementById("item_box").innerText);
     const model_check = document.getElementById("model_check").innerText;
 
+    const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
+
     // const item_x_min = document.getElementById("item_x_min").innerText;
     // const item_y_min = document.getElementById("item_y_min").innerText;
     // const item_x_max = document.getElementById("item_x_max").innerText;
@@ -143,13 +146,26 @@
                 Number(document.getElementById(`item_${i+1}_conf`).innerText),
             ];
             if (model_check == "False") box_li[i][4] = 1;
+
+            if (box_li[i][4] > threshold_conf) {
+                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
+                
+                if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+
+                box_in[i].checked = true;
+                check[i].checked = true;
+                checked[i].innerText = "チェック済み";
+            }
             // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
-        } else box_li[i] = [0,0,0,0,1];
+        } else box_li[i] = [0,0,0,0,0];
         // console.log(item_x_min);
         // console.log(item_y_min[i]);
         // console.log(item_x_max[i]);
         // console.log(item_y_max[i]);
-        // console.log(box_li[i]);
+        console.log(box_li[i]);
     }
 
     // キャンバスのサイズを画像のサイズに設定
@@ -159,6 +175,7 @@
     
     
     function auto_set_box(i) {
+        if (!box_li[i][4]) return;
         let w = x_fix / canvas.width;
         let h = y_fix / canvas.height;
         
@@ -166,6 +183,8 @@
         document.getElementById(`id_form-${i}-box_y_min`).value = (box_li[i][1] * h) + box_y_min;
         document.getElementById(`id_form-${i}-box_x_max`).value = (box_li[i][2] * w) + box_x_min;
         document.getElementById(`id_form-${i}-box_y_max`).value = (box_li[i][3] * h) + box_y_min;
+
+        box_in[i].checked = true;
     }
 
     function auto_fit() {
@@ -215,6 +234,7 @@
         console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
         console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
         console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
+        console.log("\n");
         
     };
 
@@ -248,25 +268,25 @@
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
                 console.log(box_li[i]);
 
-                if (box_li[i][4] > 0) {
-                    document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
-                    document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
-                    document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
-                    document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
+                // if (box_li[i][4] > threshold_conf) {
+                //     document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                //     document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                //     document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                //     document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
                     
-                    if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+                //     if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
 
-                    box_in[i].checked = true;
-                    check[i].checked = true;
-                    checked[i].innerText = "チェック済み";
-                }
+                //     box_in[i].checked = true;
+                //     check[i].checked = true;
+                //     checked[i].innerText = "チェック済み";
+                // }
 
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
                 box_li[i][2] *= x_fit;
                 box_li[i][3] *= y_fit;
 
-                if (box_li[i][4] > 0) ctx.strokeStyle = "blue"; // 青い線で描画
+                if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
                 else ctx.strokeStyle = "red"; // 青い線で描画
 
                 ctx.strokeRect(
@@ -288,13 +308,13 @@
         // ctx.drawImage(image, 0, 0);
         ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         // console.log(order);
-        ctx.strokeStyle = "blue"; // 青い線で描画
+        // ctx.strokeStyle = "blue"; // 青い線で描画
         
         for (let i = 0; i < set.length; i++) {
             if (i == order) ctx.lineWidth = 2;
             else ctx.lineWidth = 1;
 
-            if (box_li[i][4] > 0) ctx.strokeStyle = "blue"; // 青い線で描画
+            if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
             else ctx.strokeStyle = "red"; // 青い線で描画
 
             ctx.strokeRect(
@@ -303,7 +323,9 @@
                 box_li[i][2] - box_li[i][0],
                 box_li[i][3] - box_li[i][1],
             );
+            console.log(`class[${i+1}]: ${(box_li[i][4]*100).toFixed(2)} %`);
         }
+        console.log("\n");
     };
 
     // マウスダウンイベントのリスナーを追加
@@ -389,8 +411,7 @@
 
                 auto_set_box(i);
                 draw_box(i);
-
-                box_in[i].checked = true;
+                
                 check[i].checked = true;
                 checked[i].innerText = "チェック済み";
             }
@@ -413,22 +434,24 @@
     });
 
     // 選択したバウンディングボックスを強調して描画
-    function out_box() {
+    function out_box(order) {
 
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // ctx.drawImage(image, 0, 0);
         ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
         for (let i = 0; i < set.length; i++) {
-            if (set[i].checked) draw_box(i); // バウンディングボックスの描画
+            if (i == order) set[i].checked = true;
+            else set[i].checked = false;
         }
+        draw_box(order); // バウンディングボックスの描画
     };
 
 
     // 選択したバウンディングボックスを削除
     function del_box(i) {
         if (check[i].checked) {
-            box_li[i] = [0,0,0,0,1];
+            box_li[i] = [0,0,0,0,0];
             // check[i].checked = false;
             checked[i].innerText = "チェック";
             box_in[i].checked = false;
@@ -439,9 +462,12 @@
             document.getElementById(`id_form-${i}-box_y_max`).value = null;
             finish.checked = false;
             submit.disabled = true;
-            out_box();
+            out_box(i);
         } else {
             if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+            box_li[i][4] = 1;
+            auto_set_box(i);
+            out_box(i);
             checked[i].innerText = "チェック済み";
             finish_check(i);
         }
