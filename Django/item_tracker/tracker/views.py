@@ -154,6 +154,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         for file in files:
             file_name = file['name']
             ext = os.path.splitext(file_name)[1]
+            # if ext == '.pt' and os.path.splitext(file_name)[0] != os.path.splitext(self.asset.learning_model.name[8:])[0]:
             if ext == '.pt':
                 return os.path.splitext(file_name)[0]
 
@@ -597,7 +598,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出の実行
-        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.50)
+        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name))
 
         classDict = results1[0].names
         classNums = results1[0].boxes.cls.__array__().tolist()
@@ -613,12 +614,13 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
 
-            # print(f"{round(classNums[i])}:", classDict[classNums[i]])
-            # print(f"  x_min = {boxes[i][0]:>20} px")
-            # print(f"  y_min = {boxes[i][1]:>20} px")
-            # print(f"  x_max = {boxes[i][2]:>20} px")
-            # print(f"  y_max = {boxes[i][3]:>20} px")
-            # print(f"  conf  = {confs[i]:>20} %")
+        #     print(f"{round(classNums[i])}:", classDict[classNums[i]])
+        #     print(f"  x_min = {boxes[i][0]:>20.15f} px")
+        #     print(f"  y_min = {boxes[i][1]:>20.15f} px")
+        #     print(f"  x_max = {boxes[i][2]:>20.15f} px")
+        #     print(f"  y_max = {boxes[i][3]:>20.15f} px")
+        #     print(f"  conf  = {confs[i]:>20.15f} %")
+        #     print()
         # print("len", len(results1[0].boxes.cls))
         # print()
 
@@ -697,6 +699,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "image": history.image.image,
             "items": items.order_by('-id'),
             "results": self.box,
+            "threshold_conf": 0.69,
             # "box_x_min": round(result.box_x_min),
             # "box_y_min": round(result.box_y_min),
             # "box_x_max": round(result.box_x_max),
@@ -787,27 +790,32 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
             # file_path = self.object.file_field.path  # ファイルのパス
 
-            asset = Asset.objects.get(id=history.asset.id)
-            # Google Drive APIを使用してファイルをアップロード
-            for file_path in [history.image.movie.path, history.coordinate.path]: # Google Driveにアップロードされるファイルのパス
-            
-                creds = ServiceAccountCredentials.from_json_keyfile_name(
-                    os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
-                    settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
-                )
-                drive_service = build('drive', 'v3', credentials=creds)
 
+            creds = ServiceAccountCredentials.from_json_keyfile_name(
+                os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
+                settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+            )
+            drive_service = build('drive', 'v3', credentials=creds)
+
+            asset = Asset.objects.get(id=history.asset.id)
+            if not asset.drive_folder_id:
                 # フォルダを作成
                 folder_metadata = {
-                    'name': asset.asset_name,
+                    'name': str(asset.asset_name),
                     'mimeType': 'application/vnd.google-apps.folder',
                     'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],  # アップロード先のGoogle DriveフォルダのID
                 }
+
+                # Google Drive APIを使用してファイルをアップロード
                 folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
 
+                asset.drive_folder_id = folder['id']
+                asset.save()
+
+            for file_path in [history.image.movie.path, history.coordinate.path]: # Google Driveにアップロードされるファイルのパス
                 file_metadata = {
                     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                    'parents': [folder['id']],  # 作成したフォルダのID
+                    'parents': [str(asset.drive_folder_id)],  # 作成したフォルダのID
                 }
                 media = MediaFileUpload(file_path, resumable=True)
 
@@ -817,8 +825,6 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                     fields='id'
                 ).execute()
 
-            asset.drive_folder_id = folder['id']
-            asset.save()
 
             # print("ttt4", formset)
             messages.success(self.request, 'アイテムを追加しました。')
@@ -909,30 +915,59 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
 
     def model_check(self, asset, image):
         
-        output_path = os.path.join(settings.MEDIA_ROOT, 'model_check', asset.learning_model.name[8:-3])
-        os.makedirs(output_path, exist_ok=True)
-
         # YOLOモデルの読み込み
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
         # print("model: ", model, end="\n\n")
         # print("type(model): ", type(model), end="\n\n")
 
         # 物体検出の実行
-        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.50)
-        # results1 = model.predict(
-        #     source = os.path.join(settings.MEDIA_ROOT, image.image.name),
-        #     save = True,
-        #     save_txt = True,
-        #     save_conf = True,
-        #     conf = 0.50
-        # )
+        # results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.50)
+        results1 = model.predict(
+            source = os.path.join(settings.MEDIA_ROOT, image.image.name),
+            save = True,
+            save_txt = True,
+            save_conf = True,
+            # conf = 0.50,
+        )
         # results2 = model('23.JPG',save=True,save_txt=True,save_conf=True) #当日
-
-        print()
-        print("前日")
         
         print()
-        print(results1[0])
+        # print(results1[0])
+        # print()
+
+        # 保存されたファイルを移動する
+        # output_path = os.path.join(settings.MEDIA_ROOT, 'model_check')
+        model_name = os.path.splitext(asset.learning_model.name[9:])[0]
+        image_name = os.path.splitext(image.image.name[6:])[0]
+        output_path = os.path.join(settings.MEDIA_ROOT, 'model_check', model_name)
+
+        # print("tt0", model_name)
+        # print()
+        # print("tt1", output_path)
+        # print()
+        # print("tt2", os.path.join(str(results1[0].save_dir), f'{image_name}.jpg'))
+        # print()
+        # print("tt3", os.path.join(str(results1[0].save_dir), 'labels', f'{image_name}.txt'))
+        # print()
+        # print("tt4", os.path.join(output_path, f'{image_name}.jpg'))
+        # print()
+        # print("tt5", os.path.join(output_path, f'{image_name}.txt'))
+
+        os.makedirs(output_path, exist_ok=True)
+
+        runs_path = os.path.split(str(results1[0].save_dir))[0][:-7]
+
+        shutil.move(os.path.join(str(results1[0].save_dir), f'{image_name}.jpg'), os.path.join(output_path, f'{image_name}.jpg'))
+        shutil.move(os.path.join(str(results1[0].save_dir), 'labels', f'{image_name}.txt'), os.path.join(output_path, f'{image_name}.txt'))
+        shutil.rmtree(runs_path)
+
+        # print()
+        # print("前日")
+        
+        # print(results1[0])
+        # print()
+        # print("tt", str(results1[0].save_dir)[:-15])
+        # print("tt", results1[0].save_dir)
         # print()
         # print(results1[0].names)
         # print()
@@ -959,14 +994,15 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
 
-            print(f"{round(classNums[i])}:", classDict[classNums[i]])
-            print(f"  x_min = {boxes[i][0]:>20} px")
-            print(f"  y_min = {boxes[i][1]:>20} px")
-            print(f"  x_max = {boxes[i][2]:>20} px")
-            print(f"  y_max = {boxes[i][3]:>20} px")
-            # print(f"  y_max = {boxes[i][3]:>20} px")
-            print(f"  conf  = {confs[i]:>20} %")
-        # print("len", len(results1[0].boxes.cls))
+            print(f"{classDict[classNums[i]]:>2}. {self.items[round(classNums[i])].item_name} (conf: {confs[i] * 100:>5.02f} %)")
+            print(f"   x_min = {boxes[i][0] :>20.15f} px")
+            print(f"   y_min = {boxes[i][1] :>20.15f} px")
+            print(f"   x_max = {boxes[i][2] :>20.15f} px")
+            print(f"   y_max = {boxes[i][3] :>20.15f} px")
+            # print(f"conf  = {confs[i]*100:>20.15f} %")
+            print()
+
+        print("len", len(results1[0].boxes.cls))
         print()
         # print("当日")
         # print(results2)
@@ -1060,15 +1096,21 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
             # self.box = []
             # for i in Item.objects.filter(history=history):
             #     self.box
+            self.items = Item.objects.filter(asset=history.asset)
+
             self.box[0]['model_check'] = True
             print()
             self.model_check(history.asset, history.image)
+
+        # print("self.box:")
+        # print(self.box)
 
         extra = {
             "create": result_class,
             "image": history.image.image,
             "items": items.order_by('-id'),
             "results": self.box,
+            "threshold_conf": 0.69,
             # "box_x_min": round(result.box_x_min),
             # "box_y_min": round(result.box_y_min),
             # "box_x_max": round(result.box_x_max),
