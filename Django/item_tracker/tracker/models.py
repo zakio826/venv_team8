@@ -43,6 +43,7 @@ class Asset(models.Model):
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.CASCADE)
     asset_name = models.CharField(verbose_name='管理名', max_length=40)
 
+    # drive_folder_id = models.CharField(verbose_name='フォルダID', blank=True, null=True)
     learning_model = models.FileField(
         upload_to='learning/',
         verbose_name='学習モデル',
