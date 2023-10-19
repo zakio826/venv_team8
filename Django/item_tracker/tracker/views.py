@@ -787,7 +787,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
             # file_path = self.object.file_field.path  # ファイルのパス
 
-            
+            asset = Asset.objects.get(id=history.asset.id)
             # Google Drive APIを使用してファイルをアップロード
             for file_path in [history.image.movie.path, history.coordinate.path]: # Google Driveにアップロードされるファイルのパス
             
@@ -797,9 +797,17 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 )
                 drive_service = build('drive', 'v3', credentials=creds)
 
+                # フォルダを作成
+                folder_metadata = {
+                    'name': 'file_folder',
+                    'mimeType': 'application/vnd.google-apps.folder',
+                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],  # アップロード先のGoogle DriveフォルダのID
+                }
+                folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+
                 file_metadata = {
                     'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],  # アップロード先のGoogle DriveフォルダのID
+                    'parents': [folder['id']],  # 作成したフォルダのID
                 }
                 media = MediaFileUpload(file_path, resumable=True)
 
@@ -808,6 +816,9 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                     media_body=media,
                     fields='id'
                 ).execute()
+
+            asset.drive_folder_id = folder['id']
+            asset.save()
 
             # print("ttt4", formset)
             messages.success(self.request, 'アイテムを追加しました。')

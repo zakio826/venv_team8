@@ -43,7 +43,7 @@ class Asset(models.Model):
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.CASCADE)
     asset_name = models.CharField(verbose_name='管理名', max_length=40)
 
-    # drive_folder_id = models.CharField(verbose_name='フォルダID', blank=True, null=True)
+    drive_folder_id = models.CharField(verbose_name='フォルダID', blank=True, null=True)
     learning_model = models.FileField(
         upload_to='learning/',
         verbose_name='学習モデル',
@@ -146,7 +146,7 @@ class History(models.Model):
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.DO_NOTHING)
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', null=True, on_delete=models.SET_NULL)
-    image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.PROTECT)
+    image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.CASCADE)
     
     coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,
         # validators=[FileExtensionValidator(['pdf', ])],
