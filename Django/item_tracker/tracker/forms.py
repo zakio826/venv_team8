@@ -2,6 +2,7 @@ import os
 from typing import Any
 
 from betterforms.multiform import MultiModelForm
+from django.conf import settings
 
 from django import forms
 from django.core.mail import EmailMessage
@@ -139,7 +140,7 @@ class ResultAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            # field.widget = forms.HiddenInput()
+            field.widget = forms.HiddenInput()
 
 
 # class HistoryMultiAddForm(MultiModelForm):

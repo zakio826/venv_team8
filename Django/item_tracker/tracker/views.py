@@ -277,10 +277,11 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         result_add_form = self.result_add_form(**self.get_form_kwargs())
         item_add_form = None
 
-        print(image_add_form['group'])
+        # print(image_add_form['group'])
         # print(Asset.objects.get(id=self.id))
+        print(self.kwargs[self.pk_url_kwarg])
 
-        assets = Asset.objects.prefetch_related('group').get(id=self.object.id)
+        assets = Asset.objects.prefetch_related('group').get(id=self.kwargs[self.pk_url_kwarg])
 
         # print(assets.group)
         image_add_form['user'].initial = self.request.user
@@ -346,7 +347,7 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         self.id = int(ttt[0])
         ttts = re.findall(r'[^0-9]+', self.request.path)
 
-        asset = Asset.objects.prefetch_related('group').get(id=self.object.id)
+        asset = Asset.objects.prefetch_related('group').get(id=self.kwargs[self.pk_url_kwarg])
         image_form = self.image_add_form(self.request.POST, self.request.FILES)
         image_form = image_form.save(commit=False)
         # image_form = form.save(commit=False)
