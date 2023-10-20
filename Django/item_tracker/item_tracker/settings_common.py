@@ -186,16 +186,16 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 # デフォルトのメール送信元を設定
 DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
 
-#allauth formの割り込み
-# ACCOUNT_FORMS = {
-#     'signup': 'accounts.forms.CustomSignupForm',
-#     'login': 'accounts.forms.CustomLoginForm',
-#     'reset_password': 'accounts.forms.CustomResetPasswordForm',
-#     'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
-#     'change_password': 'accounts.forms.CustomChangePasswordForm',
-#     'add_email': 'accounts.forms.CustomAddEmailForm',
-#     'set_password': 'accounts.forms.CustomSetPasswordForm',
-# }
+# allauth formの割り込み
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm',
+    # 'login': 'accounts.forms.CustomLoginForm',
+    # 'reset_password': 'accounts.forms.CustomResetPasswordForm',
+    # 'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
+    # 'change_password': 'accounts.forms.CustomChangePasswordForm',
+    # 'add_email': 'accounts.forms.CustomAddEmailForm',
+    # 'set_password': 'accounts.forms.CustomSetPasswordForm',
+}
 
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 

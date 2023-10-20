@@ -58,18 +58,17 @@ class SignupGroupMemberForm(forms.ModelForm):
         return obj
 
 
-
 #allauthのsignupフォーム上書き
 class CustomSignupForm(SignupForm):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields.move_to_end('username', last=False)
+        print(type(self.fields))
+        print(self.fields.keys())
         for field in self.fields.values():
             print("qqqqq", field)
-            field.widget.attrs['class'] = 'form-control'
-
-
-
-
+            # field.widget.attrs['class'] = 'form-control'
 
 
 #allauthのログインフォーム上書き

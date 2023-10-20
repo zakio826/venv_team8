@@ -865,6 +865,8 @@ def chengeBox(w_size, h_size, label):
     Bounding_box = [int(label[0]), round(w_min, 6), round(h_min, 6), round(w_max, 6), round(h_max, 6)]
     return Bounding_box
 
+
+
 @login_required
 def create_group(request):
     if request.method == 'POST':
@@ -886,7 +888,7 @@ def create_group(request):
                 # グループを作成したユーザーをグループメンバーとして追加
                 GroupMember.objects.create(user=request.user, group=group)
 
-                return redirect('tracker:mypage')  # グループ一覧ページにリダイレクトする
+                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
     else:
         form = GroupForm()
 
@@ -906,7 +908,7 @@ def join_group(request):
             else:
                 # グループメンバーとしてユーザーを追加
                 GroupMember.objects.create(user=request.user, group=group)
-                return redirect('tracker:mypage')  # グループ一覧ページにリダイレクトする
+                return redirect('tracker:index')  # グループ一覧ページにリダイレクトする
     else:
         form = JoinGroupForm()
 
