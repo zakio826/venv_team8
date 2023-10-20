@@ -66,6 +66,14 @@ class GroupFilterForm(forms.Form):
         # ユーザーが所属しているすべてのグループを取得し、クエリセットを設定
         self.fields['group'].queryset = Group.objects.filter(groupmember__user=user)
 
+class SortForm(forms.Form):
+    choices = [
+        ('', 'ソート順を選択'),
+        ('asc', '昇順'),
+        ('desc', '降順'),
+    ]
+    sort_order = forms.ChoiceField(choices=choices, required=False)
+
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
