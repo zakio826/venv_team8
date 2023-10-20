@@ -644,7 +644,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "image": history.image.image,
             "items": items.order_by('-id'),
             "results": self.box,
-            "threshold_conf": 0.69,
+            "threshold_conf": 0.79,
             # "box_x_min": round(result.box_x_min),
             # "box_y_min": round(result.box_y_min),
             # "box_x_max": round(result.box_x_max),

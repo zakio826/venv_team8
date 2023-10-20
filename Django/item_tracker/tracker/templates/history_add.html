@@ -83,11 +83,6 @@
     const create = document.getElementById("create").innerText;
 
     const check_list = document.getElementById("check_list");
-    
-    // const result_box_x_min = Number(document.getElementById("result_box_x_min").innerText);
-    // const result_box_y_min = Number(document.getElementById("result_box_y_min").innerText);
-    // const result_box_x_max = Number(document.getElementById("result_box_x_max").innerText);
-    // const result_box_y_max = Number(document.getElementById("result_box_y_max").innerText);
 
     const box_x_min = Number(document.getElementById("box_x_min").innerText);
     const box_y_min = Number(document.getElementById("box_y_min").innerText);
@@ -98,12 +93,6 @@
     const model_check = document.getElementById("model_check").innerText;
 
     const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
-
-    // const item_x_min = document.getElementById("item_x_min").innerText;
-    // const item_y_min = document.getElementById("item_y_min").innerText;
-    // const item_x_max = document.getElementById("item_x_max").innerText;
-    // const item_y_max = document.getElementById("item_y_max").innerText;
-
     
     const preview = document.getElementById("preview");
 
@@ -128,11 +117,6 @@
     let x_min, x_max, y_min, y_max;
     let box_li = [];
     for (let i = 0; i < set.length; i++) {
-        // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
-        // console.log(document.getElementById(`item_${i+1}_y_min`).innerText);
-        // console.log(document.getElementById(`item_${i+1}_x_max`).innerText);
-        // console.log(document.getElementById(`item_${i+1}_y_max`).innerText);
-        // if (item_x_min[i]!=null && item_y_min[i]!=null && item_x_max[i]!=null && item_y_max[i]!=null) {
         if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
             box_li[i] = [
                 Number(document.getElementById(`item_${i+1}_x_min`).innerText) - box_x_min,
@@ -141,7 +125,10 @@
                 Number(document.getElementById(`item_${i+1}_y_max`).innerText) - box_y_min,
                 Number(document.getElementById(`item_${i+1}_conf`).innerText),
             ];
-            if (model_check == "False") box_li[i][4] = 1;
+            if (model_check == "False") {
+                box_li[i][4] = threshold_conf;
+                document.getElementById(`id_form-${i}-result_class`).value = 1;
+            } else document.getElementById(`id_form-${i}-result_class`).value = 2;
 
             if (box_li[i][4] > threshold_conf) {
                 document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
@@ -149,19 +136,19 @@
                 document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
                 document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
                 
-                if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+                if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 2;
 
-                box_in[i].checked = true;
-                check[i].checked = true;
-                checked[i].innerText = "チェック済み";
+                // check[i].checked = true;
+                // checked[i].innerText = "チェック済み";
             }
+            check[i].disabled = false;
+            box_in[i].disabled = false;
+            box_in[i].checked = true;
             // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
-        } else box_li[i] = [0,0,0,0,0];
-        // console.log(item_x_min);
-        // console.log(item_y_min[i]);
-        // console.log(item_x_max[i]);
-        // console.log(item_y_max[i]);
-        // console.log(box_li[i]);
+        } else {
+            box_li[i] = [0,0,0,0,0];
+            if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
+        }
     }
 
     // キャンバスのサイズを画像のサイズに設定
@@ -180,6 +167,7 @@
         document.getElementById(`id_form-${i}-box_x_max`).value = (box_li[i][2] * w) + box_x_min;
         document.getElementById(`id_form-${i}-box_y_max`).value = (box_li[i][3] * h) + box_y_min;
 
+        box_in[i].disabled = false;
         box_in[i].checked = true;
     }
 
@@ -204,24 +192,11 @@
 
             x_min_fit = box_x_min * x_fit;
             y_min_fit = box_y_min * y_fit;
-
-            // image.width *= canvas.width / x_fix;
-            // image.height *= canvas.height / y_fix;
-
             
             check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
             ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
-
-            // image.width = canvas.width;
-            // image.height = canvas.height;
-            
         }
-        // if (!set) {
-        //     ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
-        //     image.src = canvas.toDataURL('image/jpeg');
 
-        //     set = true;
-        // }
         console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
         console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
         console.log(`canvas.width:  ${canvas.width} px`);
@@ -233,11 +208,35 @@
         
     };
 
+    // 選択済みのバウンディングボックスを描画
+    function draw_box(order) {
+
+        // キャンバスをクリアして画像を再描画
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
+
+        // ctx.strokeStyle = "blue"; // 青い線で描画
+        
+        for (let i = 0; i < set.length; i++) {
+            if (i == order) ctx.lineWidth = 2;
+            else ctx.lineWidth = 1;
+            
+            if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
+            else if (box_li[i][4] > 0) ctx.strokeStyle = "orange"; // 青い線で描画
+            else ctx.strokeStyle = "red"; // 青い線で描画
+            if (checked[i].innerText == "チェック済み") ctx.strokeStyle = "green"; // 青い線で描画
+
+            ctx.strokeRect(
+                box_li[i][0],
+                box_li[i][1],
+                box_li[i][2] - box_li[i][0],
+                box_li[i][3] - box_li[i][1],
+            );
+        }
+    };
+
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
-        // canvas.width = image.width;
-        // canvas.height = image.height;
-        // ctx.drawImage(image, 0, 0);
 
         const x_fix = box_x_max - box_x_min;
         const y_fix = box_y_max - box_y_min;
@@ -253,73 +252,19 @@
 
         check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
 
-        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
-
-        ctx.strokeStyle = "blue"; // 青い線で描画
-        ctx.lineWidth = 2;
-        // if (item_x_min[i] && item_y_min[i] && item_x_max[i] && item_y_max[i]) {
         for (let i = 0; i < set.length; i++) {
-            
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
                 console.log(box_li[i]);
-
-                // if (box_li[i][4] > threshold_conf) {
-                //     document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
-                //     document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
-                //     document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
-                //     document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
-                    
-                //     if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
-
-                //     box_in[i].checked = true;
-                //     check[i].checked = true;
-                //     checked[i].innerText = "チェック済み";
-                // }
 
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
                 box_li[i][2] *= x_fit;
                 box_li[i][3] *= y_fit;
-
-                if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
-                else ctx.strokeStyle = "red"; // 青い線で描画
-
-                ctx.strokeRect(
-                    box_li[i][0],
-                    box_li[i][1],
-                    box_li[i][2] - box_li[i][0],
-                    box_li[i][3] - box_li[i][1],
-                );
-                
             }
         }
-        // auto_fit();
+        draw_box(-1);
     };
 
-    // 選択済みのバウンディングボックスを描画
-    function draw_box(order) {
-        // キャンバスをクリアして画像を再描画
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // ctx.drawImage(image, 0, 0);
-        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
-        // console.log(order);
-        ctx.strokeStyle = "blue"; // 青い線で描画
-        
-        for (let i = 0; i < set.length; i++) {
-            if (i == order) ctx.lineWidth = 2;
-            else ctx.lineWidth = 1;
-
-            if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
-            else ctx.strokeStyle = "red"; // 青い線で描画
-
-            ctx.strokeRect(
-                box_li[i][0],
-                box_li[i][1],
-                box_li[i][2] - box_li[i][0],
-                box_li[i][3] - box_li[i][1],
-            );
-        }
-    };
 
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
@@ -341,8 +286,8 @@
 
         draw_box(-1); // バウンディングボックスの描画
 
-        // 矩形を赤い線で描画
-        ctx.strokeStyle = "red";
+        // 矩形を青い線で描画
+        ctx.strokeStyle = "blue";
         ctx.lineWidth = 2;
         ctx.strokeRect(startX, startY, width, height);
     });
@@ -350,8 +295,6 @@
     function submit_check(fin) {
         if (fin) submit.disabled = false;
         else submit.disabled = true;
-        // if (finish.checked) submit.disabled = true;
-        // else submit.disabled = false;
     }
 
     function finish_check(index=-1) {
@@ -383,30 +326,19 @@
             y_max -= height;
         }
 
-        // キャンバスをクリアして画像を再描画
-        // ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // ctx.drawImage(image, 0, 0);
-        // isDrawing = true;
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) {
-                box_li[i] = [
-                    x_min,
-                    y_min,
-                    x_max,
-                    y_max,
-                    1
-                ];
+                box_li[i] = [x_min, y_min, x_max, y_max, 1];
 
-                // document.getElementById(`id_form-${i}-box_x_min`).value = x_min + box_x_min;
-                // document.getElementById(`id_form-${i}-box_y_min`).value = y_min + box_y_min;
-                // document.getElementById(`id_form-${i}-box_x_max`).value = x_max + box_x_min;
-                // document.getElementById(`id_form-${i}-box_y_max`).value = y_max + box_y_min;
-
+                document.getElementById(`id_form-${i}-result_class`).value = 1;
                 auto_set_box(i);
+
                 draw_box(i);
 
-                check[i].checked = true;
-                checked[i].innerText = "チェック済み";
+                check[i].disabled = false;
+                box_in[i].disabled = false;
+                box_in[i].checked = true;
+                // checked[i].innerText = "チェック済み";
             }
             console.log(box_li[i]);
         }
@@ -426,13 +358,7 @@
         isDrawing = false;
     });
 
-    // 選択したバウンディングボックスを強調して描画
     function out_box(order) {
-
-        // キャンバスをクリアして画像を再描画
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // ctx.drawImage(image, 0, 0);
-        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
         for (let i = 0; i < set.length; i++) {
             if (i == order) set[i].checked = true;
             else set[i].checked = false;
@@ -441,29 +367,52 @@
     };
 
 
-    // 選択したバウンディングボックスを削除
-    function del_box(i) {
+    // 選択したアイテムの座標を確定処理
+    function check_box(i) {
         if (check[i].checked) {
-            box_li[i] = [0,0,0,0,0];
+            // box_li[i] = [0,0,0,0,0];
             // check[i].checked = false;
             checked[i].innerText = "チェック";
-            box_in[i].checked = false;
+            // box_in[i].checked = false;
+            // if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
+            // document.getElementById(`id_form-${i}-box_x_min`).value = null;
+            // document.getElementById(`id_form-${i}-box_y_min`).value = null;
+            // document.getElementById(`id_form-${i}-box_x_max`).value = null;
+            // document.getElementById(`id_form-${i}-box_y_max`).value = null;
+            finish.checked = false;
+            submit.disabled = true;
+            // out_box(i);
+        } else {
+            // if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
+            // box_li[i][4] = 1;
+            checked[i].innerText = "チェック済み";
+            auto_set_box(i);
+            finish_check(i);
+        }
+        out_box(i);
+    };
+
+    // 選択したアイテムの座標を削除
+    function del_box(i) {
+        if (box_in[i].checked) {
+
+            box_li[i] = [0,0,0,0,0];
+
             if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
             document.getElementById(`id_form-${i}-box_x_min`).value = null;
             document.getElementById(`id_form-${i}-box_y_min`).value = null;
             document.getElementById(`id_form-${i}-box_x_max`).value = null;
             document.getElementById(`id_form-${i}-box_y_max`).value = null;
+            
+            check[i].disabled = true;
+            check[i].checked = false;
+            checked[i].innerText = "チェック";
+            box_in[i].disabled = true;
+            box_in[i].checked = false;
             finish.checked = false;
             submit.disabled = true;
-            out_box(i);
-        } else {
-            if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
-            box_li[i][4] = 1;
-            auto_set_box(i);
-            out_box(i);
-            checked[i].innerText = "チェック済み";
-            finish_check(i);
         }
+        out_box(i);
     };
     
 </script>

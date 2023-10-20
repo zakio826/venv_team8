@@ -183,7 +183,7 @@ class Result(models.Model):
     item = models.ForeignKey(Item, verbose_name='アイテム', on_delete=models.CASCADE)
 
     result_class = models.IntegerField(verbose_name='詳細結果', validators=[MinValueValidator(0), MaxValueValidator(9)])
-    # result_class = {0: '無し', 1: '手動確認', 9: '外枠'}
+    # result_class = {0: '無し', 1: '手動確認', 2: '学習済みモデル確認', 9: '外枠'}
     box_x_min = models.FloatField(verbose_name='バウンディングボックス (x_min)', blank=True, null=True)
     box_y_min = models.FloatField(verbose_name='バウンディングボックス (y_min)', blank=True, null=True)
     box_x_max = models.FloatField(verbose_name='バウンディングボックス (x_max)', blank=True, null=True)
