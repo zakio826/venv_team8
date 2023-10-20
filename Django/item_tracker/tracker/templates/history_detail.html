@@ -13,14 +13,14 @@
                 <strong>写真</strong>
             </div>
             <div class="col-9 col-lg-10">
-                <img src="{{ history.image.url }}" width="100%" height="auto" alt="Image"/>
+                <img id="image" src="{{ image.url }}" style="display: none;"/>
             </div>
         </div>
         <div class="col" id="check_list" style="overflow-y: scroll;">
             <div>
                 <strong>アイテム一覧</strong>
             </div>
-            <div><strong>「0: '無し', 1: '有り', 9: '外枠'」</div></strong>
+            <div><strong>「0: '無し', 1: '有り'」</div></strong>
             <div class="col-9 col-lg-10">
                 {% for result in history.result_set.all %}
                     {% if result.result_class != 9 %}

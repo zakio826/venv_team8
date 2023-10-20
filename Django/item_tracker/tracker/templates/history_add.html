@@ -11,26 +11,29 @@
     <input class="btn-check" type="radio" id="test1" name="test"><label class="btn btn-outline-primary" for="test1">test1</label> -->
         
     <div class="row">
-        <div class="col-8" style="position: relative;">
-            <div id="preview" style="width: 100%; height: auto;">
-                <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
-                <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
-                <span id="create" style="display: none;">{{ create }}</span>
-                {% for result in results %}
-                    {% if forloop.first %}
-                        <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
-                        <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
-                        <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
-                        <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
-                        <span id="item_box" style="display: none;">{{ results|length }}</span>
-                    {% else %}
-                        <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
-                        <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
-                        <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
-                        <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
-                    {% endif %}
-                {% endfor %}
-            </div>
+        <div class="col" style="position: relative;">
+            <canvas id="canvas"></canvas>
+            <img id="image" src="{{ image.url }}" style="display: none;"/>
+            <span id="create" style="display: none;">{{ create }}</span>
+            {% for result in results reversed %}
+                {% if forloop.last %}
+                    <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                    <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                    <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                    <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                    <span id="item_box" style="display: none;">{{ results|length }}</span>
+                {% else %}
+                    <span id="item_{{ forloop.counter }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                    <span id="item_{{ forloop.counter }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                    <span id="item_{{ forloop.counter }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                    <span id="item_{{ forloop.counter }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col" id="check_list" style="overflow-y: scroll;">
+            {% include 'common_history_add.html' %}0
+             
+            <div class="row my-5">ダミー</div>
         </div>
     </div>
 
@@ -88,9 +91,6 @@
     // const item_x_max = document.getElementById("item_x_max").innerText;
     // const item_y_max = document.getElementById("item_y_max").innerText;
 
-    
-    const preview = document.getElementById("preview");
-
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
     let startX, startY, width, height;
@@ -123,100 +123,20 @@
     // キャンバスのサイズを画像のサイズに設定
     // canvas.width = image.width;
     // canvas.height = image.height;
-    
-    const x_fix = box_x_max - box_x_min;
-    const y_fix = box_y_max - box_y_min;
-
-    canvas.width = x_fix;
-    canvas.height = y_fix;
-
-    let x_fit = canvas.width / x_fix;
-    let y_fit = canvas.height / y_fix;
-
-    let x_min_fit = box_x_min;
-    let y_min_fit = box_y_min;
-    
-    function auto_set_box(i) {
-        let w = x_fix / canvas.width;
-        let h = y_fix / canvas.height;
-        
-        document.getElementById(`id_form-${i}-box_x_min`).value = (box_li[i][0] * w) + box_x_min;
-        document.getElementById(`id_form-${i}-box_y_min`).value = (box_li[i][1] * h) + box_y_min;
-        document.getElementById(`id_form-${i}-box_x_max`).value = (box_li[i][2] * w) + box_x_min;
-        document.getElementById(`id_form-${i}-box_y_max`).value = (box_li[i][3] * h) + box_y_min;
-    }
-
-    function auto_fit() {
-        if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
-            console.log("tttt");
-            // set = false;
-
-            for (let i = 0; i < set.length; i++) {
-                box_li[i][0] *= preview.getBoundingClientRect().width / canvas.width;
-                box_li[i][1] *= preview.getBoundingClientRect().height / canvas.height;
-                box_li[i][2] *= preview.getBoundingClientRect().width / canvas.width;
-                box_li[i][3] *= preview.getBoundingClientRect().height / canvas.height;
-                console.log(box_li[i]);
-            }
-
-            canvas.width = preview.getBoundingClientRect().width.toFixed();
-            canvas.height = canvas.width * (y_fix / x_fix);
-
-            x_fit = canvas.width / x_fix;
-            y_fit = canvas.height / y_fix;
-
-            x_min_fit = canvas.width * x_fit;
-            y_min_fit = canvas.height * y_fit;
-
-            // image.width *= canvas.width / x_fix;
-            // image.height *= canvas.height / y_fix;
-
-            
-            check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
-            ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
-
-            // image.width = canvas.width;
-            // image.height = canvas.height;
-            
-        }
-        // if (!set) {
-        //     ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
-        //     image.src = canvas.toDataURL('image/jpeg');
-
-        //     set = true;
-        // }
-        console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
-        console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
-        console.log(`canvas.width:  ${canvas.width} px`);
-        console.log(`canvas.height: ${canvas.height} px`);
-        console.log(`x_min_fit: ${x_min_fit.toFixed()} px`);
-        console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
-        console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
-        console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
-        
-    };
+    canvas.width = box_x_max - box_x_min;
+    canvas.height = box_y_max - box_y_min;
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
         // canvas.width = image.width;
         // canvas.height = image.height;
         // ctx.drawImage(image, 0, 0);
-
-        const x_fix = box_x_max - box_x_min;
-        const y_fix = box_y_max - box_y_min;
-
-        canvas.width = preview.getBoundingClientRect().width.toFixed();
-        canvas.height = canvas.width * (y_fix / x_fix);
-
-        let x_fit = canvas.width / x_fix;
-        let y_fit = canvas.height / y_fix;
-
-        let x_min_fit = box_x_min * x_fit;
-        let y_min_fit = box_y_min * y_fit;
+        canvas.width = box_x_max - box_x_min;
+        canvas.height = box_y_max - box_y_min;
 
         check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
 
-        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
 
         ctx.strokeStyle = "blue"; // 青い線で描画
         ctx.lineWidth = 2;
@@ -225,17 +145,6 @@
             
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
                 console.log(box_li[i]);
-
-                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
-                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
-                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
-                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
-
-                box_li[i][0] *= x_fit;
-                box_li[i][1] *= y_fit;
-                box_li[i][2] *= x_fit;
-                box_li[i][3] *= y_fit;
-
                 ctx.strokeRect(
                     box_li[i][0],
                     box_li[i][1],
@@ -243,6 +152,10 @@
                     box_li[i][3] - box_li[i][1],
                 );
                 
+                document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
                 
                 if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
 
@@ -251,7 +164,6 @@
                 checked[i].innerText = "チェック済み";
             }
         }
-        // auto_fit();
     };
 
     // 選択済みのバウンディングボックスを描画
@@ -259,7 +171,7 @@
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         // ctx.drawImage(image, 0, 0);
-        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
         // console.log(order);
         ctx.strokeStyle = "blue"; // 青い線で描画
         
@@ -278,7 +190,6 @@
 
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
-        auto_fit();
         isDrawing = true;
         startX = e.clientX - canvas.getBoundingClientRect().left;
         startY = e.clientY - canvas.getBoundingClientRect().top;
@@ -345,18 +256,17 @@
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) {
                 box_li[i] = [
-                    x_min,
-                    y_min,
-                    x_max,
-                    y_max
+                    x_min.toFixed(),
+                    y_min.toFixed(),
+                    x_max.toFixed(),
+                    y_max.toFixed()
                 ];
 
-                // document.getElementById(`id_form-${i}-box_x_min`).value = x_min + box_x_min;
-                // document.getElementById(`id_form-${i}-box_y_min`).value = y_min + box_y_min;
-                // document.getElementById(`id_form-${i}-box_x_max`).value = x_max + box_x_min;
-                // document.getElementById(`id_form-${i}-box_y_max`).value = y_max + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_min`).value = x_min + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_min`).value = y_min + box_y_min;
+                document.getElementById(`id_form-${i}-box_x_max`).value = x_max + box_x_min;
+                document.getElementById(`id_form-${i}-box_y_max`).value = y_max + box_y_min;
 
-                auto_set_box(i);
                 draw_box(i);
 
                 box_in[i].checked = true;
@@ -370,10 +280,10 @@
         
 
         box.innerHTML
-            = (x_min).toFixed() + "px, "
-            + (y_min).toFixed() + "px, "
-            + (x_max).toFixed() + "px, "
-            + (y_max).toFixed() + "px";
+            = (x_min + box_x_min).toFixed() + "px, "
+            + (y_min + box_y_min).toFixed() + "px, "
+            + (x_max + box_x_min).toFixed() + "px, "
+            + (y_max + box_y_min).toFixed() + "px";
     });
 
     // マウスアウトイベントのリスナーを追加
