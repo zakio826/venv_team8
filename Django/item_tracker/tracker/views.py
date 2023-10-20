@@ -35,9 +35,9 @@ from google.oauth2.credentials import Credentials
 
 from httplib2 import Http
 from oauth2client.service_account import ServiceAccountCredentials
-from oauth2client import file, client, tools
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+# from oauth2client import file, client, tools
+# from pydrive.auth import GoogleAuth
+# from pydrive.drive import GoogleDrive
 from googleapiclient.http import MediaIoBaseDownload
 import shutil
 
