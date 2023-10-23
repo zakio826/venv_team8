@@ -795,19 +795,50 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
     model = History
     template_name = 'history_list.html'
     context_object_name = 'history_list'
+    paginate_by = 9
 
     def get_queryset(self):
         user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
         history_list = History.objects.filter(group__in=user_groups)
+
+        selected_group = self.request.GET.get('group')
+        if selected_group:
+            history_list = history_list.filter(group=selected_group)
+
+        # ソート条件を取得
+        sort_order = self.request.GET.get('sort_order')
+        if sort_order == 'asc':
+            history_list = history_list.order_by('updated_at')
+        elif sort_order == 'desc':
+            history_list = history_list.order_by('-updated_at')
+
         return history_list
+
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
+        context['sort_form'] = SortForm(data=self.request.GET)
+
+        history_list = History.objects.filter(group__in=user_groups)
+        page = self.request.GET.get('page')
+
+        # フォームをユーザー情報とともにインスタンス化
+        context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
+
+        return context
+    
+    
+
 class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
     model = History
-    template_name = 'history_detail.html'  # このテンプレートは後で作成します
+    template_name = 'history_detail.html'
     context_object_name = 'history'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        return context
 
 
 
