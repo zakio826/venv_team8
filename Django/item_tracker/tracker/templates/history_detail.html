@@ -13,20 +13,27 @@
                 <strong>写真</strong>
             </div>
             <div class="col-9 col-lg-10">
-                <img id="image" src="{{ image.url }}" style="display: none;"/>
+                <img id="image" src="{{ history.image.url }}" style="display: none;"/>
             </div>
         </div>
         <div class="col" id="check_list" style="overflow-y: scroll;">
             <div>
                 <strong>アイテム一覧</strong>
             </div>
-            <div><strong>「0: '無し', 1: '有り'」</div></strong>
             <div class="col-9 col-lg-10">
                 {% for result in history.result_set.all %}
                     {% if result.result_class != 9 %}
-                        <li>
-                            {{ result.item.item_name }}　[詳細結果: {{ result.result_class }}]
-                        </li>
+                    <li>
+                        {{ result.item.item_name }} [詳細結果:
+                        {% if result.result_class == 0 %}
+                            無し
+                        {% elif result.result_class == 1 %}
+                            有り
+                        {% else %}
+                            {{ result.result_class }}
+                        {% endif %}
+                        ]
+                    </li>
                     {% endif %}
                 {% empty %}
                     <p>履歴が存在しません</p>
@@ -92,4 +99,7 @@
 </div>
 
 <a class="btn btn-primary float-right" href="{% url 'tracker:history_list' %}">履歴一覧に戻る</a>
+
 {% endblock %}
+
+
