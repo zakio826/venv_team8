@@ -47,6 +47,7 @@ from ultralytics import YOLO
 class IndexView(generic.TemplateView):
     template_name = "index.html"
 
+
 class InquiryView(generic.FormView):
     template_name = "inquiry.html"
     form_class = InquiryForm
@@ -236,6 +237,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
         messages.error(self.request, "管理項目の作成に失敗しました.")
         return super().form_invalid(form)
     
+
 class ImageAddView(LoginRequiredMixin, generic.CreateView):
     model = Image
     template_name = 'image_add.html'
@@ -379,19 +381,12 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         return super().form_invalid(form)
 
 
-
 class ItemAddView(LoginRequiredMixin, generic.CreateView):
     model = Item
     template_name = 'item_add.html'
     pk_url_kwarg = 'id'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
     success_url = reverse_lazy('tracker:asset_list')
-    formset = forms.formset_factory(
-        form = ItemAddForm,
-        # extra = 1,
-        # max_num = items.__len__(),
-    )
+    formset = forms.formset_factory(form=ItemAddForm)
     fields = ()
 
     # get_context_dataをオーバーライド
@@ -399,6 +394,7 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
 
+        # URLから情報を抽出
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
@@ -413,37 +409,36 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
             "box_y_max": result.box_y_max,
             "formset": self.formset,
         }
-        # print(self.success_url)
-        # コンテキスト情報のキーを追加
+
+        # コンテキスト情報を更新
         context.update(extra)
         return context
 
+    # フォームが有効な場合の処理
     def form_valid(self, form):
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
+        history = History.objects.prefetch_related('group').prefetch_related('asset').get(id=self.kwargs[self.pk_url_kwarg])
 
+        # フォームセットを初期化
         formset = self.formset(self.request.POST)
 
         if formset.is_valid():
             for forms in formset:
-                print(forms.data)
                 item = forms.save(commit=False)
-                # item.group = history.group
                 item.asset = history.asset
                 item.save()
 
-            self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.id})
+            self.success_url = reverse_lazy(f'tracker:history_add', kwargs={'id': self.kwargs[self.pk_url_kwarg]})
             messages.success(self.request, 'アイテムを追加しました。')
             return redirect(self.success_url)
 
         else:
-            messages.error(self.request, "アイテムの追加に失敗しました。")
-            return super().form_invalid(form)
+            return self.form_invalid(form)
     
+    # フォームが無効な場合の処理
     def form_invalid(self, form):
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
+
 
 class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     model = Image
