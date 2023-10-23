@@ -209,8 +209,6 @@
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
-
-        // ctx.strokeStyle = "blue"; // 青い線で描画
         
         for (let i = 0; i < set.length; i++) {
             if (i == order) ctx.lineWidth = 2;
@@ -302,7 +300,6 @@
             draw_box(order=-2);
         } else {
             submit.disabled = true;
-            draw_box();
         }
     }
 
