@@ -183,54 +183,57 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         }
         context.update(extra)
         return context
-
+    
 class AssetCreateView(LoginRequiredMixin, generic.CreateView):
     model = Asset
     template_name = 'asset_create.html'
     form_class = AssetCreateForm
     success_url = reverse_lazy('tracker:asset_list')
-    # success_url = reverse_lazy('tracker:item_regist' )
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
-        kwargs = {'instance': self.request.user}
-        # 既存のget_context_dataをコール
+        # コンテキストデータを取得
         context = super().get_context_data(**kwargs)
-        # print(context['form'])
+        
+        # ユーザーが所属するグループを取得
         belongs = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
         group_list = []
-        print("ddd", belongs)
-        print("ddd", belongs[0])
+
         for b in belongs:
-            print("fff", b.group.id)
             group_list.append(Group.objects.filter(id=b.group.id))
-        print(group_list)
+
         groups = group_list[0]
+
+        # 複数のグループを結合
         if len(group_list) >= 2:
             for g in group_list[1:]:
-                groups = groups|g
-        print(groups)
-        print("eee", context['form'].initial)
+                groups = groups | g
+
+        # フォームのgroupフィールドのクエリセットを設定
         context['form'].fields['group'].queryset = groups
-        # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
+
+        # 追加のコンテキスト情報を設定
         extra = {
             "object": self.object,
         }
-        # print(self.success_url)
-        # コンテキスト情報のキーを追加
+
+        # コンテキスト情報を更新
         context.update(extra)
         return context
 
+    # フォームが有効な場合の処理
     def form_valid(self, form):
         asset = form.save(commit=False)
         asset.save()
-        # print("ddd", asset.id)
+
+        # 成功時のリダイレクトURLを設定
         self.success_url = reverse_lazy(f'tracker:image_add', kwargs={'id': asset.id})
         messages.success(self.request, '管理項目を作成しました。')
         return super().form_valid(form)
     
+    # フォームが無効な場合の処理
     def form_invalid(self, form):
-        messages.error(self.request, "管理項目の作成に失敗しました。")
+        messages.error(self.request, "管理項目の作成に失敗しました.")
         return super().form_invalid(form)
     
 
