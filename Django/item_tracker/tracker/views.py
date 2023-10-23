@@ -92,102 +92,88 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
     model = Asset
     template_name = 'asset_detail.html'
     pk_url_kwarg = 'id'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
 
+    # ファイルをダウンロードするメソッド
     def download_file(self, file_id, file_name):
+        # Google Driveからファイルをダウンロードするためのリクエストを作成
         request = self.drive_service.files().get_media(fileId=file_id)
+        # ローカルにファイルを保存するためのファイルハンドラを開き、ファイルをバイナリ書き込みモードで開いている
         fh = open(os.path.join(settings.MEDIA_ROOT, 'learning', file_name), 'wb')
+        # メディアファイルをダウンロードするためのダウンローダーを作成
         downloader = MediaIoBaseDownload(fh, request)
         done = False
 
+        # ダウンロードが完了するまでループし、進捗を表示している
         while done is False:
             status, done = downloader.next_chunk()
             print(f'Download {file_name} {int(status.progress() * 100)}%')
 
-        # self.asset.learning_model = os.path.join(settings.MEDIA_ROOT, 'learning', self.pt_file_name)
+        # ダウンロードが完了したら、ファイルパスをデータベースに保存している
         self.asset.learning_model.name = os.path.join('learning', self.pt_file_name)
         self.asset.save()
 
-    #Drive上のサブディレクトリの中身を参照しフォルダごとダウンロード(条件あり)
+    # フォルダ内のファイルを再帰的にダウンロードするメソッド
     def download_folder(self, folder_id, target_folder_name):
+        # フォルダ内のファイルを検索するためのクエリを設定
         query = f"'{folder_id}' in parents"
+        # クエリを実行し、ファイルリストを取得
         results = self.drive_service.files().list(q=query).execute()
         files = results.get('files', [])
-    
+
+        # フォルダ内の各ファイルに対して処理を実行
         for file in files:
             if file['mimeType'] == 'application/vnd.google-apps.folder':
+                # もしファイルがフォルダであれば、再帰的にフォルダを作成し中身をダウンロード
                 subfolder_id = file['id']
                 subfolder_name = file['name']
                 subfolder_path = os.path.join(os.path.join(os.path.join(settings.MEDIA_ROOT, 'learning'), target_folder_name), subfolder_name)
                 os.makedirs(subfolder_path, exist_ok=True)
                 self.download_folder(subfolder_id, target_folder_name)
             else:
+                # ファイルであればダウンロード
                 file_id = file['id']
                 file_name = file['name']
-                # ext = os.path.splitext(file_name)[1]
-                # self.pt_file_name = self.file_name + '.pt'
                 if file_name == self.pt_file_name:
-                    # return os.path.splitext(file_name)[0]
                     self.download_file(file_id, file_name)
 
-    # .ptファイルの名前を取得し、ローカル上で作成されるフォルダ名に使用
+    # ファイルの拡張子が'.pt'であるフォルダの名前を取得するメソッド
     def get_pt_folder_name(self):
-        # query_list = [
-        #     f"'{settings.GOOGLE_DRIVE_FOLDER_ID}' in parents",
-        #     "mimeType = 'application/vnd.pt'"
-        #     # "(name contains '.pt')"
-        # ]
-        # query = " and ".join(query_list)
         query = f"'{self.asset.drive_folder_id}' in parents"
         results = self.drive_service.files().list(q=query).execute()
-        # folder_id = settings.GOOGLE_DRIVE_FOLDER_ID
-        # query = f"'{folder_id}' in parents and mimeType = 'application/vnd.pt'"
-        # query = query = f"'{folder_id}' in parents and mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'"
-        # results = self.drive_service.files().list(
-        #     q = query,
-        #     fields = "files(id, name)",
-        #     # fields = "nextPageToken, files(id, name)",
-        #     # pageSize = 100,
-        # ).execute()
         files = results.get('files', [])
 
         for file in files:
             file_name = file['name']
             ext = os.path.splitext(file_name)[1]
-            # if ext == '.pt' and os.path.splitext(file_name)[0] != os.path.splitext(self.asset.learning_model.name[8:])[0]:
             if ext == '.pt':
                 return os.path.splitext(file_name)[0]
 
-    # get_context_dataをオーバーライド
+    # コンテキストデータを取得するメソッド
     def get_context_data(self, **kwargs):
-
-        # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
-        
-        self.asset = Asset.objects.get(id=self.object.id)
+        # Assetモデルのインスタンスを取得し、関連するデータを取得
+        self.asset = get_object_or_404(Asset, id=self.object.id)
         self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
         self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
         
+        # Google Driveからファイルをダウンロードするためのセットアップ
         if self.asset.drive_folder_id:
             service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
             creds = service_account.Credentials.from_service_account_file(
-                service_account_key_path, # サービスアカウントキーのJSONファイルへのパス
-                scopes = settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+                service_account_key_path,
+                scopes=settings.GOOGLE_DRIVE_API_SCOPES,
             )
             self.drive_service = build('drive', 'v3', credentials=creds)
 
-            # .pt フォルダ名を取得
+            # '.pt'フォルダの名前を取得し、フォルダ内のファイルをダウンロード
             pt_folder_name = self.get_pt_folder_name()
 
-            # ダウンロード
             if pt_folder_name:
                 self.download_folder(self.asset.drive_folder_id, pt_folder_name)
-                
             else:
-                print("ptファイルがないか処理の途中でエラーが発生しています。")
+                print("ptファイルが見つかりません。またはエラーが発生しました。")
 
-        # 追加したいコンテキスト情報(取得したコンテキスト情報のキーのリストを設定)
+        # コンテキストに追加のデータを設定
         extra = {
             "object": self.object,
             "image_list": Image.objects.prefetch_related('asset').filter(asset=self.object.id).filter(front=True),
@@ -195,7 +181,6 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
             "asset_id": self.object.id,
             "historys": History.objects.prefetch_related('asset').prefetch_related('user').filter(asset_id=self.object.id),
         }
-        # コンテキスト情報のキーを追加
         context.update(extra)
         return context
 
