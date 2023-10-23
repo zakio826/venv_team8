@@ -81,7 +81,6 @@
     const checked = document.getElementsByName("checked");
     const set = document.getElementsByName("set");
     const box_in = document.getElementsByName("box");
-    const box = document.getElementById("box");
     const finish = document.getElementById("finish");
     const submit = document.getElementById("submit");
     const box_list = document.getElementById("box_list");
@@ -138,34 +137,21 @@
 
             if (box_li[i][4] >= threshold_conf) {
                 if (box_li[i][4] > threshold_conf) {
-                    // document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] + box_x_min;
-                    // document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] + box_y_min;
-                    // document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] + box_x_min;
-                    // document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] + box_y_min;
-                
                     document.getElementById(`id_form-${i}-result_class`).value = 2;
                 } else {
                     document.getElementById(`id_form-${i}-result_class`).value = 1;
                 }
 
-                // check[i].checked = true;
-                // checked[i].innerText = "チェック済み";
                 check[i].disabled = false;
                 box_in[i].disabled = false;
                 box_in[i].checked = true;
             }
-            // console.log(document.getElementById(`item_${i+1}_x_min`).innerText);
         } else {
             box_li[i] = [0,0,0,0,0];
             if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
         }
     }
 
-    // キャンバスのサイズを画像のサイズに設定
-    // canvas.width = image.width;
-    // canvas.height = image.height;
-    
-    
     
     function auto_set_box(i) {
         if (!box_li[i][4]) return;
@@ -184,7 +170,6 @@
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
             console.log("tttt");
-            // set = false;
 
             for (let i = 0; i < set.length; i++) {
                 box_li[i][0] *= preview.getBoundingClientRect().width / canvas.width;
@@ -232,10 +217,11 @@
             else ctx.lineWidth = 1;
             
             if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
-            else if (box_li[i][4] > 0) ctx.strokeStyle = "orange"; // 青い線で描画
-            else ctx.strokeStyle = "red"; // 青い線で描画
+            else if (box_li[i][4] > 0) ctx.strokeStyle = "orange"; // オレンジ色の線で描画
+            else ctx.strokeStyle = "red"; // 赤い線で描画
 
             if (checked[i].innerText == "チェック済み") {
+                 // 緑色の線で描画
                 ctx.strokeStyle = `rgb(
                     0,
                     220,
@@ -254,7 +240,7 @@
     };
 
     // 画像の読み込みが完了したらキャンバスに描画
-    function img_load(reload=false) {
+    image.onload = () => {
 
         const x_fix = box_x_max - box_x_min;
         const y_fix = box_y_max - box_y_min;
@@ -282,7 +268,6 @@
         }
         draw_box();
     };
-    image.onload = img_load();
 
 
     // マウスダウンイベントのリスナーを追加
@@ -395,22 +380,17 @@
     // 選択したアイテムの座標を確定処理
     function check_box(i) {
         if (check[i].checked) {
-            // box_li[i] = [0,0,0,0,0];
-            // check[i].checked = false;
-            checked[i].innerText = "チェック";
-            // box_in[i].checked = false;
-            // if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
             document.getElementById(`id_form-${i}-box_x_min`).value = null;
             document.getElementById(`id_form-${i}-box_y_min`).value = null;
             document.getElementById(`id_form-${i}-box_x_max`).value = null;
             document.getElementById(`id_form-${i}-box_y_max`).value = null;
+            
+            checked[i].innerText = "チェック";
             finish.checked = false;
             submit.disabled = true;
-            // out_box(i);
         } else {
-            // if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 1;
-            // box_li[i][4] = 1;
             checked[i].innerText = "チェック済み";
+
             auto_set_box(i);
             finish_check(i);
         }
@@ -420,9 +400,7 @@
     // 選択したアイテムの座標を削除
     function del_box(i) {
         if (box_in[i].checked) {
-
             box_li[i] = [0,0,0,0,0];
-
             if (create == 0) document.getElementById(`id_form-${i}-result_class`).value = 0;
             document.getElementById(`id_form-${i}-box_x_min`).value = null;
             document.getElementById(`id_form-${i}-box_y_min`).value = null;
