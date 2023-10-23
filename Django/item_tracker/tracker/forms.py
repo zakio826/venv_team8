@@ -124,11 +124,8 @@ class HistoryAddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # self.fields['user'].widget = forms.HiddenInput()
-
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            # field.widget = forms.HiddenInput()
 
 class ResultAddForm(forms.ModelForm):
 
@@ -148,16 +145,6 @@ class ResultAddForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
             field.widget = forms.HiddenInput()
-
-
-# class HistoryMultiAddForm(MultiModelForm):
-
-#     form_classes = {
-#         "history_add_form": HistoryAddForm,
-#         "result_add_form": forms.formset_factory(
-#             form = 
-#         ),
-#     }
 
 
 class GroupForm(forms.ModelForm):
