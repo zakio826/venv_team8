@@ -91,7 +91,6 @@ class Item(models.Model):
 class Image(models.Model):
     """画像モデル"""
     
-    # history = models.ForeignKey(History, verbose_name='履歴', on_delete=models.CASCADE)
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.DO_NOTHING)
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, verbose_name='撮影ユーザー', null=True, on_delete=models.SET_NULL)
@@ -126,7 +125,6 @@ class Image(models.Model):
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
 
-            # self.image.path = image_path
             self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)
         
         # 最終的に保存
@@ -147,9 +145,7 @@ class History(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', null=True, on_delete=models.SET_NULL)
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.CASCADE)
     
-    coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,
-        # validators=[FileExtensionValidator(['pdf', ])],
-    )
+    coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,)
 
     checked_at = models.DateTimeField(verbose_name='確認日時', default=datetime.now)
     updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)
