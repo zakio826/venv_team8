@@ -57,7 +57,7 @@
     </label>
     <form method="POST" enctype='multipart/form-data'>
         {% csrf_token %}
-        <button class="btn btn-primary" type="submit" id="submit" disabled>作成</button>
+        <button class="btn btn-primary" type="submit" id="submit" disabled>終了する</button>
         <table class="table">
             {{ result_add_form.as_table }}
         </table>
@@ -224,7 +224,14 @@
             if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
             else if (box_li[i][4] > 0) ctx.strokeStyle = "orange"; // 青い線で描画
             else ctx.strokeStyle = "red"; // 青い線で描画
-            if (checked[i].innerText == "チェック済み") ctx.strokeStyle = "green"; // 青い線で描画
+
+            if (checked[i].innerText == "チェック済み") {
+                ctx.strokeStyle = `rgb(
+                    0,
+                    220,
+                    50
+                )`;
+            }
 
             ctx.strokeRect(
                 box_li[i][0],
@@ -333,12 +340,13 @@
                 document.getElementById(`id_form-${i}-result_class`).value = 1;
                 auto_set_box(i);
 
-                draw_box(i);
-
                 check[i].disabled = false;
+                check[i].checked = true;
                 box_in[i].disabled = false;
                 box_in[i].checked = true;
-                // checked[i].innerText = "チェック済み";
+                checked[i].innerText = "チェック済み";
+
+                draw_box(i);
             }
             console.log(box_li[i]);
         }
