@@ -447,23 +447,19 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     fields = ()
     success_url = reverse_lazy('tracker:asset_list')
 
+    # 物体検出を行うヘルパーメソッド
     def model_check(self, asset, image):
-        
+        # YOLOモデルを読み込み
         output_path = os.path.join(settings.MEDIA_ROOT, 'model_check', asset.learning_model.name[8:-3])
         os.makedirs(output_path, exist_ok=True)
-
-        # YOLOモデルの読み込み
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
-        # 物体検出の実行
+        # 物体検出を実行し、結果を解析
         results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name))
-
-        classDict = results1[0].names
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
 
-        print()
         for i in range(len(results1[0].boxes.cls)):
             if round(classNums[i]) and self.box[round(classNums[i])]['conf'] < confs[i]:
                 self.box[round(classNums[i])]['box_x_min'] = boxes[i][0]
@@ -472,40 +468,27 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
 
-        #     print(f"{round(classNums[i])}:", classDict[classNums[i]])
-        #     print(f"  x_min = {boxes[i][0]:>20.15f} px")
-        #     print(f"  y_min = {boxes[i][1]:>20.15f} px")
-        #     print(f"  x_max = {boxes[i][2]:>20.15f} px")
-        #     print(f"  y_max = {boxes[i][3]:>20.15f} px")
-        #     print(f"  conf  = {confs[i]:>20.15f} %")
-        #     print()
-        # print("len", len(results1[0].boxes.cls))
-        # print()
-
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
         # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
         historys = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').order_by('-updated_at')
-        history = historys.get(id=self.id)
-        print(historys[0].id)
-        # last_history = historys.get(id)
-        results = Result.objects.filter(history=historys[0])
-        # results = Result.objects.prefetch_related('history').filter(asset=history.asset)
-        # result = results.filter(history=history)
+        history = historys.get(id=self.kwargs[self.pk_url_kwarg])
 
+        # ヒストリの結果を取得
+        results = Result.objects.filter(history=historys[0])
         items = Item.objects.filter(asset=history.asset, outer_edge=False)
+
+        # 結果追加フォームのフォームセットを生成
         result_add_form = forms.formset_factory(
-            form = ResultAddForm,
-            extra = items.__len__(),
-            max_num = items.__len__(),
+            form=ResultAddForm,
+            extra=items.__len__(),
+            max_num=items.__len__(),
         )
-        
+
         ttts = re.findall(r'[^0-9]+', self.request.path)
-        print("f", ttts)
-        # self.id = int(ttt[0])
+
+        # ボックス情報を初期化
         result = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
         self.box = [{
             "box_x_min": result.box_x_min,
@@ -514,6 +497,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "box_y_max": result.box_y_max,
             "model_check": False,
         }]
+
+        # 判定モードを設定
         if ttts[0] == '/asset-check/':
             result_class = 0
 
@@ -521,7 +506,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             box_x_fix = (result.box_x_max - result.box_x_min) / result_history.image.image.width
             box_y_fix = (result.box_y_max - result.box_y_min) / result_history.image.image.height
 
-            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])#.exclude(result_class=9)
+            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])
+
             for i, r in enumerate(results):
                 result_history = historys.get(id=r.history.id)
                 if not i:
@@ -541,16 +527,10 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                     })
             
             if history.asset.learning_model:
-                # self.box = []
-                # for i in Item.objects.filter(history=history):
-                #     self.box
                 self.box[0]['model_check'] = True
-                print()
                 self.model_check(history.asset, history.image)
         else:
             result_class = 1
-            # results = Result.objects.filter(history=historys[0])
-        
 
         extra = {
             "create": result_class,
@@ -558,10 +538,6 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "items": items.order_by('-id'),
             "results": self.box,
             "threshold_conf": 0.79,
-            # "box_x_min": round(result.box_x_min),
-            # "box_y_min": round(result.box_y_min),
-            # "box_x_max": round(result.box_x_max),
-            # "box_y_max": round(result.box_y_max),
             "result_add_form": result_add_form(
                 initial = [
                     {
@@ -573,107 +549,84 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 ],
             ),
         }
-        # コンテキスト情報のキーを追加
         context.update(extra)
         return context
     
-
+    # フォームが有効な場合の処理
     def form_valid(self, form):
-        print("eeeff", self.request.POST)
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
-        
+        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.kwargs[self.pk_url_kwarg])
 
-        # image = Image.objects.prefetch_related('group').prefetch_related('asset').get(id=self.id)
-        
-        print("eee", form.data)
         ctx = self.get_context_data()
         items = Item.objects.filter(asset=history.asset, outer_edge=False)
         ttttt = forms.formset_factory(
-            form = ResultAddForm,
-            extra = items.__len__(),
-            max_num = items.__len__(),
+            form=ResultAddForm,
+            extra=items.__len__(),
+            max_num=items.__len__(),
         )
-        print("fdsf", history.id)
-        # history_id = history.objects
-        print("fdsf", self.request.FILES)
+
         formset = ttttt(self.request.POST)
-        print("ttt0", formset.forms)
+
         if formset.is_valid():
             coordinate_path = os.path.join(settings.MEDIA_ROOT, history.coordinate.name)
             history_coordinate = open(coordinate_path, 'a')
             labelList = []
-            for i, form in enumerate(formset.forms):
 
+            for i, form in enumerate(formset.forms):
                 result = form.save(commit=False)
-                # print("eeet", form)
                 result.history = history
                 result.item = items[i]
                 result.save()
 
-                print()
-                print("result_class:", form.data[f'form-{i}-result_class'])
-                print("type(result_class):", type(form.data[f'form-{i}-result_class']))
-                print()
                 if int(form.data[f'form-{i}-result_class']):
                     labelList.append(chengeLabel(
-                            w_size = history.image.image.width,
-                            h_size = history.image.image.height,
-                            classNum = i + 1,
-                            w_min = form.data[f'form-{i}-box_x_min'],
-                            h_min = form.data[f'form-{i}-box_y_min'],
-                            w_max = form.data[f'form-{i}-box_x_max'],
-                            h_max = form.data[f'form-{i}-box_y_max']
+                            w_size=history.image.image.width,
+                            h_size=history.image.image.height,
+                            classNum=i + 1,
+                            w_min=form.data[f'form-{i}-box_x_min'],
+                            h_min=form.data[f'form-{i}-box_y_min'],
+                            w_max=form.data[f'form-{i}-box_x_max'],
+                            h_max=form.data[f'form-{i}-box_y_max']
                     ))
                     history_coordinate.write('\n')
                     history_coordinate.write(
                         ' '.join(chengeLabel(
-                                w_size = history.image.image.width,
-                                h_size = history.image.image.height,
-                                classNum = i + 1,
-                                w_min = form.data[f'form-{i}-box_x_min'],
-                                h_min = form.data[f'form-{i}-box_y_min'],
-                                w_max = form.data[f'form-{i}-box_x_max'],
-                                h_max = form.data[f'form-{i}-box_y_max']
+                                w_size=history.image.image.width,
+                                h_size=history.image.image.height,
+                                classNum=i + 1,
+                                w_min=form.data[f'form-{i}-box_x_min'],
+                                h_min=form.data[f'form-{i}-box_y_min'],
+                                w_max=form.data[f'form-{i}-box_x_max'],
+                                h_max=form.data[f'form-{i}-box_y_max']
                         ))
                     )
             history_coordinate.close()
 
-            print()
             for i in range(len(labelList)):
-                # print(labelList[i])
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
-            print()
-
-            # file_path = self.object.file_field.path  # ファイルのパス
-
 
             creds = ServiceAccountCredentials.from_json_keyfile_name(
-                os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
-                settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
+                os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+                settings.GOOGLE_DRIVE_API_SCOPES
             )
             drive_service = build('drive', 'v3', credentials=creds)
 
             asset = Asset.objects.get(id=history.asset.id)
+
             if not asset.drive_folder_id:
-                # フォルダを作成
                 folder_metadata = {
                     'name': str(asset.asset_name),
                     'mimeType': 'application/vnd.google-apps.folder',
-                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],  # アップロード先のGoogle DriveフォルダのID
+                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
                 }
 
-                # Google Drive APIを使用してファイルをアップロード
                 folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-
                 asset.drive_folder_id = folder['id']
                 asset.save()
 
-            for file_path in [history.image.movie.path, history.coordinate.path]: # Google Driveにアップロードされるファイルのパス
+            for file_path in [history.image.movie.path, history.coordinate.path]:
                 file_metadata = {
-                    'name': os.path.basename(file_path),  # アップロードされるファイルの名前
-                    'parents': [str(asset.drive_folder_id)],  # 作成したフォルダのID
+                    'name': os.path.basename(file_path),
+                    'parents': [str(asset.drive_folder_id)],
                 }
                 media = MediaFileUpload(file_path, resumable=True)
 
@@ -683,24 +636,16 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                     fields='id'
                 ).execute()
 
-
-            # print("ttt4", formset)
-            messages.success(self.request, '履歴を追加しました。')
+            messages.success(self.request, '履歴を追加しました.')
             return redirect(self.success_url)
-            # return super().form_valid(form)
-
-            # return redirect(self.get_redirect_url())
         else:
             ctx["form"] = formset
-            print("tttd", form)
-            messages.error(self.request, "履歴の追加に失敗しました。")
+            messages.error(self.request, "履歴の追加に失敗しました.")
             return super().form_invalid(form)
-    
+
+    # フォームが無効な場合の処理
     def form_invalid(self, form):
-        print("eeef", form)
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        messages.error(self.request, "履歴の追加に失敗しました。")
+        messages.error(self.request, "履歴の追加に失敗しました.")
         return super().form_invalid(form)
 
 
