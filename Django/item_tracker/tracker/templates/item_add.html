@@ -22,8 +22,6 @@
                 <span id="box_y_min" style="display: none;">{{ box_y_min }}</span>
                 <span id="box_x_max" style="display: none;">{{ box_x_max }}</span>
                 <span id="box_y_max" style="display: none;">{{ box_y_max }}</span>
-                <!-- <div style="position: relative; width: 100%;">
-                </div> -->
             </div>
 
             <div class="col-4">
@@ -39,17 +37,13 @@
                 
                 <div class="row justify-content-around w-100 ms-0" id="form_edit">
                     <button class="col-5 btn btn-primary" type="button" id="item_add">追加</button>
-                    <!-- <div class="col-6">
-                    </div> -->
                     <button class="col-5 btn btn-primary" type="button" id="item_del">削除</button>
-                    <!-- <div class="col-6">
-                    </div> -->
                 </div>
             </div>
         </div>
 
         <hr>
-        
+
         <button class="btn btn-primary w-100 mt-3" type="submit">登録</button>
     </form>
 </div>
@@ -58,6 +52,7 @@
 
 {% block js %}
 <script>
+    // キャンバスとコンテキストを取得
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const image = document.getElementById("image");
@@ -73,12 +68,12 @@
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
+        // キャンバスのサイズを設定し、画像を描画
         canvas.width = box_x_max - box_x_min;
         canvas.height = box_y_max - box_y_min;
-        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, box_x_min, box_y_min, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 
-        // formset.style = `height: ${canvas.getBoundingClientRect().height - form_edit.getBoundingClientRect().height - 50};`;
-
+        // デバッグ情報をコンソールに出力
         console.log("box_x_min: " + box_x_min);
         console.log("box_y_min: " + box_y_min);
         console.log("box_x_max: " + box_x_max);
@@ -88,14 +83,10 @@
         console.log("canvas.height: " + canvas.height);
     };
 
-
-
-
-
     function auto_fit_height(max_h) {
         if (form.style.overflowY == "scroll") formset.style.height = max_h;
         else formset.style.height = "auto";
-    };
+    }
 
     function switch_scroll() {
         var max_h = canvas.getBoundingClientRect().height - form_edit.getBoundingClientRect().height - 50;
@@ -105,11 +96,14 @@
         else form.style.overflowY = "visible";
         console.log("form.style: " + form.style.overflowY);
         auto_fit_height(max_h);
+    }
+
+    // ウィンドウのリサイズ時にスクロール状態を切り替える
+    window.onresize = () => {
+        switch_scroll();
     };
 
-    window.onresize = () => { switch_scroll(); };
-
-    function create_item_from(num) {
+    function create_item_form(num) {
         var tag = document.createElement('li');
         tag.setAttribute('id', 'item_' + num);
         tag.setAttribute('class', 'my-2');
@@ -124,11 +118,8 @@
             text_form.setAttribute('name', `form-${num}-${nameset[i]}`);
             text_form.setAttribute('class', 'form-control');
 
-            if (i-1 >= nameset.length) text_form.setAttribute('value', 'False');
+            if (i - 1 >= nameset.length) text_form.setAttribute('value', 'False');
             tag.appendChild(text_form);
-
-            // console.log(nameset[i]);
-            // console.log(tag);
         }
 
         return tag;
@@ -140,11 +131,11 @@
     const del = document.getElementById("item_del");
     del.disabled = true;
 
-    form_area.appendChild(create_item_from(num));
+    form_area.appendChild(create_item_form(num));
 
     add.addEventListener("click", function() {
         num++;
-        form_area.appendChild(create_item_from(num));
+        form_area.appendChild(create_item_form(num));
         totalForms.value = String(num + 1);
         if (del.disabled == true) del.disabled = false;
 
