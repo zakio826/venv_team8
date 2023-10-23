@@ -1,7 +1,7 @@
 
 {% for item in items reversed %}
 <div class="row justify-content-around w-100 my-2">
-    <div class="col-auto" style="font-size: 18px;">{{ item.item_name }}</div>
+    <div class="col-auto col-md-6" style="display:flex; align-items: center; font-size: 16px;">{{ item.item_name }}</div>
     <div class="col-auto">
         {% if forloop.first %}
             <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set" checked>
