@@ -9,6 +9,10 @@ from django.contrib import messages
 
 from django.conf import settings
 
+import secrets
+import string
+
+
 class LoginView(AllauthLoginView):
     def form_valid(self, form):
         personal_use = self.request.POST.get("personal_use") == "on"
@@ -20,6 +24,9 @@ class LoginView(AllauthLoginView):
         if self.request.user.is_authenticated:
             # ユーザーが個人利用を選択した場合
             if personal_use:
+                # グループIDの自動生成と重複チェック
+                group_id = self.generate_unique_group_id()
+                
                 # グループ名を設定
                 group_name = "個人利用グループ"
 
@@ -27,15 +34,14 @@ class LoginView(AllauthLoginView):
                 group_exists = Group.objects.filter(user=self.request.user, group_name=group_name).exists()
 
                 if group_exists:
-                    # messages.error(self.request, '同じ名前のグループがすでに存在します。別の名前を選択してください。')
                     return redirect(settings.LOGIN_REDIRECT_URL)
-                    #return self.render_to_response(self.get_context_data(form=form))
                 else:
                     # グループを作成
                     group = Group.objects.create(
                         user=self.request.user,
                         group_name=group_name,
                         private=True,
+                        group_id=group_id  # グループIDを設定
                     )
                     # ユーザーをグループメンバーとして追加
                     GroupMember.objects.create(user=self.request.user, group=group)
@@ -48,4 +54,10 @@ class LoginView(AllauthLoginView):
                 else:
                     return redirect('tracker:create_group')
         return response
+
+    def generate_unique_group_id(self):
+        while True:
+            group_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+            if not Group.objects.filter(group_id=group_id).exists():
+                return group_id
 

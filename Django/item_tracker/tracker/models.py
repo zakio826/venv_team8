@@ -18,7 +18,7 @@ class Group(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ホストユーザー', on_delete=models.PROTECT)
     group_name = models.CharField(verbose_name='グループ名', max_length=40, blank=False, null=True)
     private = models.BooleanField(verbose_name='個人利用', default=True)
-    
+    group_id = models.CharField(verbose_name='グループID', max_length=12, unique=True)
     class Meta:
         verbose_name_plural = 'Group'
     

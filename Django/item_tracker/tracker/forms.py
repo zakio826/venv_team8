@@ -174,10 +174,7 @@ class GroupForm(forms.ModelForm):
             self.fields['user'].initial = user
 
 class JoinGroupForm(forms.Form):
-    group = forms.ModelChoiceField(
-        queryset=Group.objects.filter(private=False),  # 個人利用でないグループを選択
-        label='グループ選択',
-    )
+    group_id = forms.CharField(label='グループID', max_length=12, required=True)
 
 class GroupJoinForm(forms.ModelForm):
 
