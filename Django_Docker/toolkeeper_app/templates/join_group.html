@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+<h2>グループへ参加する</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.group_id.label_tag }}
+    {{ form.group_id }}
+    {{ form.password.label_tag }}
+    {{ form.password }}
+    <button type="submit">参加</button>
+    <button><a href="{% url 'toolkeeper_app:create_group' %}">グループを作成する</a></button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}アイテムチェック | toolkeeper{% endblock %}
+
+{% block active_diary_list %}active{% endblock %}
+
+{% block contents %}
+<div class="container my-5">
+
+    <div style="display: flex; width: 100%; justify-content: center;">
+        <div class="row justify-content-between align-items-center mb-3 mx-0" style="width: 80%;">
+            <h5 class="col col-lg-auto align-self-start" style="text-align: center; margin-top: 0.5rem;">全てのアイテムが入るように、外枠を囲ってください。</h5>
+            <button class="col-auto col-lg-2 align-self-end btn btn-primary my-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
+        </div>
+    </div>
+    
+    <hr>
+
+    <div class="row">
+        <div class="col-8" style="position: relative;">
+            <div id="preview" style="width: 100%; height: auto;">
+                <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
+                <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
+                <span id="create" style="display: none;">{{ create }}</span>
+                {% for result in results %}
+                    {% if forloop.first %}
+                        <span id="item_box" style="display: none;">{{ results|length }}</span>
+                        <span id="box_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                        <span id="box_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                        <span id="box_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                        <span id="box_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                        <span id="model_check" style="display: none;">{{ result.model_check }}</span>
+                    {% else %}
+                        <span id="item_{{ forloop.counter0 }}_x_min" style="display: none;">{{ result.box_x_min }}</span>
+                        <span id="item_{{ forloop.counter0 }}_y_min" style="display: none;">{{ result.box_y_min }}</span>
+                        <span id="item_{{ forloop.counter0 }}_x_max" style="display: none;">{{ result.box_x_max }}</span>
+                        <span id="item_{{ forloop.counter0 }}_y_max" style="display: none;">{{ result.box_y_max }}</span>
+                        <span id="item_{{ forloop.counter0 }}_conf" style="display: none;">{{ result.conf }}</span>
+                    {% endif %}
+                {% endfor %}
+                <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
+            </div>
+        </div>
+        <div class="col-4">
+            {% if create == 0 %}
+                {% include 'common_history_add.html' %}
+            {% else %}
+                {% include 'common_history_create.html' %}
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+
+    <div style="display: flex; width: 100%; justify-content: center;">
+        <label class="w-auto my-4" for="finish">
+            <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> すべてのアイテムをチェックしました。
+        </label>
+    </div>
+    
+    <form method="POST" enctype='multipart/form-data'>
+        {% csrf_token %}
+        <button class="btn btn-primary w-100" type="submit" id="submit" disabled>終了する</button>
+        <table class="table">
+            {{ result_add_form.as_table }}
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+
+{% block js %}
+
+{% if create == 0 %}
+    {% include 'common_history_add_js.html' %}
+{% else %}
+    {% include 'common_history_create_js.html' %}
+{% endif %}
+
+{% endblock %}

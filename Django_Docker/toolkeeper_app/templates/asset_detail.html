@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}管理項目詳細 | toolkeeper{% endblock %}
+
+{% block active_asset_list %}active{% endblock %}
+
+{% block contents %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-3 col-lg-2">
+            <strong>管理名</strong>
+        </div>
+        <div class="col-9 col-lg-10">
+            {{ object.asset_name }}
+        </div>
+    </div>
+    
+    <hr>
+    
+    <div class="row">
+        <div class="col-3 col-lg-2">
+            <strong>写真</strong>
+        </div>
+        <div class="col-9 col-lg-10">
+            {% for image in image_list %}
+                {% if image.image %}
+                    <img src="{{ image.image.url }}" width="100%" height="auto"/>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr>
+    
+    <div class="row">
+        <div class="col-6 row">
+            <div class="col-6 col-lg-4 mb-2">
+                <strong>アイテム一覧</strong>
+            </div>
+            <div class="col-auto">
+                {% for item in item_list %}
+                    <span class="row mb-2 ms-1">{{ forloop.counter }}. {{ item.item_name }}</span>
+                {% endfor %}
+                    <!-- <span class="row mb-2 ms-1">5. なんとかこうとか</span>
+                    <span class="row mb-2 ms-1">6. なんとかこうとか</span>
+                    <span class="row mb-2 ms-1">7. なんとかこうとか</span>
+                    <span class="row mb-2 ms-1">8. なんとかこうとか</span>
+                    <span class="row mb-2 ms-1">9. なんとかこうとか</span> -->
+            </div>
+        </div>
+        <div class="col-6 row">
+            {% include 'common_history_list.html' %}
+        </div>
+    </div>
+    
+
+    <!-- <hr>
+
+    <div class="row">
+        <div class="col-3">
+            <strong>確認日時</strong>
+        </div> <div class="col-9">
+            {{ object.checked_at }}
+        </div>
+    </div>
+    
+    <hr>
+    
+    <div class="row">
+        <div class="col-3">
+            <strong>更新日時</strong>
+        </div>
+        <div class="col-9">
+            {{ object.updated_at }}
+        </div>
+    </div> -->
+    <a class="btn btn-primary" href="{% url 'toolkeeper_app:test_page' 4 %}"> テストページ</a>
+    <a class="btn btn-primary" href="{% url 'toolkeeper_app:check_image_add' asset_id %}"> チェックする</a>
+</div>
+{% endblock %}

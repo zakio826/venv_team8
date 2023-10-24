@@ -44,15 +44,15 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_bootstrap5',
-    'betterforms',
+    'django_cleanup.apps.CleanupConfig',
+
+    'cv2',
 
     'google',
     'google.api',
     'google.api_core',
     'google_auth_httplib2',
     'google_auth_oauthlib',
-
-    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
