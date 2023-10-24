@@ -822,7 +822,8 @@ def join_group(request):
 def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
     assets = Asset.objects.filter(group=group)
-    return render(request, 'group_detail.html', {'group': group, 'assets': assets})
+    members_count = group.groupmember_set.count()
+    return render(request, 'group_detail.html', {'group': group, 'assets': assets, 'members_count': members_count})
 
 @login_required
 def group_list(request):

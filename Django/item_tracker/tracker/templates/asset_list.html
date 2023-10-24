@@ -31,12 +31,10 @@
                     <a class="nav-link" href="{% url 'tracker:history_list' %}">履歴一覧</a>
                 </span>
             </button>
-            <!-- <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
-            <a class="btn btn-primary float-right" href="{% url 'tracker:history_list' %}">履歴一覧</a> -->
         </div>
         <form method="get">
             {{ group_filter_form.as_p }}
-            <button type="submit" class="btn btn-primary">絞り込み</button>
+            <button class="btn btn-3" type="submit">絞り込み</button>
         </form>
         <script>
           // フォームが「すべてのグループ」を選択中である場合、選択状態にする
