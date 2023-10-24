@@ -15,8 +15,24 @@
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
         <div class="d-flex justify-content-end mb-4">
-            <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
-            <a class="btn btn-primary float-right" href="{% url 'tracker:history_list' %}">履歴一覧</a>
+            <button class="learn-more">
+                <span class="circle" aria-hidden="true">
+                  <span class="icon arrow"></span>
+                </span>
+                <span class="button-text">
+                    <a class="nav-link" href="{% url 'tracker:asset_create' %}">新規作成</a>
+                </span>
+            </button>
+            <button class="learn-more">
+                <span class="circle" aria-hidden="true">
+                  <span class="icon arrow"></span>
+                </span>
+                <span class="button-text">
+                    <a class="nav-link" href="{% url 'tracker:history_list' %}">履歴一覧</a>
+                </span>
+            </button>
+            <!-- <a class="btn btn-primary float-right" href="{% url 'tracker:asset_create' %}">新規作成</a>
+            <a class="btn btn-primary float-right" href="{% url 'tracker:history_list' %}">履歴一覧</a> -->
         </div>
         <form method="get">
             {{ group_filter_form.as_p }}
@@ -52,7 +68,7 @@
                         </div>
                         <!-- Product actions-->
                         <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                            <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'tracker:asset_detail' image.asset.id %}">{{ image.asset }} - {{ image.group }}</a></div>
+                            <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'tracker:asset_detail' image.asset.id %}">詳細</a></div>
                         </div>
                     </div>
                 </div>
