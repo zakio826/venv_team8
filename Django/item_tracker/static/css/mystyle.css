@@ -12,6 +12,53 @@ footer {
     margin-top: 3rem;
     margin-bottom: -1rem;
 }
+
+.my-btn
+
+.my-btn-red {
+    color: rgb(230, 0, 70) !important;
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(230, 0, 70);
+}
+.my-btn-red:hover {
+    color: rgb(190, 0, 50) !important;
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(190, 0, 50);
+}
+.my-btn-red:active {
+    color: rgb(160, 0, 40) !important;
+    background-color: rgb(255, 255, 255);
+    border-color: rgb(160, 0, 40);
+}
+.my-btn .btn-check:checked + .my-btn-red {
+    color: rgb(255, 255, 255) !important;
+    background-color: rgb(230, 0, 70);
+    border-color: rgb(230, 0, 70);
+}
+.my-btn .btn-check:checked + .my-btn-red:hover {
+    color: rgb(255, 255, 255) !important;
+    background-color: rgb(190, 0, 50);
+    border-color: rgb(190, 0, 50);
+}
+.my-btn .btn-check:checked + .my-btn-red:active {
+    color: rgb(255, 255, 255) !important;
+    background-color: rgb(160, 0, 40);
+    border-color: rgb(160, 0, 40);
+}
+
+.my-btn-green {
+    background-color: rgb(0, 220, 60) !important;
+    border-color: rgb(0, 220, 60) !important;
+}
+.my-btn-green:hover {
+    background-color: rgb(0, 190, 55) !important;
+    border-color: rgb(0, 190, 55) !important;
+}
+.my-btn-green:active {
+    background-color: rgb(0, 150, 50) !important;
+    border-color: rgb(0, 150, 50) !important;
+}
+
 /* ホバーに合わせて伸びるボタン */
 @import url('https://fonts.googleapis.com/css?family=Mukta:700');
 * {
