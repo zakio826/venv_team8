@@ -1,7 +1,6 @@
 import os
 from typing import Any
 
-from betterforms.multiform import MultiModelForm
 from django.conf import settings
 
 from django import forms
