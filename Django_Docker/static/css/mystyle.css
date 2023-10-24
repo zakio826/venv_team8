@@ -15,35 +15,35 @@ footer {
 
 .my-btn
 
-.my-btn-red {
+.my-check-red {
     color: rgb(230, 0, 70) !important;
     background-color: rgb(255, 255, 255);
     border-color: rgb(230, 0, 70);
 }
-.my-btn-red:hover {
+.my-check-red:hover {
     color: rgb(190, 0, 50) !important;
     background-color: rgb(255, 255, 255);
     border-color: rgb(190, 0, 50);
 }
-.my-btn-red:active {
+.my-check-red:active {
     color: rgb(160, 0, 40) !important;
     background-color: rgb(255, 255, 255);
     border-color: rgb(160, 0, 40);
 }
-.my-btn .btn-check:checked + .my-btn-red {
+.my-btn-red, .my-btn .btn-check:checked + .my-check-red {
     color: rgb(255, 255, 255) !important;
-    background-color: rgb(230, 0, 70);
-    border-color: rgb(230, 0, 70);
+    background-color: rgb(230, 0, 70) !important;
+    border-color: rgb(230, 0, 70) !important;
 }
-.my-btn .btn-check:checked + .my-btn-red:hover {
+.my-btn-red:hover, .my-btn .btn-check:checked + .my-check-red:hover {
     color: rgb(255, 255, 255) !important;
-    background-color: rgb(190, 0, 50);
-    border-color: rgb(190, 0, 50);
+    background-color: rgb(190, 0, 50) !important;
+    border-color: rgb(190, 0, 50) !important;
 }
-.my-btn .btn-check:checked + .my-btn-red:active {
+.my-btn-red:active, .my-btn .btn-check:checked + .my-check-red:active {
     color: rgb(255, 255, 255) !important;
-    background-color: rgb(160, 0, 40);
-    border-color: rgb(160, 0, 40);
+    background-color: rgb(160, 0, 40) !important;
+    border-color: rgb(160, 0, 40) !important;
 }
 
 .my-btn-green {
