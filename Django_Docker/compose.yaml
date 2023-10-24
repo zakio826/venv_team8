@@ -10,7 +10,7 @@ services:
   web:
     build: .
     environment:
-      DJANGO_SETTINGS_MODULE: item_tracker.settings
+      DJANGO_SETTINGS_MODULE: toolkeeper.settings
       DB_NAME: toolkeeper_db
       DB_USER: team8
       DB_PASSWORD: toolkeeper

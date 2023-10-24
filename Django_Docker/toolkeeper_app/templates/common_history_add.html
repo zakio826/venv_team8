@@ -1,0 +1,33 @@
+<div id="check_list" style="overflow-y: scroll; height: 100%;">
+    {% for item in items reversed %}
+    <div class="row justify-content-around w-100 my-2">
+        <div class="col-auto col-md-6" style="display:flex; align-items: center; font-size: 16px;">{{ item.item_name }}</div>
+        <div class="col-auto">
+            {% if forloop.first %}
+                <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set" checked>
+            {% else %}
+                <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set">
+            {% endif %}
+            <label class="btn btn-outline-primary" for="set_{{ forloop.counter0 }}" onclick="auto_fit(); draw_box('{{ forloop.counter0 }}');">選択</label>
+        </div>
+    </div>
+            
+    <div class="row justify-content-around w-100">
+        <div class="col-12 col-xl-5 my-xl-2">
+            <input class="btn-check" type="checkbox" id="check_{{ forloop.counter0 }}" name="check" disabled>
+            <label class="btn btn-outline-primary w-100" for="check_{{ forloop.counter0 }}" onclick="check_box('{{ forloop.counter0 }}');">
+                <span name="checked">チェック</span>
+            </label>
+        </div>
+
+        <div class="col-12 col-xl-5 my-2 my-xl-2">
+            <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
+            <label class="btn btn-outline-primary w-100" for="box_{{ forloop.counter0 }}" onclick="del_box('{{ forloop.counter0 }}');">座標取消</label>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="all_check">
+    <button class="btn btn-primary w-100 mt-4" type="button">一括チェック</button>
+</div>

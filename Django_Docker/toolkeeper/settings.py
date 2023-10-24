@@ -28,9 +28,9 @@ STATICFILES_DIRS = (
 SECRET_KEY = 'django-insecure-mh0=-w7^c3y5+mm86zb%gsbodtvldp1_(g-gr8f@8-1qs1y_ju'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost']
 
 
 # Application definition
@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'tracker.apps.TrackerConfig',
+    'toolkeeper_app.apps.ToolkeeperAppConfig',
     'accounts.apps.AccountsConfig',
     
 	'django.contrib.sites',
@@ -153,6 +153,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 MESSAGE_TAGS = {
     messages.ERROR: 'alert alert-danger',
@@ -180,8 +184,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_REQUIRED = True
 
 # ログイン/ログアウト後の遷移先を設定
-LOGIN_REDIRECT_URL = 'tracker:asset_list'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'tracker:index'
+LOGIN_REDIRECT_URL = 'toolkeeper_app:asset_list'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'toolkeeper_app:index'
 
 # ログアウトリンクのクリック一発でログアウトする設定
 ACCOUNT_LOGOUT_ON_GET = True
@@ -203,7 +207,7 @@ ACCOUNT_FORMS = {
     # 'set_password': 'accounts.forms.CustomSetPasswordForm',
 }
 
-EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
+EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'toolkeeper_app:inquiry'
 
 MEDIA_URL = '/media/'
 
