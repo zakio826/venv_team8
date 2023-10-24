@@ -53,6 +53,7 @@
 
     <hr>
 
+    <h5 id="confirmation" style="text-align: center;"></h5>
     <div style="display: flex; width: 100%; justify-content: center;">
         <label class="w-auto my-4" for="finish">
             <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> すべてのアイテムをチェックしました。
@@ -61,7 +62,7 @@
     
     <form method="POST" enctype='multipart/form-data'>
         {% csrf_token %}
-        <button class="btn btn-primary w-100" type="submit" id="submit" disabled>終了する</button>
+        <button class="my-btn-green btn btn-primary w-100" type="submit" id="submit" disabled>終了する</button>
         <table class="table">
             {{ result_add_form.as_table }}
         </table>

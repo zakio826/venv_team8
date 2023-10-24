@@ -1,4 +1,5 @@
 /prototype
 /tmp
 /Django/item_tracker/media/*.json
+/Django_Docker/media/*.json
 /lib

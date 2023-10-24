@@ -13,9 +13,9 @@
     </div>
             
     <div class="row justify-content-around w-100">
-        <div class="col-12 my-2 my-xl-2">
+        <div class="my-btn col-12 my-2 my-xl-2">
             <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
-            <label class="btn btn-outline-primary w-100" for="box_{{ forloop.counter0 }}" onclick="del_box('{{ forloop.counter0 }}');">座標取消</label>
+            <label class="my-btn-red btn w-100" for="box_{{ forloop.counter0 }}" onclick="del_box('{{ forloop.counter0 }}');">座標取消</label>
         </div>
     </div>
     {% endfor %}

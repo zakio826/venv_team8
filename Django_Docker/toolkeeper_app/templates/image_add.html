@@ -18,9 +18,9 @@
         <img id="image" src="{{ image.url }}" style="display: none;"/>
     </div>
 
-    <div class="row w-50 mt-4 mb-5 mx-auto" id="control" style="display: none;">
+    <div class="my-btn row w-50 mt-4 mb-5 mx-auto" id="control" style="display: none;">
         <input class="btn-check" type="checkbox" id="check" disabled>
-        <label class="btn btn-outline-primary" for="check" onclick="del_box();">外枠をリセット</label>
+        <label class="my-btn-red btn" for="check" onclick="del_box();">外枠をリセット</label>
     </div>
     
     <div class="row">
@@ -31,7 +31,7 @@
                 {{ item_add_form.as_table }}
                 {{ result_add_form.as_table }}
             </table>
-            <button class="btn btn-primary w-100 mt-3" type="submit" id="submit" disabled>{{ submit }}</button>
+            <button class="my-btn-green btn btn-primary w-100 mt-3" type="submit" id="submit" disabled>{{ submit }}</button>
         </form>
     </div>
     
@@ -253,6 +253,7 @@
         document.getElementById(`id_box_x_max`).value = null;
         document.getElementById(`id_box_y_max`).value = null;
 
+        check.checked = false;
         check.disabled = true;
         submit.disabled = true;
 
