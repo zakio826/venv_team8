@@ -12,3 +12,33 @@ footer {
     margin-top: 3rem;
     margin-bottom: -1rem;
 }
+
+.my-btn-red {
+    color: crimson;
+}
+.my-btn-red:hover {
+    color: crimson;
+}
+.my-btn-red:active {
+    color: crimson;
+}
+
+.my-btn-orange {
+    color: orange;
+}
+.my-btn-orange:hover {
+    color: orange;
+}
+.my-btn-orange:active {
+    color: orange;
+}
+
+.my-btn-green {
+    color: limegreen;
+}
+.my-btn-green:hover {
+    color: limegreen;
+}
+.my-btn-green:active {
+    color: limegreen;
+}
