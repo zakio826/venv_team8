@@ -62,7 +62,7 @@
     
     <form method="POST" enctype='multipart/form-data'>
         {% csrf_token %}
-        <button class="btn btn-primary w-100" type="submit" id="submit" disabled>終了する</button>
+        <button class="my-btn-green btn btn-primary w-100" type="submit" id="submit" disabled>終了する</button>
         <table class="table">
             {{ result_add_form.as_table }}
         </table>

@@ -14,31 +14,31 @@ footer {
 }
 
 .my-btn-red {
-    color: crimson;
+    color: crimson !important;
 }
 .my-btn-red:hover {
-    color: crimson;
+    color: crimson !important;
 }
 .my-btn-red:active {
-    color: crimson;
+    color: crimson !important;
 }
 
 .my-btn-orange {
-    color: orange;
+    color: orange !important;
 }
 .my-btn-orange:hover {
-    color: orange;
+    color: orange !important;
 }
 .my-btn-orange:active {
-    color: orange;
+    color: orange !important;
 }
 
 .my-btn-green {
-    color: limegreen;
+    color: limegreen !important;
 }
 .my-btn-green:hover {
-    color: limegreen;
+    color: limegreen !important;
 }
 .my-btn-green:active {
-    color: limegreen;
+    color: limegreen !important;
 }
