@@ -774,7 +774,7 @@ def create_group(request):
 
             GroupMember.objects.create(user=request.user, group=group)
 
-            return redirect('tracker:index')
+            return redirect('tracker:group_list')
 
     else:
         form = GroupForm()
@@ -811,7 +811,7 @@ def join_group(request):
                         messages.error(request, '既にこのグループに参加しています.')
                     else:
                         GroupMember.objects.create(user=request.user, group=group)
-                        return redirect('tracker:mypage')
+                        return redirect('tracker:group_list')
 
     else:
         form = JoinGroupForm()
@@ -821,12 +821,13 @@ def join_group(request):
 
 def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
-    return render(request, 'group_detail.html', {'group': group})
+    assets = Asset.objects.filter(group=group)
+    return render(request, 'group_detail.html', {'group': group, 'assets': assets})
 
 @login_required
-def mypage(request):
+def group_list(request):
     user_groups = GroupMember.objects.filter(user=request.user)
-    return render(request, 'mypage.html', {'user_groups': user_groups})
+    return render(request, 'group_list.html', {'user_groups': user_groups})
 
 
 

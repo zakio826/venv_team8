@@ -20,7 +20,7 @@ urlpatterns = [
 
     path('create_group/', views.create_group, name='create_group'),
     path('join_group/', views.join_group, name='join_group'),
-    path('mypage/', views.mypage, name='mypage'),
+    path('group_list/', views.group_list, name='group_list'),
     path('group_detail/<int:group_id>/', views.group_detail, name='group_detail'),
 
     path('history/', views.HistoryListView.as_view(), name='history_list'),

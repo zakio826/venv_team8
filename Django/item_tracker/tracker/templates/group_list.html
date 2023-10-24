@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+<!-- Page content-->
+<section class="py-5">
+    <div class="container px-5">
+        <!-- Contact form-->
+        <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-5">
+            <div class="text-center mb-5">
+                <h1 class="fw-bolder">所属中のグループ一覧</h1>
+                <hr>
+            </div>
+            <div class="row gx-5 justify-content-center">
+                <div class="col-lg-8 col-xl-6">
+                    <ul>
+                        {% for user_group in user_groups %}
+                        <div class="col mb-3">
+                            <div class="card h-10">
+                                <div class="card-body text-center">
+                                    <a class="fw-bolder nav-link" href="{% url 'tracker:group_detail' user_group.group.id %}">
+                                        {{ user_group.group.group_name }}（ホスト：{% if user_group.group.user == request.user %}あなた）{% else %}{{ user_group.group.user.username }}）{% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="d-grid">
+            <button class="btn btn-primary btn-lg">
+                <a class="nav-link" href="{% url 'tracker:create_group' %}">グループ登録</a>
+            </button>
+        </div>
+    </div>
+{% endblock %}
