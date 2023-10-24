@@ -27,6 +27,8 @@
     const preview = document.getElementById("preview");
     const all_check = document.getElementById("all_check");
 
+    const confirmation = document.getElementById("confirmation");
+
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
     let startX, startY, width, height;
@@ -45,9 +47,12 @@
 
 
     // バウンディングボックスの座標を初期化
+    let item_name = [];
     let x_min, x_max, y_min, y_max;
     let box_li = [];
     for (let i = 0; i < set.length; i++) {
+        item_name[i] = document.getElementById(`item_${i}_name`).innerText;
+
         if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
             box_li[i] = [
                 Number(document.getElementById(`item_${i+1}_x_min`).innerText) - box_x_min,
@@ -74,8 +79,9 @@
             document.getElementById(`id_form-${i}-result_class`).value = 0;
         }
     }
+    console.log(item_name);
 
-    
+
     function auto_set_box(i) {
         if (!box_li[i][4]) return;
         let w = x_fix / canvas.width;
@@ -89,6 +95,7 @@
         box_in[i].disabled = false;
         box_in[i].checked = true;
     }
+
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
@@ -126,8 +133,28 @@
         
     };
 
+
+    function set_confirmation() {
+        if (isDrawing) return;
+        confirmation.innerHTML = null;
+        for (let i = 0; i < set.length; i++) {
+            if (checked[i].innerText != "チェック済み") {
+                if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML}、`;
+                var tag = document.createElement('span');
+                if (box_li[i][4] > threshold_conf) tag.setAttribute('style', 'color: blue;');
+                else if (box_li[i][4] > 0) tag.setAttribute('style', 'color: orange;');
+                else tag.setAttribute('style', 'color: red;');
+                tag.innerText = `${item_name[i]}`;
+                confirmation.appendChild(tag);
+            }
+        }
+        if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML} がチェックされていません。`;
+        else confirmation.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> がチェック済みです。';
+    };
+
+    
     // 選択済みのバウンディングボックスを描画
-    function draw_box(order=-1) {
+    function draw_box(order) {
 
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -158,6 +185,7 @@
                 box_li[i][3] - box_li[i][1],
             );
         }
+        set_confirmation();
     };
 
     // 画像の読み込みが完了したらキャンバスに描画
@@ -187,7 +215,7 @@
                 box_li[i][3] *= y_fit;
             }
         }
-        draw_box();
+        draw_box(-1);
     };
 
 
@@ -209,7 +237,7 @@
         width = x - startX;
         height = y - startY;
 
-        draw_box(); // バウンディングボックスの描画
+        draw_box(-1); // バウンディングボックスの描画
 
         // 矩形を青い線で描画
         ctx.strokeStyle = "blue";
@@ -220,10 +248,9 @@
     function submit_check(fin) {
         if (fin) {
             submit.disabled = false;
-            draw_box(order=-2);
+            draw_box(-2);
         } else {
             submit.disabled = true;
-            draw_box();
         }
     }
 
@@ -269,19 +296,11 @@
                 box_in[i].checked = true;
                 checked[i].innerText = "チェック済み";
 
-                draw_box(order=i);
+                draw_box(i);
             }
             console.log(box_li[i]);
         }
         finish_check();
-
-        
-
-        box.innerHTML
-            = (x_min).toFixed() + "px, "
-            + (y_min).toFixed() + "px, "
-            + (x_max).toFixed() + "px, "
-            + (y_max).toFixed() + "px";
     });
 
     // マウスアウトイベントのリスナーを追加
@@ -294,7 +313,7 @@
             if (i == order) set[i].checked = true;
             else set[i].checked = false;
         }
-        draw_box(order=order); // バウンディングボックスの描画
+        draw_box(order); // バウンディングボックスの描画
     };
 
 
@@ -347,6 +366,7 @@
                 checked[i].innerText = "チェック済み";
             }
         }
+        draw_box(-2);
         finish_check();
     };
 

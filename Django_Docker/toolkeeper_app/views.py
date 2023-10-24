@@ -409,6 +409,7 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
             "box_y_max": result.box_y_max,
             "formset": self.formset,
         }
+        print(settings.MEDIA_ROOT)
 
         # コンテキスト情報を更新
         context.update(extra)

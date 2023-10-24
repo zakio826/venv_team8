@@ -52,7 +52,7 @@ class LoginView(AllauthLoginView):
                 if user_belongs_to_groups:
                     return redirect(settings.LOGIN_REDIRECT_URL) 
                 else:
-                    return redirect('toolkeeper_app:create_group')
+                    return redirect(settings.LOGIN_REDIRECT_URL)
         return response
 
     def generate_unique_group_id(self):
