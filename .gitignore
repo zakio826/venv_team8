@@ -1,7 +1,6 @@
 /prototype
 /tmp
 /Django/item_tracker/media
-/Django_Docker
 /Django_Docker/.env
 /Django_Docker/*.json
 /Django_Docker/*.bat
