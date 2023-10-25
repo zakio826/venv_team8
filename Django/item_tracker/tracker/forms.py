@@ -157,11 +157,18 @@ class GroupForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['private'].initial = False
         self.fields['private'].widget = forms.HiddenInput()
+        self.fields['group_name'].widget.attrs.update({'placeholder': 'グループ名を入力してください'})
         if user:
             self.fields['user'].initial = user
+        
 
 class JoinGroupForm(forms.Form):
-    group_id = forms.CharField(label='グループID', max_length=12, required=True)
+    group_id = forms.CharField(
+        label='グループID',
+        max_length=12,
+        required=True,
+        widget=forms.TextInput(attrs={'placeholder': 'グループIDを入力してください'})
+    )
 
 class GroupJoinForm(forms.ModelForm):
 
