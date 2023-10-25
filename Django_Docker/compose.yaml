@@ -8,16 +8,14 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
   web:
-    build: .
+    image: fki2266287/tool-keeper-web:latest
     environment:
-      DJANGO_SETTINGS_MODULE: toolkeeper.settings_dev
       SECRET_KEY: django-insecure-mh0=-w7^c3y5+mm86zb%gsbodtvldp1_(g-gr8f@8-1qs1y_ju
       ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
       SERVICE_ACCOUNT_KEY_NAME: ${SERVICE_ACCOUNT_KEY_NAME}
       GOOGLE_DRIVE_FOLDER_ID: ${GOOGLE_DRIVE_FOLDER_ID}
     depends_on:
