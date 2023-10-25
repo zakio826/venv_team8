@@ -35,9 +35,6 @@ from google.oauth2.credentials import Credentials
 
 from httplib2 import Http
 from oauth2client.service_account import ServiceAccountCredentials
-# from oauth2client import file, client, tools
-# from pydrive.auth import GoogleAuth
-# from pydrive.drive import GoogleDrive
 from googleapiclient.http import MediaIoBaseDownload
 import shutil
 
@@ -159,7 +156,7 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         
         # Google Driveからファイルをダウンロードするためのセットアップ
         if self.asset.drive_folder_id:
-            service_account_key_path = os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME)
+            service_account_key_path = settings.SERVICE_ACCOUNT_KEY_ROOT
             creds = service_account.Credentials.from_service_account_file(
                 service_account_key_path,
                 scopes=settings.GOOGLE_DRIVE_API_SCOPES,
@@ -606,7 +603,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
 
             creds = ServiceAccountCredentials.from_json_keyfile_name(
-                os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+                # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+                settings.SERVICE_ACCOUNT_KEY_ROOT,
                 settings.GOOGLE_DRIVE_API_SCOPES
             )
             drive_service = build('drive', 'v3', credentials=creds)
@@ -1133,7 +1131,8 @@ class TestPageView(LoginRequiredMixin, generic.CreateView):
             for file_path in [history.image.movie.path, history.coordinate.path]: # Google Driveにアップロードされるファイルのパス
             
                 creds = ServiceAccountCredentials.from_json_keyfile_name(
-                    os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
+                    # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME), # サービスアカウントキーのJSONファイルへのパス
+                    settings.SERVICE_ACCOUNT_KEY_ROOT, # サービスアカウントキーのJSONファイルへのパス
                     settings.GOOGLE_DRIVE_API_SCOPES, # Google Drive APIのスコープ
                 )
                 drive_service = build('drive', 'v3', credentials=creds)

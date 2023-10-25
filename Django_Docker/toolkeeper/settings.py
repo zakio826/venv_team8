@@ -26,6 +26,7 @@ ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS')]
 # STATIC_ROOT = '/code/static'
 MEDIA_ROOT = '/code/media'
 
+SERVICE_ACCOUNT_KEY_ROOT = f'/code/{SERVICE_ACCOUNT_KEY_NAME}'
 
 # ロギング設定
 LOGGING = {

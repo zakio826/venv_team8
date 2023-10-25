@@ -69,3 +69,5 @@ LOGGING = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+SERVICE_ACCOUNT_KEY_ROOT = os.path.join(BASE_DIR, SERVICE_ACCOUNT_KEY_NAME)
