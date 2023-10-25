@@ -3,4 +3,5 @@
 /Django/item_tracker/media
 /Django_Docker/media
 /Django_Docker/.env
+/Django_Docker/*.json
 /lib
