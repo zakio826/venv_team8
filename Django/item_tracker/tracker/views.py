@@ -818,12 +818,29 @@ def join_group(request):
 
     return render(request, 'join_group.html', {'form': form})
 
-
+@login_required
 def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
-    assets = Asset.objects.filter(group=group)
     members_count = group.groupmember_set.count()
-    return render(request, 'group_detail.html', {'group': group, 'assets': assets, 'members_count': members_count})
+
+    if request.method == 'POST' and 'delete_group' in request.POST:
+        # 削除確認のための URL にリダイレクト
+        return redirect('tracker:group_delete', group_id=group_id)
+
+    return render(request, 'group_detail.html', {'group': group, 'members_count': members_count})
+
+@login_required
+def group_delete(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+
+    if request.method == 'POST' and 'confirm_delete' in request.POST:
+        group.delete()
+        messages.success(request, 'グループが削除されました。')
+        return redirect('tracker:group_list')
+    elif request.method == 'POST' and 'cancel_delete' in request.POST:
+        return redirect('tracker:group_detail', group_id=group_id)
+
+    return render(request, 'group_delete.html', {'group': group})
 
 @login_required
 def group_list(request):

@@ -45,6 +45,12 @@
             </div>
         </div>
         <div class="d-grid">
+            {% if group.user == request.user %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-lg btn-danger" name="delete_group">グループ削除</button>
+                </form>
+            {% endif %}
             <button class="btn btn-lg btn-2">
                 <a class="nav-link" href="{% url 'tracker:group_list' %}">グループ一覧に戻る</a>
             </button>
