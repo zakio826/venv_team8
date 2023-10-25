@@ -492,29 +492,36 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 @login_required
 def create_group(request):
     if request.method == 'POST':
-        Group.private=False
         form = GroupForm(request.POST)
         if form.is_valid():
             group_name = form.cleaned_data['group_name']
             
-            # 同じグループ名のレコードが存在しないかを確認
-            group_exists = Group.objects.filter(user=request.user, group_name=group_name).exists()
+            # グループIDの自動生成と重複チェック
+            group_id = generate_unique_group_id()
             
-            if group_exists:
-                messages.error(request, 'あなたは同じ名前のグループをすでに作成しています。別の名前を選択してください。')
-            else:
-                group = form.save(commit=False)
-                group.user = request.user  # ユーザーを設定
-                group.save()
+            group = form.save(commit=False)
+            group.user = request.user
+            group.group_id = group_id
+            group.save()
 
-                # グループを作成したユーザーをグループメンバーとして追加
-                GroupMember.objects.create(user=request.user, group=group)
+            GroupMember.objects.create(user=request.user, group=group)
 
-                return redirect('tracker:mypage')  # グループ一覧ページにリダイレクトする
+            return redirect('tracker:index')
+
     else:
         form = GroupForm()
 
     return render(request, 'create_group.html', {'form': form})
+
+import secrets
+import string
+
+def generate_unique_group_id():
+    while True:
+        group_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+        if not Group.objects.filter(group_id=group_id).exists():
+            return group_id
+
 
 
 @login_required
@@ -522,19 +529,28 @@ def join_group(request):
     if request.method == 'POST':
         form = JoinGroupForm(request.POST)
         if form.is_valid():
-            group = form.cleaned_data['group']
-            user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
-            
-            if user_already_in_group:
-                messages.error(request, '既にこのグループに参加しています。')
+            group_id = form.cleaned_data['group_id']
+
+            try:
+                group = Group.objects.get(group_id=group_id)
+            except Group.DoesNotExist:
+                messages.error(request, '提供されたグループIDが存在しません。正しいグループIDを入力してください.')
             else:
-                # グループメンバーとしてユーザーを追加
-                GroupMember.objects.create(user=request.user, group=group)
-                return redirect('tracker:mypage')  # グループ一覧ページにリダイレクトする
+                if group.private:
+                    messages.error(request, 'このグループは個人利用グループであり、参加できません.')
+                else:
+                    user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
+                    if user_already_in_group:
+                        messages.error(request, '既にこのグループに参加しています.')
+                    else:
+                        GroupMember.objects.create(user=request.user, group=group)
+                        return redirect('tracker:mypage')
+
     else:
         form = JoinGroupForm()
 
     return render(request, 'join_group.html', {'form': form})
+
 
 
 def group_detail(request, group_id):

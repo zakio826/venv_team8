@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load django_bootstrap5 %}
+{% load static %}
+
+{% block title %}サインアップ | ないもの検知{% endblock %}
+
+{% block active_signup %}active{% endblock %}
+
+{% block contents %}
+<section class="py-5">
+    <div class="container px-5">
+        <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-5">
+            <div class="text-center mb-5">
+                <div class="bg-gradient text-white rounded-3 mb-3"><img src="{% static 'assets/login.png' %}" alt="" width="50" height="50"></div>
+                <h1>サインアップ</h1>
+            </div>
+            <div class="row gx-5 justify-content-center">
+                <div class="col-lg-8 col-xl-6">
+                    <form method="post" action="{% url 'account_signup' %}">
+                        {% csrf_token %}
+
+
+                        {{ form.non_field_errors }}
+
+                        {% for field in form %}
+                        <div class="form-floating mb-3">
+                            {% if field.name == 'password1' or field.name == 'password2' %}
+                            <input type="password" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" autocomplete="new-password" required id="{{ field.id_for_label }}">
+                            {% elif field.name == 'email' %}
+                            <input type="email" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" autocomplete="{{ field.label }}" required id="{{ field.id_for_label }}">
+                            {% else %}
+                            <input type="text" name="{{ field.name }}" class="form-control" placeholder="{{ field.label }}" autocomplete="{{ field.label }}" required id="{{ field.id_for_label }}">
+                            {% endif %}
+                            {{ field.errors }}
+                            <label for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+
+
+                        <!--<div class="mb-4 col-4">
+                            {% bootstrap_form form %}aaa
+                        </div>-->
+                        
+                        {% if redirect_field_value %}
+                            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                        {% endif %}
+                        
+                        <div class="d-grid mb-3">
+                            <button class="btn btn-primary btn-lg" id="submitButton" type="submit">登録</button>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

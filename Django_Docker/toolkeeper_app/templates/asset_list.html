@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}管理項目一覧 | toolkeeper{% endblock %}
+
+{% block active_asset_list %}active{% endblock %}
+
+
+{% block contents %}
+<!-- Section-->
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-3">
+        <div class="d-flex justify-content-end mb-4">
+            <button class="learn-more">
+                <span class="circle" aria-hidden="true">
+                  <span class="icon arrow"></span>
+                </span>
+                <span class="button-text">
+                    <a class="nav-link" href="{% url 'toolkeeper_app:asset_create' %}">新規作成</a>
+                </span>
+            </button>
+            <button class="learn-more">
+                <span class="circle" aria-hidden="true">
+                  <span class="icon arrow"></span>
+                </span>
+                <span class="button-text">
+                    <a class="nav-link" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧</a>
+                </span>
+            </button>
+        </div>
+        <form method="get">
+            {{ group_filter_form.as_p }}
+            <button class="btn btn-3" type="submit">絞り込み</button>
+        </form>
+        <script>
+          // フォームが「すべてのグループ」を選択中である場合、選択状態にする
+          var groupFilterForm = document.querySelector('#id_group');
+          if (groupFilterForm.value === 'all') {
+            groupFilterForm.selectedIndex = 0;
+          }
+        </script>
+        <hr>
+
+        {% if image_list %}
+            <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">管理項目をクリックすると詳細へ移ります</p></div>
+        {% endif %}
+        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
+            {% for image in page_obj %}
+                <div class="col mb-5">
+                    <div class="card h-100">
+                        <a class="btn" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">
+                            <!--badge-->
+                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">box</div>
+                            <!-- Product image-->
+                            {% if image.image %}
+                                <img class="card-img-top" src="{{ image.image.url }}" alt="..." />
+                            {% endif %}
+                            <!-- Product details-->
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>
+                                    <!-- Product reviews-->
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <p>管理項目がありません</p>
+            {% endfor %}
+        </div>
+        <!--<p>{{ image_list }}</p>-->
+
+        <!-- ページネーションリンクの表示 -->
+        {% if page_obj.paginator.count > 0 %}
+            <div class="d-flex justify-content-center mt-4">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1&group={{ request.GET.group }}">最初</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}">前へ</a></li>
+                    {% endif %}
+                    <!-- ページ番号のセレクトボックス -->
+                    <li class="page-item">
+                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group=' + '{{ request.GET.group }}';">
+                            {% for page_num in page_obj.paginator.page_range %}
+                                <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}">次へ</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}">最後</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

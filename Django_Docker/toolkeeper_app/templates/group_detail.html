@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+
+<!-- Page content-->
+<section class="py-5">
+    <div class="container px-5">
+        <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-3">
+            <div class="row">
+                <div class="d-grid mb-5">
+                    <h2><u>{{ group.group_name }}（ホスト: {% if group.user == request.user %} あなた） {% else %} {{ group.user.username }}） {% endif %}</u></h2>
+                    <p><strong>グループID:{{ group.group_id }}</strong></p>
+                </div>
+                <div class="col-6">
+                    <h5 class="mb-2">メンバー[{{ members_count }}名]</h5>
+                    <hr>
+                    <div class="scrollable-detail">
+                        <ul>
+                            {% for member in group.groupmember_set.all %}
+                                <li><h5>
+                                    {% if member.user == group.user and member.user == request.user %}<u><font color="#99CC33">{{ member.user.username }}</font>（ホスト）</u>
+                                    {% elif member.user == group.user %}<u>{{ member.user.username }}（ホスト）</u>
+                                    {% elif member.user == request.user %}<font color="#99CC33">{{ member.user.username }}</font>
+                                    {% else %} {{ member.user.username }} {% endif %}
+                                </h5></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="col">
+                    <h5 class="mb-2">管理項目一覧</h5>
+                    <hr>
+                    <div class="scrollable-detail">
+                        <ul>
+                            {% if assets %}
+                                {% for asset in assets %}
+                                    <li><h5>{{ asset.asset_name }}</h5></li>
+                                {% endfor %}
+                            {% else %}
+                                <h5>このグループには管理項目がありません。</h5>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-grid">
+            {% if group.user == request.user %}
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-lg btn-danger" name="delete_group">グループ削除</button>
+                </form>
+            {% endif %}
+            <button class="btn btn-lg btn-2">
+                <a class="nav-link" href="{% url 'toolkeeper_app:group_list' %}">グループ一覧に戻る</a>
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
