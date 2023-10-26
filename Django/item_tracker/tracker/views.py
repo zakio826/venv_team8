@@ -695,7 +695,13 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # history オブジェクトを正しく取得
+        history = context['history']
+        # 関連する image オブジェクトを取得
+        image = history.image
+        context['image'] = image  # テンプレートに image を追加
         return context
+
 
 
 
