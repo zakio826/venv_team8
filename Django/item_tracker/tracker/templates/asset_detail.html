@@ -18,39 +18,32 @@
     
     <hr>
     
-    <div class="row">
-        <div class="col-3 col-lg-2">
+    <div class="row mb-3">
+        <div class="col-9">
             <strong>写真</strong>
-        </div>
-        <div class="col-9 col-lg-10">
             {% for image in image_list %}
                 {% if image.image %}
                     <img src="{{ image.image.url }}" width="100%" height="auto"/>
                 {% endif %}
             {% endfor %}
         </div>
-    </div>
-
-    <hr>
-    
-    <div class="row">
-        <div class="col-6 row">
-            <div class="col-6 col-lg-4 mb-2">
-                <strong>アイテム一覧</strong>
-            </div>
-            <div class="col-auto">
-                {% for item in item_list %}
-                    <span class="row mb-2 ms-1">{{ forloop.counter }}. {{ item.item_name }}</span>
-                {% endfor %}
-                    <!-- <span class="row mb-2 ms-1">5. なんとかこうとか</span>
-                    <span class="row mb-2 ms-1">6. なんとかこうとか</span>
-                    <span class="row mb-2 ms-1">7. なんとかこうとか</span>
-                    <span class="row mb-2 ms-1">8. なんとかこうとか</span>
-                    <span class="row mb-2 ms-1">9. なんとかこうとか</span> -->
+        <div class="col">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <strong>アイテム一覧</strong>
+                </div>
+                <div class="col-12 mb-4">
+                    <div class="scrollasset">
+                        {% for item in item_list %}
+                            <span class="row mb-2 ms-1">{{ forloop.counter }}. {{ item.item_name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a class="btn btn-3" href="{% url 'tracker:check_image_add' asset_id %}"> チェックする</a>
+                <!-- <a class="btn btn-primary" href="{% url 'tracker:test_page' 4 %}"> テストページ</a> -->
             </div>
         </div>
     </div>
-    
 
     <!-- <hr>
 
@@ -72,7 +65,5 @@
             {{ object.updated_at }}
         </div>
     </div> -->
-    <a class="btn btn-primary" href="{% url 'tracker:test_page' 4 %}"> テストページ</a>
-    <a class="btn btn-primary" href="{% url 'tracker:check_image_add' asset_id %}"> チェックする</a>
 </div>
 {% endblock %}

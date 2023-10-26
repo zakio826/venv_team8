@@ -60,6 +60,7 @@ class GroupFilterForm(forms.Form):
         queryset=Group.objects.none(),  # 最初は空のクエリセット
         empty_label='すべてのグループ',
         required=False,
+        label='グループ'
     )
 
     def __init__(self, user, *args, **kwargs):
@@ -73,7 +74,7 @@ class SortForm(forms.Form):
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(choices=choices, required=False)
+    sort_order = forms.ChoiceField(choices=choices, required=False, label='ソート順')
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
@@ -157,7 +158,7 @@ class GroupForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['private'].initial = False
         self.fields['private'].widget = forms.HiddenInput()
-        self.fields['group_name'].widget.attrs.update({'placeholder': 'グループ名を入力してください'})
+        self.fields['group_name'].widget.attrs.update({'placeholder': 'グループ名を入力'})
         if user:
             self.fields['user'].initial = user
         
@@ -167,7 +168,7 @@ class JoinGroupForm(forms.Form):
         label='グループID',
         max_length=12,
         required=True,
-        widget=forms.TextInput(attrs={'placeholder': 'グループIDを入力してください'})
+        widget=forms.TextInput(attrs={'placeholder': 'グループIDを入力'})
     )
 
 class GroupJoinForm(forms.ModelForm):

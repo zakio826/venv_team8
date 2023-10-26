@@ -158,6 +158,16 @@ button:hover .button-text {
     overflow-y: auto;
 }
 
+.scroll {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.scrollasset {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
 
 @import url(https://fonts.googleapis.com/css?family=Roboto:400,100,900);
 

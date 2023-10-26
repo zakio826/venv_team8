@@ -695,7 +695,6 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
         return context
 
 
@@ -823,11 +822,13 @@ def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
     members_count = group.groupmember_set.count()
 
+    # 管理項目を取得
+    assets = Asset.objects.filter(group=group)
+
     if request.method == 'POST' and 'delete_group' in request.POST:
-        # 削除確認のための URL にリダイレクト
         return redirect('tracker:group_delete', group_id=group_id)
 
-    return render(request, 'group_detail.html', {'group': group, 'members_count': members_count})
+    return render(request, 'group_detail.html', {'group': group, 'members_count': members_count, 'assets': assets})
 
 @login_required
 def group_delete(request, group_id):
