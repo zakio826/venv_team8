@@ -6,4 +6,4 @@ RUN apt-get update && apt-get install -y libgl1-mesa-glx
 RUN pip install --upgrade pip
 RUN pip install --upgrade setuptools
 RUN pip install -r requirements.txt
-CMD ["python", "manage.py", "runserver", "$ALLOWED_HOSTS:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8088"]
