@@ -700,6 +700,7 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
         # 関連する image オブジェクトを取得
         image = history.image
         context['image'] = image  # テンプレートに image を追加
+        context.update(extra)
         return context
 
 
