@@ -26,7 +26,7 @@
             <!-- Navigation-->
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div class="container px-5">
-                    <a class="navbar-brand" href="{% url 'tracker:index' %}">ないもの検知</a>
+                    <a class="navbar-brand" href="{% url 'tracker:index' %}">toolkeeper</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -36,7 +36,11 @@
                             
                             {% if user.is_authenticated %}
                                 <li class="nav-item"><a class="nav-link {% block active_asset_list %}{% endblock %}" href="{% url 'tracker:asset_list' %}">管理項目一覧</a></li>
+<<<<<<< HEAD
                                 <li class="nav-item ms-lg-3"><a class="nav-link" href="{% url 'tracker:mypage' %}">グループ一覧</a></li>
+=======
+                                <li class="nav-item ms-lg-3"><a class="nav-link" href="{% url 'tracker:group_list' %}">グループ一覧</a></li>
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
                                 <li class="nav-item ms-lg-3"><a class="nav-link" href="{% url 'account_logout' %}">ログアウト</a></li>
                             {% else %}
                                 <li class="nav-item ms-lg-3"><a class="nav-link {% block active_signup %}{% endblock %}" href="{% url 'account_signup' %}">サインアップ</a></li>

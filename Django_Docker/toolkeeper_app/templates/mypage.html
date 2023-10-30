@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+<h2>所属しているグループ一覧</h2>
+<ul>
+    {% for user_group in user_groups %}
+    <li>
+        <a href="{% url 'toolkeeper_app:group_detail' user_group.group.id %}">{{ user_group.group.group_name }}</a>
+        （ホスト：{% if user_group.group.user == request.user %}あなた）{% else %}{{ user_group.group.user.username }}）{% endif %}
+
+    </li>
+    {% endfor %}
+    
+</ul>
+<a class="nav-link" href="{% url 'toolkeeper_app:create_group' %}">グループ登録</a>
+{% endblock %}

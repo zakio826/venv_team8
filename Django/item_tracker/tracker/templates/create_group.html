@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block contents %}
+<<<<<<< HEAD
 <h2>グループ作成</h2>
 <br>
 <form method="post">
@@ -10,4 +11,32 @@
     <button type="submit">作成</button>
     <button><a href="{% url 'tracker:join_group' %}">グループへ参加する</a></button>
 </form>
+=======
+<!-- Page content-->
+<section class="py-5">
+    <div class="container px-5">
+        <!-- Contact form-->
+        <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-3">
+            <div class="text-center mb-5">
+                <h2>グループ作成</h2>
+                <hr>
+            </div>
+            <div class="row gx-5 justify-content-center">
+                <div class="col-lg-8 col-xl-6">
+                    <form method="post">
+                        {% csrf_token %}
+                        <h5 class="mb-4">ホストユーザー：{{ user.username }}</h5>
+                        <h5 class="mb-4">{{ form.as_p }}</h5>
+                        <button class="btn btn-3" type="submit">作成</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="d-grid">
+            <button class="btn btn-lg btn-2">
+                <a class="nav-link" href="{% url 'tracker:join_group' %}">グループへ参加</a>
+            </button>
+        </div>
+    </div>
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 {% endblock %}

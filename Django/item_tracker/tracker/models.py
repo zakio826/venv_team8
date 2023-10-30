@@ -18,7 +18,7 @@ class Group(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='ホストユーザー', on_delete=models.PROTECT)
     group_name = models.CharField(verbose_name='グループ名', max_length=40, blank=False, null=True)
     private = models.BooleanField(verbose_name='個人利用', default=True)
-    
+    group_id = models.CharField(verbose_name='グループID', max_length=12, unique=True)
     class Meta:
         verbose_name_plural = 'Group'
     
@@ -91,7 +91,10 @@ class Item(models.Model):
 class Image(models.Model):
     """画像モデル"""
     
+<<<<<<< HEAD
     # history = models.ForeignKey(History, verbose_name='履歴', on_delete=models.CASCADE)
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.DO_NOTHING)
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, verbose_name='撮影ユーザー', null=True, on_delete=models.SET_NULL)
@@ -114,7 +117,10 @@ class Image(models.Model):
         super().save(*args, **kwargs)
 
         # 先頭の1フレームを取得してImageFieldに保存
+<<<<<<< HEAD
         # cap = cv2.VideoCapture(os.path.join(settings.MEDIA_ROOT, str(self.movie)))
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         output_path = os.path.join(settings.MEDIA_ROOT, str(self.movie))
         cap = cv2.VideoCapture(output_path)
 
@@ -127,7 +133,10 @@ class Image(models.Model):
             image_path = os.path.splitext(output_path)[0] + '.jpg'
             cv2.imwrite(image_path, frame)
 
+<<<<<<< HEAD
             # self.image.path = image_path
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
             self.image.name = os.path.relpath(image_path, settings.MEDIA_ROOT)
         
         # 最終的に保存
@@ -148,9 +157,13 @@ class History(models.Model):
     user = models.ForeignKey(CustomUser, verbose_name='確認ユーザー', null=True, on_delete=models.SET_NULL)
     image = models.ForeignKey(Image, verbose_name='写真', on_delete=models.CASCADE)
     
+<<<<<<< HEAD
     coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,
         # validators=[FileExtensionValidator(['pdf', ])],
     )
+=======
+    coordinate = models.FileField(upload_to='coordinate/', verbose_name='座標ファイル', blank=True, null=True,)
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     checked_at = models.DateTimeField(verbose_name='確認日時', default=datetime.now)
     updated_at = models.DateTimeField(verbose_name='更新日時', blank=True, null=True)
@@ -184,7 +197,11 @@ class Result(models.Model):
     item = models.ForeignKey(Item, verbose_name='アイテム', on_delete=models.CASCADE)
 
     result_class = models.IntegerField(verbose_name='詳細結果', validators=[MinValueValidator(0), MaxValueValidator(9)])
+<<<<<<< HEAD
     # result_class = {0: '無し', 1: '手動確認', 9: '外枠'}
+=======
+    # result_class = {0: '無し', 1: '手動確認', 2: '学習済みモデル確認', 9: '外枠'}
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     box_x_min = models.FloatField(verbose_name='バウンディングボックス (x_min)', blank=True, null=True)
     box_y_min = models.FloatField(verbose_name='バウンディングボックス (y_min)', blank=True, null=True)
     box_x_max = models.FloatField(verbose_name='バウンディングボックス (x_max)', blank=True, null=True)

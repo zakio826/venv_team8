@@ -1,0 +1,106 @@
+body, #wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+footer {
+    margin-top: auto;
+}
+
+.my-div-style {
+    margin-top: 3rem;
+    margin-bottom: -1rem;
+}
+
+.my-btn {
+    transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+}
+
+.my-check-red {
+    color: rgba(230, 0, 70, 1) !important;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(230, 0, 70, 1);
+    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+}
+.my-check-red:hover {
+    color: rgba(230, 0, 70, 0.6) !important;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(230, 0, 70, 0.6);
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+.my-check-red:active {
+    color: rgba(230, 0, 70, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(230, 0, 70, 0.4);
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+.my-btn-red, .my-btn .btn-check:checked + .my-check-red {
+    color: rgba(255, 255, 255, 0) !important;
+    background-color: rgba(230, 0, 70, 1) !important;
+    border-color: rgba(230, 0, 70, 1) !important;
+    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+}
+.my-btn-red:hover, .my-btn .btn-check:checked + .my-check-red:hover {
+    color: rgba(255, 255, 255, 0) !important;
+    background-color: rgba(230, 0, 70, 0.6) !important;
+    border-color: rgba(230, 0, 70, 0.6) !important;
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+.my-btn-red:active, .my-btn .btn-check:checked + .my-check-red:active {
+    color: rgba(255, 255, 255, 0) !important;
+    background-color: rgba(230, 0, 70, 0.4) !important;
+    border-color: rgba(230, 0, 70, 0.4) !important;
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+
+.my-check-blue {
+    color: rgba(230, 0, 70, 1) !important;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(230, 0, 70, 1);
+    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+}
+.my-check-blue:hover {
+    color: rgba(230, 0, 70, 0.6) !important;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(230, 0, 70, 0.6);
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+.my-check-blue:active {
+    color: rgba(230, 0, 70, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0);
+    border-color: rgba(230, 0, 70, 0.4);
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+.my-btn-blue, .my-btn .btn-check:checked + .my-check-blue {
+    color: rgba(255, 255, 255, 0) !important;
+    background-color: rgba(230, 0, 70, 1) !important;
+    border-color: rgba(230, 0, 70, 1) !important;
+    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+}
+.my-btn-blue:hover, .my-btn .btn-check:checked + .my-check-blue:hover {
+    color: rgba(255, 255, 255, 0) !important;
+    background-color: rgba(230, 0, 70, 0.6) !important;
+    border-color: rgba(230, 0, 70, 0.6) !important;
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+.my-btn-blue:active, .my-btn .btn-check:checked + .my-check-blue:active {
+    color: rgba(255, 255, 255, 0) !important;
+    background-color: rgba(230, 0, 70, 0.4) !important;
+    border-color: rgba(230, 0, 70, 0.4) !important;
+    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+}
+
+
+.my-btn-green {
+    background-color: rgba(0, 220, 60, 1) !important;
+    border-color: rgba(0, 220, 60, 1) !important;
+}
+.my-btn-green:hover {
+    background-color: rgba(0, 190, 55, 1) !important;
+    border-color: rgba(0, 190, 55, 1) !important;
+}
+.my-btn-green:active {
+    background-color: rgba(0, 150, 50, 1) !important;
+    border-color: rgba(0, 150, 50, 1) !important;
+}

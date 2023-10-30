@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}History List{% endblock %}
+
+{% block contents %}
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-3">
+        <div class="text-center mb-3">
+            <h2>履歴一覧</h2>
+        </div>
+        <form method="get">
+            {{ group_filter_form.as_p }}
+            {{ sort_form.as_p }}
+            <button type="submit" class="btn btn-3">絞り込みとソート</button>
+        </form>
+        <hr>
+
+        {% if history_list %}
+            <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">履歴をクリックすると詳細へ移ります</p></div>
+        {% endif %}
+        <div class="container px-4 px-lg-5 mt-3">
+            <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
+                
+                {% for history in history_list %}
+                    <a class="btn" href="{% url 'tracker:history_detail' history.pk %}">
+                        <div class="col">
+                            <div class="card">
+                                <!--badge-->
+                                <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">履歴</div>
+                                <!-- Product details-->
+                                <div class="card-body">
+                                    <div class="text-center">
+                                        <!-- Product name-->
+                                        <h5 class="fw-bolder">{{ history.asset.asset_name }}</h5>
+                                        <!-- Product reviews-->
+                                        <div class="d-flex justify-content-center small text-warning mb-2">
+                                            確認日時: {{ history.checked_at }}
+                                            <br>
+                                            <!-- 更新日時: {{ history.updated_at }}
+                                            <br> -->
+                                            グループ: {{ history.group }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Product actions-->
+                                <!-- <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'tracker:history_detail' history.pk %}">詳細</a></div>
+                                </div> -->
+                            </div>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <p>履歴が存在しません</p>
+                {% endfor %}
+            </div>
+
+            <!-- ページネーションリンクの表示 -->
+            <!-- ページネーションリンク -->
+            {% if page_obj.paginator.count > 0 %}
+            <div class="d-flex justify-content-center mt-4">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">最初</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">前へ</a>
+                    </li>
+                    {% endif %}
+                    <!-- ページ番号のセレクトボックス -->
+                    <li class="page-item">
+                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}';">
+                            {% for page_num in page_obj.paginator.page_range %}
+                                <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">次へ</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">最後</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</section>
+{% endblock %}
+

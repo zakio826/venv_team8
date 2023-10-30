@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}日記作成 | Private Diary{% endblock %}
+{% block title %}管理項目作成 | toolkeeper{% endblock %}
 
 {% block active_diary_list %}active{% endblock %}
 
@@ -14,7 +14,7 @@
                 {{ form.as_table }}
                 {{ object.name }}
             </table>
-            <button class="btn btn-primary" type="submit">作成</button>
+            <button class="btn btn-3 w-100 mt-3" type="submit">作成</button>
         </form>
     </div>
 </div>

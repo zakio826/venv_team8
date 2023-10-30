@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}History Detail{% endblock %}
+
+{% block contents %}
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-3">
+        <div class="text-center mb-3">
+            <h2>履歴詳細</h2>
+        </div>
+
+        <div class="container my-5">
+            <hr>
+            <div class="row">
+                <div class="col-8">
+                    <div class="col-3 col-lg-2">
+                        <strong>写真</strong>
+                    </div>
+                    <div class="col-9 col-lg-10">
+                        <img src="{{ image.image.url }}" style="display: none;"/>
+                    </div>
+                </div>
+                <div class="col scroll" id="check_list">
+                    <div class="mb-3">
+                        <strong>アイテム一覧/詳細結果</strong>
+                    </div>
+                    <div class="col-9 col-lg-10">
+                        {% for result in history.result_set.all %}
+                            {% if result.result_class != 9 %}
+                            <li class="mb-2">
+                                {{ result.item.item_name }}：
+                                {% if result.result_class == 0 %}
+                                    <u><font color="#ff6347">無し</font></u>
+                            
+                                {% elif result.result_class == 1 %}
+                                    <u><font color="#99CC33">有り</font></u>
+                                {% else %}
+                                    {{ result.result_class }}
+                                {% endif %}
+                                
+                            </li>
+                            {% endif %}
+                        {% empty %}
+                            <p>履歴が存在しません</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>グループ</strong>
+                </div>
+                <div class="col-9 col-lg-10">
+                    {{ history.group.group_name }}
+                </div>
+            </div>
+            
+            <hr>
+
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>ユーザー</strong>
+                </div>
+                <div class="col-9 col-lg-10">
+                    {{ history.user.username }}
+                </div>
+            </div>
+            
+            <hr>
+
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>管理名</strong>
+                </div>
+                <div class="col-9 col-lg-10">
+                    {{ history.asset.asset_name }}
+                </div>
+            </div>
+            
+            <hr>
+
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>確認日時</strong>
+                </div> <div class="col-9 col-lg-10">
+                    {{ history.checked_at }}
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- <div class="row">
+                <div class="col-3">
+                    <strong>更新日時</strong>
+                </div>
+                <div class="col-9">
+                    {{ history.updated_at }}
+                </div>
+            </div>
+            <hr> -->
+
+            <a class="btn btn-3 float-right" href="{% url 'tracker:history_list' %}">履歴一覧に戻る</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+

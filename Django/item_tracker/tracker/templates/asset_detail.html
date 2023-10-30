@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}管理項目詳細 | ないもの検知{% endblock %}
+{% block title %}管理項目詳細 | toolkeeper{% endblock %}
 
 {% block active_asset_list %}active{% endblock %}
 
@@ -18,16 +18,38 @@
     
     <hr>
     
+<<<<<<< HEAD
     <div class="row">
         <div class="col-3 col-lg-2">
             <strong>写真</strong>
         </div>
         <div class="col-9 col-lg-10">
+=======
+    <div class="row mb-3">
+        <div class="col-9">
+            <strong>写真</strong>
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
             {% for image in image_list %}
                 {% if image.image %}
                     <img src="{{ image.image.url }}" width="100%" height="auto"/>
                 {% endif %}
             {% endfor %}
+        </div>
+        <div class="col">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <strong>アイテム一覧</strong>
+                </div>
+                <div class="col-12 mb-4">
+                    <div class="scrollasset">
+                        {% for item in item_list %}
+                            <span class="row mb-2 ms-1">{{ forloop.counter }}. {{ item.item_name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a class="btn btn-3" href="{% url 'tracker:check_image_add' asset_id %}"> チェックする</a>
+                <!-- <a class="btn btn-primary" href="{% url 'tracker:test_page' 4 %}"> テストページ</a> -->
+            </div>
         </div>
     </div>
 

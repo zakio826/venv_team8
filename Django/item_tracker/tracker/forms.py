@@ -2,6 +2,7 @@ import os
 from typing import Any
 
 from betterforms.multiform import MultiModelForm
+from django.conf import settings
 
 from django import forms
 from django.core.mail import EmailMessage
@@ -56,6 +57,26 @@ class InquiryForm(forms.Form):
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 
+class GroupFilterForm(forms.Form):
+    group = forms.ModelChoiceField(
+        queryset=Group.objects.none(),  # 最初は空のクエリセット
+        empty_label='すべてのグループ',
+        required=False,
+        label='グループ'
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super(GroupFilterForm, self).__init__(*args, **kwargs)
+        # ユーザーが所属しているすべてのグループを取得し、クエリセットを設定
+        self.fields['group'].queryset = Group.objects.filter(groupmember__user=user)
+
+class SortForm(forms.Form):
+    choices = [
+        ('', 'ソート順を選択'),
+        ('asc', '昇順'),
+        ('desc', '降順'),
+    ]
+    sort_order = forms.ChoiceField(choices=choices, required=False, label='ソート順')
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
@@ -125,10 +146,13 @@ class ImageAddForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['movie'].widget.attrs['accept'] = ".mp4"
+<<<<<<< HEAD
         # self.fields['image'].widget = forms.HiddenInput()
         # self.fields['group'].widget = forms.HiddenInput()
         # self.fields['asset'].widget = forms.HiddenInput()
         # self.fields['front'].widget = forms.HiddenInput()
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
@@ -138,6 +162,7 @@ class ImageAddForm(forms.ModelForm):
         extension = os.path.splitext(file.name)[1] # 拡張子を取得
         if not extension.lower() in settings.VALID_EXTENSIONS:
             raise forms.ValidationError('mp4ファイルを選択してください！')
+<<<<<<< HEAD
         
 class HistoryAddForm(forms.ModelForm):
 
@@ -153,6 +178,28 @@ class HistoryAddForm(forms.ModelForm):
         # self.fields['asset'].widget = forms.HiddenInput()
         # self.fields['user'].widget = forms.HiddenInput()
         # self.fields['image'].widget = forms.HiddenInput()
+=======
+
+class ItemAddForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = ['item_name']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
+
+class HistoryAddForm(forms.ModelForm):
+
+    class Meta:
+        model = History
+        fields = ['user']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
@@ -167,9 +214,12 @@ class ResultAddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+<<<<<<< HEAD
         # self.fields['asset'].widget = forms.HiddenInput()
         # self.fields['item'].widget = forms.HiddenInput()
         # self.fields['image'].widget = forms.HiddenInput()
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         self.fields['result_class'].widget = forms.HiddenInput()
         # self.fields['box_x_min'].widget = forms.HiddenInput()
         # self.fields['box_y_min'].widget = forms.HiddenInput()
@@ -178,6 +228,7 @@ class ResultAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+<<<<<<< HEAD
             # field.widget = forms.HiddenInput()
 
 # class HistoryMultiAddForm(MultiModelForm):
@@ -232,14 +283,33 @@ class AssetMultiCreateForm(MultiModelForm):
     #         self.save_m2m = save_m2m
 
     #     return objects
+=======
+            field.widget = forms.HiddenInput()
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
 
-class ItemMultiAddForm(MultiModelForm):
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ['group_name', 'private']
 
-    form_classes = {
-        "image_add_form": ImageAddForm,
-        "item_add_form": ItemAddForm,
-    }
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # デフォルト値をNoneに設定
+        super().__init__(*args, **kwargs)
+        self.fields['private'].initial = False
+        self.fields['private'].widget = forms.HiddenInput()
+        self.fields['group_name'].widget.attrs.update({'placeholder': 'グループ名を入力'})
+        if user:
+            self.fields['user'].initial = user
+        
+
+class JoinGroupForm(forms.Form):
+    group_id = forms.CharField(
+        label='グループID',
+        max_length=12,
+        required=True,
+        widget=forms.TextInput(attrs={'placeholder': 'グループIDを入力'})
+    )
 
 
 

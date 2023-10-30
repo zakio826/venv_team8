@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}管理項目作成 | toolkeeper{% endblock %}
+
+{% block active_diary_list %}active{% endblock %}
+
+{% block contents %}
+<div class="container my-5">
+    <div class="row">
+        <form method="POST" enctype='multipart/form-data'>
+            {% csrf_token %}
+            <table class="table">
+                {{ form.as_table }}
+                {{ object.name }}
+            </table>
+            <button class="my-btn-green btn btn-primary w-100 mt-3" type="submit">作成</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

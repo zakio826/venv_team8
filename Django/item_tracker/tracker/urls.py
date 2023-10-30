@@ -9,7 +9,10 @@ urlpatterns = [
     path('inquiry/', views.InquiryView.as_view(), name="inquiry"),
     path('asset-list/', views.AssetListView.as_view(), name="asset_list"),
     path('asset-detail/<int:id>/', views.AssetDetailView.as_view(), name="asset_detail"),
+<<<<<<< HEAD
     path('asset-multi-create/', views.AssetMultiCreateView.as_view(), name="asset_multi_create"),
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     path('asset-create/', views.AssetCreateView.as_view(), name="asset_create"),
     path('asset-create/image-add/<int:id>/', views.ImageAddView.as_view(), name="image_add"),
@@ -18,12 +21,24 @@ urlpatterns = [
 
     path('asset-check/image-add/<int:id>/', views.ImageAddView.as_view(), name="check_image_add"),
     path('asset-check/<int:id>/', views.HistoryAddView.as_view(), name="asset_check"),
+<<<<<<< HEAD
     # path('asset-check/history-add/<int:id>/', views.HistoryAddView.as_view(), name="history_add"),
 
     path('create_group/', views.create_group, name='create_group'),
     path('join_group/', views.join_group, name='join_group'),
     path('mypage/', views.mypage, name='mypage'),
     path('group_detail/<int:group_id>/', views.group_detail, name='group_detail'),
+=======
+
+    path('create_group/', views.create_group, name='create_group'),
+    path('join_group/', views.join_group, name='join_group'),
+    path('group_list/', views.group_list, name='group_list'),
+    path('group_detail/<int:group_id>/', views.group_detail, name='group_detail'),
+    path('group_detail/<int:group_id>/delete-confirmation/', views.group_delete, name='group_delete'),
+
+    path('history/', views.HistoryListView.as_view(), name='history_list'),
+    path('history/<int:pk>/', views.HistoryDetailView.as_view(), name='history_detail'),
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     path('test-page/<int:id>/', views.TestPageView.as_view(), name="test_page"),
 ]

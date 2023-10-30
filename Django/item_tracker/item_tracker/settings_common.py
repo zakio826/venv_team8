@@ -44,11 +44,18 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'django_bootstrap5',
+<<<<<<< HEAD
     'betterforms',
+=======
+    'django_cleanup.apps.CleanupConfig',
+
+    'cv2',
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     'google',
     'google.api',
     'google.api_core',
+<<<<<<< HEAD
     # 'google-api-python-client',
     # 'google.auth',
     'google_auth_httplib2',
@@ -56,6 +63,10 @@ INSTALLED_APPS = [
     # 'googleapis-common-protos',
 
     'django_cleanup.apps.CleanupConfig',
+=======
+    'google_auth_httplib2',
+    'google_auth_oauthlib',
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 ]
 
 MIDDLEWARE = [
@@ -189,6 +200,7 @@ ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 # デフォルトのメール送信元を設定
 DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
 
+<<<<<<< HEAD
 #allauth formの割り込み
 # ACCOUNT_FORMS = {
 #     'signup': 'accounts.forms.CustomSignupForm',
@@ -199,6 +211,18 @@ DEFAULT_FROM_EMAIL = os.environ.get('FROM_EMAIL')
 #     'add_email': 'accounts.forms.CustomAddEmailForm',
 #     'set_password': 'accounts.forms.CustomSetPasswordForm',
 # }
+=======
+# allauth formの割り込み
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm',
+    # 'login': 'accounts.forms.CustomLoginForm',
+    # 'reset_password': 'accounts.forms.CustomResetPasswordForm',
+    # 'reset_password_from_key': 'accounts.forms.CustomResetPasswordKeyForm',
+    # 'change_password': 'accounts.forms.CustomChangePasswordForm',
+    # 'add_email': 'accounts.forms.CustomAddEmailForm',
+    # 'set_password': 'accounts.forms.CustomSetPasswordForm',
+}
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
 EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'tracker:inquiry'
 

@@ -12,3 +12,235 @@ footer {
     margin-top: 3rem;
     margin-bottom: -1rem;
 }
+
+.my-btn {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+}
+
+.my-check-red {
+  color: rgba(230, 0, 70, 1) !important;
+  background-color: rgba(255, 255, 255, 1);
+  border-color: rgba(230, 0, 70, 1);
+}
+.my-check-red:hover {
+  color: rgba(190, 0, 50, 1) !important;
+  background-color: rgba(255, 255, 255, 1);
+  border-color: rgba(190, 0, 50, 1);
+}
+.my-check-red:active {
+  color: rgba(160, 0, 40, 1) !important;
+  background-color: rgba(255, 255, 255, 1);
+  border-color: rgba(160, 0, 40, 1);
+}
+.my-btn-red, .my-btn .btn-check:checked + .my-check-red {
+  color: rgba(255, 255, 255, 1) !important;
+  background-color: rgba(230, 0, 70, 1) !important;
+  border-color: rgba(230, 0, 70, 1) !important;
+}
+.my-btn-red:hover, .my-btn .btn-check:checked + .my-check-red:hover {
+  color: rgba(255, 255, 255, 1) !important;
+  background-color: rgba(190, 0, 50, 1) !important;
+  border-color: rgba(190, 0, 50, 1) !important;
+}
+.my-btn-red:active, .my-btn .btn-check:checked + .my-check-red:active {
+  color: rgba(255, 255, 255, 1) !important;
+  background-color: rgba(160, 0, 40, 1) !important;
+  border-color: rgba(160, 0, 40, 1) !important;
+}
+
+.my-btn-green {
+    background-color: rgb(0, 220, 60) !important;
+    border-color: rgb(0, 220, 60) !important;
+}
+.my-btn-green:hover {
+    background-color: rgb(0, 190, 55) !important;
+    border-color: rgb(0, 190, 55) !important;
+}
+.my-btn-green:active {
+    background-color: rgb(0, 150, 50) !important;
+    border-color: rgb(0, 150, 50) !important;
+}
+
+/* ホバーに合わせて伸びるボタン */
+@import url('https://fonts.googleapis.com/css?family=Mukta:700');
+* {
+  box-sizing: border-box;
+}
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+button {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  outline: none;
+  border: 0;
+  vertical-align: middle;
+  text-decoration: none;
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+button.learn-more {
+  width: 12rem;
+  height: auto;
+}
+button.learn-more .circle {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  position: relative;
+  display: block;
+  margin: 0;
+  width: 3rem;
+  height: 3rem;
+  background: #212529;
+  border-radius: 1.625rem;
+}
+button.learn-more .circle .icon {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  background: #fff;
+}
+button.learn-more .circle .icon.arrow {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  left: 0.625rem;
+  width: 1.125rem;
+  height: 0.125rem;
+  background: none;
+}
+button.learn-more .circle .icon.arrow::before {
+  position: absolute;
+  content: '';
+  top: -0.25rem;
+  right: 0.0625rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-top: 0.125rem solid #fff;
+  border-right: 0.125rem solid #fff;
+  transform: rotate(45deg);
+}
+button.learn-more .button-text {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.75rem 0;
+  margin: 0 0 0 1.85rem;
+  color: #212529;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+}
+button:hover .circle {
+  width: 100%;
+}
+button:hover .circle .icon.arrow {
+  background: #fff;
+  transform: translate(1rem,0);
+}
+button:hover .button-text {
+  color: #fff;
+}
+
+
+.scrollable-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.scrollable-detail {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.scroll {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.scrollasset {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,100,900);
+
+.btn-2 {
+    background: #212529;
+    letter-spacing: 0;
+    color: #fff;
+}
+.btn-2:hover,
+.btn-2:active {
+    background: #212529;
+    letter-spacing: 5px;
+    color: #fff;
+}
+.btn-2:after,
+.btn-2:before {
+    background: #666666;
+    backface-visibility: hidden;
+    border: 1px solid rgba(255,255,255,0);
+    bottom: 0px;
+    content: " ";
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    transition: all 280ms ease-in-out;
+    width: 0;
+    color: #fff;
+}
+.btn-2:hover:after,
+.btn-2:hover:before {
+    background: #666666;
+    backface-visibility: hidden;
+    border-color: #fff;
+    transition: width 350ms ease-in-out;
+    width: 70%;
+    color: #fff;
+}
+.btn-2:hover:before {
+    background: #666666;
+    bottom: auto;
+    top: 0;
+    width: 70%;
+    color: #fff;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+.btn:hover {
+  text-decoration: none;
+}
+.btn-3 {
+  background: #212529;
+  border: 1px solid #212529;
+  box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+  font-weight: 900;
+  letter-spacing: 1px;
+  transition: all 150ms linear;
+  color: #fff;
+}
+.btn-3:hover {
+  background: #666666;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 1px 1px 2px rgba(255,255,255,0.2);
+  color: #ffffff;
+  text-decoration: none;
+  text-shadow: -1px -1px 0 #888888;
+  transition: all 250ms linear;
+}

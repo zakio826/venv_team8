@@ -1,0 +1,16 @@
+Django
+psycopg2-binary
+django-allauth
+Pillow
+django-bootstrap
+django-bootstrap5
+django-cleanup
+opencv-python
+opencv-contrib-python
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+oauth2client
+ultralytics
+numpy
+pandas

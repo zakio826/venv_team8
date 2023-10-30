@@ -1,16 +1,25 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}日記作成 | Private Diary{% endblock %}
+{% block title %}画像追加 | toolkeeper{% endblock %}
 
 {% block active_diary_list %}active{% endblock %}
 
 {% block contents %}
 <div class="container my-5">
+<<<<<<< HEAD
+=======
+    <div class="row justify-content-between my-4" id="checked" style="display: none;">
+        <h5 class="col-10" style="text-align: center; margin-top: 0.5rem;">全てのアイテムが入るように、外枠を囲ってください。</h5>
+        <button class="col-2 btn btn-3 my-auto" type="button" onclick="auto_fit();">画像読込</button>
+    </div>
+
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     <div id="preview" style="position: relative; width: 100%; margin: auto;">
         <canvas id="canvas" style="display: none;"></canvas>
         <video id="movie" controls autoplay loop style="display: none;"></video>
         <img id="image" src="{{ image.url }}" style="display: none;"/>
+<<<<<<< HEAD
         <!-- <img id="img" src="{{ image.url }}" style="display: none;"/> -->
         <!-- <span id="create" style="display: none;">{{ create }}</span> -->
     </div>
@@ -26,6 +35,14 @@
     </div>
 
     <hr>
+=======
+    </div>
+
+    <div class="row w-50 mt-4 mb-5 mx-auto" id="control" style="display: none;">
+        <input class="btn-check" type="checkbox" id="check" disabled>
+        <label class="btn btn-outline-primary" for="check" onclick="del_box();">外枠をリセット</label>
+    </div>
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     
     <div class="row">
         <form method="POST" enctype='multipart/form-data'>
@@ -35,7 +52,11 @@
                 {{ item_add_form.as_table }}
                 {{ result_add_form.as_table }}
             </table>
+<<<<<<< HEAD
             <button class="btn btn-primary" type="submit" id="submit">{{ submit }}</button>
+=======
+            <button class="btn btn-2 w-100 mt-2" type="submit" id="submit" disabled>{{ submit }}</button>
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         </form>
     </div>
     
@@ -44,6 +65,7 @@
 
 
 {% block js %}
+<<<<<<< HEAD
 <script>// キャンバスとコンテキストを取得
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
@@ -52,18 +74,34 @@
     const previewCtx = previewCanvas.getContext("2d");
     const image = document.getElementById("image");
     const movie = document.getElementById("movie");
+=======
+<script>
+    // キャンバスとコンテキストを取得
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const preview = document.getElementById("preview"); // プレビューキャンバスの領域
+
+    const image = document.getElementById("image");
+    const movie = document.getElementById("movie");
+    const movie_get = document.getElementById("id_movie");
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     const check = document.getElementById("check");
     const checked = document.getElementById("checked");
     const control = document.getElementById("control");
     let set = false;
+<<<<<<< HEAD
     // const box_in = document.getElementsByName("box");
     const box = document.getElementById("box");
     // const finish = document.getElementById("finish");
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     const submit = document.getElementById("submit");
     submit.disabled = true;
 
+<<<<<<< HEAD
     // const box_list = document.getElementById("box_list");
     // const create = document.getElementById("create").innerText;
     const image_get = document.getElementById("id_image");
@@ -72,6 +110,10 @@
     
     const preview = document.getElementById("preview");
     // const img = document.getElementById("img");
+=======
+    
+
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
@@ -80,16 +122,24 @@
     // バウンディングボックスの座標を初期化
     let x_min, x_max, y_min, y_max;
     let box_li = [0,0,0,0];
+<<<<<<< HEAD
     // for (let i = 0; i < set.length; i++) box_li[i] = 
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     
     movie.autoplay = false;
     movie.muted = true;
 
+<<<<<<< HEAD
     function auto_set_box() {
         // let w = preview.getBoundingClientRect().width;
         // let h = preview.getBoundingClientRect().height;
         // let w = movie.videoWidth;
         // let h = movie.videoHeight;
+=======
+
+    function auto_set_box() {
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         let w = movie.videoWidth / canvas.width;
         let h = movie.videoHeight / canvas.height;
 
@@ -99,6 +149,7 @@
         document.getElementById(`id_box_y_max`).value = box_li[3] * h;
     };
     
+<<<<<<< HEAD
     // function captureFirstFrame(videoElement, canvasElement) {
     function captureFrame() {
         // const canvas = canvasElement;
@@ -107,6 +158,12 @@
         videoElement.currentTime = 0;
         context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
         // ctx.drawImage(image, 0, 0);
+=======
+
+    function captureFrame() {
+        videoElement.currentTime = 0;
+        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         return canvasElement.toDataURL('image/jpeg');
     }
     
@@ -116,6 +173,7 @@
         
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+<<<<<<< HEAD
         
         // image.src = canvas.toDataURL('image/jpeg');
         // movie.currentTime = 0;
@@ -133,12 +191,16 @@
         // ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
         // ctx.drawImage(previewCanvas, 0, 0, canvas.width, canvas.height);
         // ctx.drawImage(captureFirstFrame(movie, canvas), 0, 0, canvas.width, canvas.height);
+=======
+        ctx.drawImage(image, 0, 0);
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     }
     
 
     movie_get.addEventListener('change', function() {
         movie.src = URL.createObjectURL(movie_get.files[0]);
         movie.onloadedmetadata = function() {
+<<<<<<< HEAD
             // canvas.width = movie.videoWidth;
             // canvas.height = movie.videoHeight;
             // canvas.width = canvas.getBoundingClientRect().width;
@@ -157,12 +219,22 @@
             
             movie.currentTime = 0;
 
+=======
+            canvas.width = preview.getBoundingClientRect().width;
+            canvas.height = canvas.width * (movie.videoHeight / movie.videoWidth);
+            canvas.style = "width: 100%; height: auto;";
+            checked.style = "margin: 0;";
+            control.style = "";
+            
+            movie.currentTime = 0;
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
             
             image.width = canvas.width;
             image.height = canvas.height;
             ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
             image.src = canvas.toDataURL('image/jpeg');
             ctx.drawImage(image, 0, 0);
+<<<<<<< HEAD
             
             
             // drawFirstFrame(); // 動画の最初のフレームを描画
@@ -290,6 +362,14 @@
         // image.width = canvas.width;
         // image.height = canvas.height;
         // ctx.drawImage(movie, 0, 0, image.width, image.height);
+=======
+        };
+    });
+    
+
+    function auto_fit() {
+        console.log("tttt");
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         if (canvas.width != preview.getBoundingClientRect().width) {
             set = false;
 
@@ -319,7 +399,10 @@
     function draw_box(order) {
         drawFirstFrame(); // 動画の最初のフレームを描画
 
+<<<<<<< HEAD
         // console.log(order);
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         ctx.strokeStyle = "blue"; // 青い線で描画
         
         if (order) ctx.lineWidth = 2;
@@ -333,6 +416,7 @@
         );
     };
 
+<<<<<<< HEAD
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
         // movie.currentTime = 0;
@@ -340,15 +424,27 @@
         auto_fit();
         // image.src = previewCanvas.toDataURL('image/jpeg');
         // ctx.drawImage(image, 0, 0);
+=======
+
+    // マウスダウンイベントのリスナーを追加
+    canvas.addEventListener("mousedown", (e) => {
+        auto_fit();
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
         isDrawing = true;
         startX = e.clientX - canvas.getBoundingClientRect().left;
         startY = e.clientY - canvas.getBoundingClientRect().top;
     });
 
+<<<<<<< HEAD
     // マウスムーブイベントのリスナーを追加
     canvas.addEventListener("mousemove", (e) => {
         // movie.currentTime = 0;
+=======
+
+    // マウスムーブイベントのリスナーを追加
+    canvas.addEventListener("mousemove", (e) => {
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         if (!isDrawing) return;
 
         const x = e.clientX - canvas.getBoundingClientRect().left;
@@ -365,6 +461,7 @@
         ctx.strokeRect(startX, startY, width, height);
     });
 
+<<<<<<< HEAD
     // function submit_check(fin) {
     //     if (fin) submit.disabled = false;
     //     else submit.disabled = true;
@@ -385,6 +482,11 @@
     // マウスアップイベントのリスナーを追加
     canvas.addEventListener("mouseup", () => {
         // movie.currentTime = 0;
+=======
+
+    // マウスアップイベントのリスナーを追加
+    canvas.addEventListener("mouseup", () => {
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         isDrawing = false;
 
         // 描画した矩形の座標を表示
@@ -402,10 +504,13 @@
             y_max -= height;
         }
 
+<<<<<<< HEAD
         // キャンバスをクリアして画像を再描画
         // ctx.clearRect(0, 0, canvas.width, canvas.height);
         // drawFirstFrame(); // 動画の最初のフレームを描画
         // isDrawing = true;
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         box_li = [
             x_min,
             y_min,
@@ -415,16 +520,20 @@
         console.log(box_li);
 
         auto_set_box();
+<<<<<<< HEAD
         // document.getElementById(`id_box_x_min`).value = x_min;
         // document.getElementById(`id_box_y_min`).value = y_min;
         // document.getElementById(`id_box_x_max`).value = x_max;
         // document.getElementById(`id_box_y_max`).value = y_max;
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
         check.checked = true;
         check.disabled = false;
         submit.disabled = false;
 
         draw_box(true);
+<<<<<<< HEAD
         
         // finish_check();
 
@@ -435,25 +544,34 @@
             + y_min.toFixed() + "px, "
             + x_max.toFixed() + "px, "
             + y_max.toFixed() + "px";
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     });
 
     // マウスアウトイベントのリスナーを追加
     canvas.addEventListener("mouseout", () => {
+<<<<<<< HEAD
         // movie.currentTime = 0;
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         isDrawing = false;
     });
 
     // 選択したバウンディングボックスを強調して描画
     function out_box() {
+<<<<<<< HEAD
 
         // キャンバスをクリアして画像を再描画
         // ctx.clearRect(0, 0, canvas.width, canvas.height);
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         drawFirstFrame(); // 動画の最初のフレームを描画
         for (let i = 0; i < set.length; i++) {
             if (set[i].checked) draw_box(i); // バウンディングボックスの描画
         }
     };
 
+<<<<<<< HEAD
     // 選択したバウンディングボックスの座標を追加
     function set_box() {
         for (let i = 0; i < set.length; i++) {
@@ -470,6 +588,8 @@
         out_box();
     };
 
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
     // 選択したバウンディングボックスを削除
     function del_box() {
         box_li = [0,0,0,0];
@@ -482,7 +602,10 @@
         check.disabled = true;
         submit.disabled = true;
 
+<<<<<<< HEAD
         // ctx.clearRect(0, 0, canvas.width, canvas.height);
+=======
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         drawFirstFrame(); // 動画の最初のフレームを描画
     };
     
