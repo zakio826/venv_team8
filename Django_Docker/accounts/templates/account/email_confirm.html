@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Confirm sign up | ないもの検知{% endblock %}
+{% block title %}メールアドレス認証 | ToolKeeper{% endblock %}
 
 {% block active_login %}active{% endblock %}
 
@@ -16,7 +16,7 @@
 
                 <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
                     {% csrf_token %}
-                    <button class="btn btn-primary" type="submit">確定</button>
+                    <button class="btn btn-3" type="submit">確定</button>
                 </form>
 
             {% else %}

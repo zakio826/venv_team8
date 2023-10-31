@@ -22,7 +22,7 @@
 
         <div class="my-btn col-12 col-xl-5 my-2 my-xl-2">
             <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
-            <label class="my-check-red btn w-100" for="box_{{ forloop.counter0 }}" onclick="del_box('{{ forloop.counter0 }}');">座標取消</label>
+            <label class="btn my-check-red w-100" for="box_{{ forloop.counter0 }}" onclick="del_box('{{ forloop.counter0 }}');">座標取消</label>
         </div>
     </div>
     {% endfor %}

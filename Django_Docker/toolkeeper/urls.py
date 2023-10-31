@@ -19,7 +19,7 @@ from django.contrib.staticfiles.urls import static
 from django.urls import path, include
 from accounts.views import LoginView
 
-from . import settings, settings_common, settings_dev
+from . import settings_common, settings_dev
 
 urlpatterns = [
     path('admin/', admin.site.urls),

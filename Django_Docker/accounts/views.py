@@ -60,4 +60,3 @@ class LoginView(AllauthLoginView):
             group_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
             if not Group.objects.filter(group_id=group_id).exists():
                 return group_id
-
