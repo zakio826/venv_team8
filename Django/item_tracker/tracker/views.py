@@ -702,8 +702,12 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
         # 関連する image オブジェクトを取得
         image = history.image
         context['image'] = image  # テンプレートに image を追加
+<<<<<<< HEAD
         context.update(context)
         print(context)
+=======
+        context.update(extra)
+>>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         return context
 
 
