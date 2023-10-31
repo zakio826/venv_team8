@@ -1,15 +1,24 @@
 @echo off
+
 chcp 65001
 docker --version
+
 call :choiceYN return
 if "%return%"=="n" goto :finish
-rem docker compose up -d
-rem start "" http://127.0.0.1:8000/
-docker compose run web python manage.py runserver
+
+rem docker compose run web python manage.py runserver
+docker compose up -d
+
+echo トップページに移動します。
+timeout /t 5 /nobreak > nul 2>&1
+start "" http://localhost:8088
+
 set /p input="アプリを終了するには、Enterを入力してください: "
 docker compose down
+
 :finish
 echo 終了します。
+
 exit /b 0
 
 

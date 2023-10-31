@@ -146,13 +146,6 @@ class ImageAddForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['movie'].widget.attrs['accept'] = ".mp4"
-<<<<<<< HEAD
-        # self.fields['image'].widget = forms.HiddenInput()
-        # self.fields['group'].widget = forms.HiddenInput()
-        # self.fields['asset'].widget = forms.HiddenInput()
-        # self.fields['front'].widget = forms.HiddenInput()
-=======
->>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
@@ -162,23 +155,6 @@ class ImageAddForm(forms.ModelForm):
         extension = os.path.splitext(file.name)[1] # 拡張子を取得
         if not extension.lower() in settings.VALID_EXTENSIONS:
             raise forms.ValidationError('mp4ファイルを選択してください！')
-<<<<<<< HEAD
-        
-class HistoryAddForm(forms.ModelForm):
-
-    class Meta:
-        model = History
-        fields = ['user']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # self.fields['update_at'].widget = forms.HiddenInput()
-        # self.fields['group'].widget = forms.HiddenInput()
-        # self.fields['asset'].widget = forms.HiddenInput()
-        # self.fields['user'].widget = forms.HiddenInput()
-        # self.fields['image'].widget = forms.HiddenInput()
-=======
 
 class ItemAddForm(forms.ModelForm):
     class Meta:
@@ -199,7 +175,6 @@ class HistoryAddForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
->>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
@@ -214,12 +189,6 @@ class ResultAddForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-<<<<<<< HEAD
-        # self.fields['asset'].widget = forms.HiddenInput()
-        # self.fields['item'].widget = forms.HiddenInput()
-        # self.fields['image'].widget = forms.HiddenInput()
-=======
->>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
         self.fields['result_class'].widget = forms.HiddenInput()
         # self.fields['box_x_min'].widget = forms.HiddenInput()
         # self.fields['box_y_min'].widget = forms.HiddenInput()
@@ -228,64 +197,7 @@ class ResultAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-<<<<<<< HEAD
-            # field.widget = forms.HiddenInput()
-
-# class HistoryMultiAddForm(MultiModelForm):
-
-#     form_classes = {
-#         "history_add_form": HistoryAddForm,
-#         "result_add_form": forms.formset_factory(
-#             form = 
-#         ),
-#     }
-
-
-
-
-
-
-
-class ItemAddDummyForm(forms.ModelForm):
-    name = forms.CharField(label='アイテム名', max_length=30)
-
-
-
-
-
-
-
-
-from collections import OrderedDict
-
-class AssetMultiCreateForm(MultiModelForm):
-
-    form_classes = {
-        "asset_create_form": AssetCreateForm,
-        "image_add_form": ImageAddForm,
-        # "item_add_form": ItemAddEXForm,
-    }
-
-    # def save(self, group=None, asset=None, item_list=None):
-    #     obj = super.save(commit=False)
-    #     print("ttt", obj)
-
-    #     objects = OrderedDict(
-    #         (key, form.save())
-    #         for key, form in self.forms.items()
-    #     )
-
-    #     if any(hasattr(form, 'save_m2m') for form in self.forms.values()):
-    #         def save_m2m():
-    #             for form in self.forms.values():
-    #                 if hasattr(form, 'save_m2m'):
-    #                     form.save_m2m()
-    #         self.save_m2m = save_m2m
-
-    #     return objects
-=======
             field.widget = forms.HiddenInput()
->>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
 
 
 class GroupForm(forms.ModelForm):

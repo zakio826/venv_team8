@@ -4,7 +4,7 @@ docker --version
 pause
 echo Dockerfileからコンテナイメージを作成します。
 docker compose build --no-cache
-echo マイグレートします。
+rem echo マイグレートします。
 call :choiceYN return
 if "%return%"=="y" (
     docker compose run --rm web python manage.py migrate
