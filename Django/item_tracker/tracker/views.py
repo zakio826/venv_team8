@@ -24,6 +24,7 @@ from .models import Group, GroupMember, Asset, Item, Image, History, Result
 
 logger = logging.getLogger(__name__)
 from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 
 import re
 
@@ -697,9 +698,12 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         # history オブジェクトを正しく取得
         history = context['history']
+        print(history.image.image.url)
         # 関連する image オブジェクトを取得
         image = history.image
         context['image'] = image  # テンプレートに image を追加
+        context.update(context)
+        print(context)
         return context
 
 
@@ -853,6 +857,32 @@ def group_delete(request, group_id):
 def group_list(request):
     user_groups = GroupMember.objects.filter(user=request.user)
     return render(request, 'group_list.html', {'user_groups': user_groups})
+
+@login_required
+def group_host(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+
+    # グループのホストでない場合、アクセス拒否
+    if group.user != request.user:
+        messages.error(request, 'この操作を実行する権限がありません。')
+        return redirect('tracker:group_detail', group_id=group_id)
+    elif group.private:
+        messages.error(request, '個人利用グループのためホスト譲渡はできません。')
+        return redirect('tracker:group_detail', group_id=group_id)
+    
+    # グループに所属するメンバー（ホスト以外）を取得
+    group_members = GroupMember.objects.filter(group=group).exclude(user=group.user)
+
+    if request.method == 'POST':
+        new_host_id = request.POST.get('new_host')
+        if new_host_id:
+            new_host = get_object_or_404(GroupMember, id=new_host_id)
+            group.user = new_host.user
+            group.save()
+            messages.success(request, 'ホストが'+ group.user.username + 'に変更されました。')
+            return redirect('tracker:group_detail', group_id=group_id)
+
+    return render(request, 'group_host.html', {'group': group, 'group_members': group_members})
 
 
 
