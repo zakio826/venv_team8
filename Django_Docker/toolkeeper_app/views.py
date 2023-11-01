@@ -853,6 +853,32 @@ def group_list(request):
     user_groups = GroupMember.objects.filter(user=request.user)
     return render(request, 'group_list.html', {'user_groups': user_groups})
 
+@login_required
+def group_host(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+
+    # グループのホストでない場合、アクセス拒否
+    if group.user != request.user:
+        messages.error(request, 'この操作を実行する権限がありません。')
+        return redirect('toolkeeper_app:group_detail', group_id=group_id)
+    elif group.private:
+        messages.error(request, '個人利用グループのためホスト譲渡はできません。')
+        return redirect('toolkeeper_app:group_detail', group_id=group_id)
+    
+    # グループに所属するメンバー（ホスト以外）を取得
+    group_members = GroupMember.objects.filter(group=group).exclude(user=group.user)
+
+    if request.method == 'POST':
+        new_host_id = request.POST.get('new_host')
+        if new_host_id:
+            new_host = get_object_or_404(GroupMember, id=new_host_id)
+            group.user = new_host.user
+            group.save()
+            messages.success(request, 'ホストが'+ group.user.username + 'に変更されました。')
+            return redirect('toolkeeper_app:group_detail', group_id=group_id)
+
+    return render(request, 'group_host.html', {'group': group, 'group_members': group_members})
+
 
 
 

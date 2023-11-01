@@ -10,8 +10,8 @@ rem timeout /t 2 /nobreak > nul 2>&1
 start /b docker compose up
 
 timeout /t 10 /nobreak > nul 2>&1
-start "" http://localhost:8088/admin
-start "" http://localhost:8088
+rem start "" http://localhost:8088/admin
+rem start "" http://localhost:8088
 
 pause > nul
 docker compose down

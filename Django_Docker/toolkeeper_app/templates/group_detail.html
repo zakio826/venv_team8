@@ -1,9 +1,5 @@
 {% extends 'base.html' %}
 
-{% block title %}グループ詳細 | ToolKeeper{% endblock %}
-
-{% block active_group_list %}active{% endblock %}
-
 {% block contents %}
 
 <!-- Page content-->
@@ -13,7 +9,13 @@
             <div class="row">
                 <div class="d-grid mb-5">
                     <h2><u>{{ group.group_name }}（ホスト: {% if group.user == request.user %} あなた） {% else %} {{ group.user.username }}） {% endif %}</u></h2>
-                    <p><strong>グループID:{{ group.group_id }}</strong></p>
+                    <p><strong>グループID：<u id="text">{{ group.group_id }}</u></strong>
+                        <button class="mx-1 mb-1" id="copybutton">
+                            <svg id="copyfont" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2Zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6ZM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2Z"/>
+                            </svg>
+                        </button>
+                    </p>
                 </div>
                 <div class="col-6">
                     <h5 class="mb-2">メンバー[{{ members_count }}名]</h5>
@@ -53,6 +55,11 @@
                 <form method="post">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-lg btn-danger" name="delete_group">グループ削除</button>
+                    {% if not group.private %}
+                        <button class="btn btn-lg btn-success">
+                            <a class="nav-link" href="{% url 'toolkeeper_app:group_host' group.id %}">ホストを変更</a>
+                        </button>
+                    {% endif %}
                 </form>
             {% endif %}
             <button class="btn btn-lg btn-2">
@@ -62,4 +69,26 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block js %}
+<script>
+    const btn = document.getElementById("copybutton"); // button要素取得
+    const txt = document.getElementById("text").textContent; // テキスト取得
+
+    btn.addEventListener("click", () => { // ボタンをクリックしたら
+        navigator.clipboard
+            .writeText(txt) // テキストをクリップボードに書き込み
+            .then(
+            (success) => console.log('テキストのコピーに成功'),
+            (error) => console.log('テキストのコピーに失敗')
+            );
+
+        btn.innerHTML = '<i class="bi bi-check2"></i>'; // ボタンの文字変更
+        setTimeout(() => (btn.innerHTML = 
+            '<svg id="copyfont" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2Zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6ZM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2Z"/></svg>'
+        ), 1500); // ボタンの文字を戻す
+    });
+
+</script>
 {% endblock %}
