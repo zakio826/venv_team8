@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}History List{% endblock %}
+{% block title %}履歴一覧 | ToolKeeper{% endblock %}
+
+{% block active_asset_list %}active{% endblock %}
 
 {% block contents %}
 <section class="py-5">
@@ -36,12 +38,16 @@
                                         <div class="d-flex justify-content-center small text-warning mb-2">
                                             確認日時: {{ history.checked_at }}
                                             <br>
-                                            更新日時: {{ history.updated_at }}
-                                            <br>
+                                            <!-- 更新日時: {{ history.updated_at }}
+                                            <br> -->
                                             グループ: {{ history.group }}
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Product actions-->
+                                <!-- <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                                    <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'toolkeeper_app:history_detail' history.pk %}">詳細</a></div>
+                                </div> -->
                             </div>
                         </div>
                     </a>

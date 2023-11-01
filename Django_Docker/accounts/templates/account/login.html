@@ -2,7 +2,7 @@
 {% load django_bootstrap5 %}
 {% load static %}
 
-{% block title %}Log In | ないもの検知{% endblock %}
+{% block title %}ログイン | ToolKeeper{% endblock %}
 
 {% block active_login %}active{% endblock %}
 
@@ -70,7 +70,7 @@
                             <!-- <input type="checkbox" name="personal_use" class="form-check-input" id="personalUse"> -->
                             <!-- <label for="personalUse" class="form-check-label">個人利用</label> -->
                         </div>
-                        <div class="d-grid mb-3"><button class="btn btn-primary btn-lg" id="submitButton" type="submit">ログイン</button></div>
+                        <div class="d-grid mb-3"><button class="btn btn-3 btn-lg" id="submitButton" type="submit">ログイン</button></div>
                         <p><a class="button secondaryAction" href="{% url 'account_reset_password' %}">パスワードを忘れましたか？</a></p>
                     </form>
                 </div>

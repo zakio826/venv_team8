@@ -32,7 +32,6 @@ class InquiryForm(forms.Form):
         self.fields['message'].widget.attrs['placeholder'] = 'メッセージをここに入力してください。'
         self.fields['message'].widget.attrs['style'] = 'height: 10rem'
 
-
     def send_email(self):
         name = self.cleaned_data['name']
         email = self.cleaned_data['email']
@@ -52,6 +51,7 @@ class InquiryForm(forms.Form):
         message = EmailMessage(subject=subject, body=message, from_email=from_email, to=to_list, cc=cc_list)
         message.send()
 
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 class GroupFilterForm(forms.Form):
@@ -59,6 +59,7 @@ class GroupFilterForm(forms.Form):
         queryset=Group.objects.none(),  # 最初は空のクエリセット
         empty_label='すべてのグループ',
         required=False,
+        label='グループ'
     )
 
     def __init__(self, user, *args, **kwargs):
@@ -66,13 +67,16 @@ class GroupFilterForm(forms.Form):
         # ユーザーが所属しているすべてのグループを取得し、クエリセットを設定
         self.fields['group'].queryset = Group.objects.filter(groupmember__user=user)
 
+
 class SortForm(forms.Form):
     choices = [
         ('', 'ソート順を選択'),
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(choices=choices, required=False)
+    sort_order = forms.ChoiceField(choices=choices, required=False, label='ソート順')
+
+
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
@@ -83,6 +87,7 @@ class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['group'].widget.attrs['class'] = 'form-control'
         self.fields['asset_name'].widget.attrs['class'] = 'form-control'
+
 
 class ImageAddForm(forms.ModelForm):
     class Meta:
@@ -103,6 +108,7 @@ class ImageAddForm(forms.ModelForm):
         if not extension.lower() in settings.VALID_EXTENSIONS:
             raise forms.ValidationError('mp4ファイルを選択してください！')
 
+
 class ItemAddForm(forms.ModelForm):
     class Meta:
         model = Item
@@ -114,8 +120,8 @@ class ItemAddForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
 
-class HistoryAddForm(forms.ModelForm):
 
+class HistoryAddForm(forms.ModelForm):
     class Meta:
         model = History
         fields = ['user']
@@ -125,6 +131,7 @@ class HistoryAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
 
 class ResultAddForm(forms.ModelForm):
 
@@ -156,7 +163,7 @@ class GroupForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['private'].initial = False
         self.fields['private'].widget = forms.HiddenInput()
-        self.fields['group_name'].widget.attrs.update({'placeholder': 'グループ名を入力してください'})
+        self.fields['group_name'].widget.attrs.update({'placeholder': 'グループ名を入力'})
         if user:
             self.fields['user'].initial = user
 
@@ -165,7 +172,7 @@ class JoinGroupForm(forms.Form):
         label='グループID',
         max_length=12,
         required=True,
-        widget=forms.TextInput(attrs={'placeholder': 'グループIDを入力してください'})
+        widget=forms.TextInput(attrs={'placeholder': 'グループIDを入力'})
     )
 
 class GroupJoinForm(forms.ModelForm):
@@ -178,3 +185,4 @@ class GroupJoinForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         self.fields['group'].widget.attrs['class'] = 'form-control'
+

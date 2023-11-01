@@ -12,6 +12,7 @@ import cv2
 import re
 import shutil
 
+
 class Group(models.Model):
     """グループモデル"""
     
@@ -25,6 +26,7 @@ class Group(models.Model):
     def __str__(self):
         return self.group_name + "_" + self.user.username
 
+
 class GroupMember(models.Model):
     """グループメンバーモデル"""
     
@@ -36,6 +38,7 @@ class GroupMember(models.Model):
     
     def __str__(self):
         return self.group.group_name + "_" + self.user.username
+
 
 class Asset(models.Model):
     """管理項目モデル"""
@@ -63,6 +66,7 @@ class Asset(models.Model):
         # 親クラスのsaveメソッドを呼び出す
         super().save(*args, **kwargs)
 
+
 class Item(models.Model):
     """アイテムモデル"""
     
@@ -87,6 +91,7 @@ class Item(models.Model):
     
     def __str__(self):
         return self.asset.asset_name + "_" + self.item_name
+
 
 class Image(models.Model):
     """画像モデル"""
@@ -137,6 +142,7 @@ class Image(models.Model):
     def __str__(self):
         return self.asset.asset_name + "_" + self.taken_at.astimezone(tz=None).strftime('%Y-%m-%d %H:%M:%S')
 
+
 class History(models.Model):
     """履歴モデル"""
     
@@ -171,6 +177,7 @@ class History(models.Model):
     
     def __str__(self):
         return self.asset.asset_name + "_" + self.updated_at.astimezone(tz=None).strftime('%Y-%m-%d %H:%M:%S')
+
 
 class Result(models.Model):
     """アイテム別履歴モデル"""

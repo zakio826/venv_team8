@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% block title %}履歴詳細 | ToolKeeper{% endblock %}
 
-{% block title %}History Detail{% endblock %}
+{% block active_asset_list %}active{% endblock %}
 
 {% block contents %}
 <section class="py-5">
@@ -10,32 +11,36 @@
         </div>
 
         <div class="container my-5">
+            <hr>
             <div class="row">
                 <div class="col-8">
-                    <div class="col-3 col-lg-2">
-                        <strong>写真</strong>
-                    </div>
-                    <div class="col-9 col-lg-10">
-                        <img id="image" src="{{ history.image.url }}" style="display: none;"/>
+                    <strong>写真</strong>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <strong>アイテム一覧/詳細結果</strong>
                     </div>
                 </div>
-                <div class="col scrollable-detail" id="check_list">
-                    <div>
-                        <strong>アイテム一覧</strong>
-                    </div>
-                    <div class="col-9 col-lg-10">
+            </div>
+            <div class="row">
+                <div class="col-8">
+                    <img src="{{ image.image.url }}" width="100%"/>
+                </div>
+                <div class="col" id="check_list" style="position: relative;">
+                    <div class="row" style="position: absolute; overflow-y: scroll; max-height: 100%;">
                         {% for result in history.result_set.all %}
                             {% if result.result_class != 9 %}
-                            <li>
-                                {{ result.item.item_name }} [詳細結果:
+                            <li class="mb-2">
+                                {{ result.item.item_name }}：
                                 {% if result.result_class == 0 %}
-                                    無し
+                                    <u><font color="#ff6347">無し</font></u>
+                            
                                 {% elif result.result_class == 1 %}
-                                    有り
+                                    <u><font color="#99CC33">有り</font></u>
                                 {% else %}
                                     {{ result.result_class }}
                                 {% endif %}
-                                ]
+                                
                             </li>
                             {% endif %}
                         {% empty %}
@@ -82,16 +87,16 @@
             <hr>
 
             <div class="row">
-                <div class="col-3">
+                <div class="col-3 col-lg-2">
                     <strong>確認日時</strong>
-                </div> <div class="col-9">
+                </div> <div class="col-9 col-lg-10">
                     {{ history.checked_at }}
                 </div>
             </div>
             
             <hr>
             
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-3">
                     <strong>更新日時</strong>
                 </div>
@@ -99,7 +104,7 @@
                     {{ history.updated_at }}
                 </div>
             </div>
-            <hr>
+            <hr> -->
 
             <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
         </div>

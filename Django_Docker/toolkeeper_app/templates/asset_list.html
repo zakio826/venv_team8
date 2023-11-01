@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}管理項目一覧 | toolkeeper{% endblock %}
+{% block title %}管理項目一覧 | ToolKeeper{% endblock %}
 
 {% block active_asset_list %}active{% endblock %}
 
@@ -11,12 +11,12 @@
 <!-- Section-->
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
-        <div class="d-flex justify-content-end mb-4">
-            <button class="learn-more">
+        <div class="row d-flex justify-content-end mb-4">
+            <button class="col-auto learn-more">
                 <span class="circle" aria-hidden="true">
                   <span class="icon arrow"></span>
                 </span>
-                <span class="button-text">
+                <span class="col-auto button-text">
                     <a class="nav-link" href="{% url 'toolkeeper_app:asset_create' %}">新規作成</a>
                 </span>
             </button>
@@ -48,7 +48,7 @@
         <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
             {% for image in page_obj %}
                 <div class="col mb-5">
-                    <div class="card h-100">
+                    <div class="card">
                         <a class="btn" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">
                             <!--badge-->
                             <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">box</div>
@@ -62,9 +62,16 @@
                                     <!-- Product name-->
                                     <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>
                                     <!-- Product reviews-->
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <!--何か入れたければ入れる-->
+                                    </div>
                                 </div>
                             </div>
                         </a>
+                        <!-- Product actions-->
+                        <!-- <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                            <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">詳細</a></div>
+                        </div> -->
                     </div>
                 </div>
                 {% empty %}

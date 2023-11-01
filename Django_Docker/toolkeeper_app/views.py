@@ -16,7 +16,6 @@ from django.http import Http404
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-# from .forms import InquiryForm, AssetCreateForm, ItemAddForm, ImageAddForm, AssetMultiCreateForm, ItemMultiAddForm, GroupJoinForm, ItemAddEXForm, .
 from .forms import *
 from accounts.models import CustomUser
 from django.db import models
@@ -56,6 +55,7 @@ class InquiryView(generic.FormView):
         logger.info('Inquiry sent by {}'.format(form.cleaned_data['name']))
         return super().form_valid(form)
 
+
 class AssetListView(LoginRequiredMixin, generic.ListView):
     model = Asset
     template_name = 'asset_list.html'
@@ -85,6 +85,7 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
 
         return context
+
 
 class AssetDetailView(LoginRequiredMixin, generic.DetailView):
     model = Asset
@@ -181,7 +182,8 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         }
         context.update(extra)
         return context
-    
+
+
 class AssetCreateView(LoginRequiredMixin, generic.CreateView):
     model = Asset
     template_name = 'asset_create.html'
@@ -392,9 +394,7 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         context = super().get_context_data(**kwargs)
 
         # URLから情報を抽出
-        ttt = re.findall(r'\d+', self.request.path)
-        self.id = int(ttt[0])
-        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.id)
+        history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.kwargs[self.pk_url_kwarg])
         result = Result.objects.get(history=history)
 
         extra = {
@@ -453,7 +453,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name))
+        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
@@ -670,7 +670,6 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
             history_list = history_list.order_by('-updated_at')
 
         return history_list
-
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -684,8 +683,7 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
 
         return context
-    
-    
+
 
 class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
     model = History
@@ -694,8 +692,14 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+        # history オブジェクトを正しく取得
+        history = context['history']
+        # 関連する image オブジェクトを取得
+        image = history.image
+        context['image'] = image  # テンプレートに image を追加
+        context.update(context)
         return context
+
 
 
 
@@ -773,7 +777,7 @@ def create_group(request):
 
             GroupMember.objects.create(user=request.user, group=group)
 
-            return redirect('toolkeeper_app:index')
+            return redirect('toolkeeper_app:group_list')
 
     else:
         form = GroupForm()
@@ -823,11 +827,13 @@ def group_detail(request, group_id):
     group = get_object_or_404(Group, pk=group_id)
     members_count = group.groupmember_set.count()
 
+    # 管理項目を取得
+    assets = Asset.objects.filter(group=group)
+
     if request.method == 'POST' and 'delete_group' in request.POST:
-        # 削除確認のための URL にリダイレクト
         return redirect('toolkeeper_app:group_delete', group_id=group_id)
 
-    return render(request, 'group_detail.html', {'group': group, 'members_count': members_count})
+    return render(request, 'group_detail.html', {'group': group, 'members_count': members_count, 'assets': assets})
 
 @login_required
 def group_delete(request, group_id):
@@ -846,6 +852,7 @@ def group_delete(request, group_id):
 def group_list(request):
     user_groups = GroupMember.objects.filter(user=request.user)
     return render(request, 'group_list.html', {'user_groups': user_groups})
+
 
 
 

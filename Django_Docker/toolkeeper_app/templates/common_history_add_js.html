@@ -118,7 +118,7 @@
             x_min_fit = box_x_min * x_fit;
             y_min_fit = box_y_min * y_fit;
             
-            check_list.style = `overflow-y: scroll; height: ${canvas.height - all_check.getBoundingClientRect().height};`;
+            check_list.style = `overflow-y: scroll; height: ${canvas.height - all_check.getBoundingClientRect().height - 16};`;
             ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
         }
 
@@ -203,7 +203,7 @@
         let x_min_fit = box_x_min * x_fit;
         let y_min_fit = box_y_min * y_fit;
 
-        check_list.style = `overflow-y: scroll; height: ${canvas.height - all_check.getBoundingClientRect().height};`;
+        check_list.style = `overflow-y: scroll; height: ${canvas.height - all_check.getBoundingClientRect().height - 16};`;
 
         for (let i = 0; i < set.length; i++) {
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
