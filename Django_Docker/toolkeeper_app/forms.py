@@ -59,7 +59,7 @@ class GroupFilterForm(forms.Form):
         queryset=Group.objects.none(),  # 最初は空のクエリセット
         empty_label='すべてのグループ',
         required=False,
-        label='グループ'
+        label='絞り込み'
     )
 
     def __init__(self, user, *args, **kwargs):
@@ -75,6 +75,23 @@ class SortForm(forms.Form):
         ('desc', '降順'),
     ]
     sort_order = forms.ChoiceField(choices=choices, required=False, label='ソート順')
+
+class UserFilterForm(forms.Form):
+    user = forms.ModelChoiceField(
+        queryset=CustomUser.objects.all(),
+        empty_label='すべてのユーザー',
+        required=False,
+        label=''
+    )
+
+class AssetFilterForm(forms.Form):
+    asset = forms.ModelChoiceField(
+        queryset=Asset.objects.all(),
+        empty_label='すべての管理項目',
+        required=False,
+        label=''
+    )
+
 
 
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):

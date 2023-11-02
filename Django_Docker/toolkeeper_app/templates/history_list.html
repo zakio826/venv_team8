@@ -11,9 +11,15 @@
             <h2>履歴一覧</h2>
         </div>
         <form method="get">
-            {{ group_filter_form.as_p }}
-            {{ sort_form.as_p }}
-            <button type="submit" class="btn btn-3">絞り込みとソート</button>
+            <div class="mb-4">            
+                <div class="mb-1">
+                    {{ group_filter_form }}｜{{ user_filter_form }}｜{{ asset_filter_form }}
+                </div>
+                {{ sort_form.as_p }}
+            </div>
+            <div>
+                <button type="submit" class="btn btn-3">絞り込みとソート</button>
+            </div>
         </form>
         <hr>
 
@@ -59,19 +65,20 @@
             <!-- ページネーションリンクの表示 -->
             <!-- ページネーションリンク -->
             {% if page_obj.paginator.count > 0 %}
+            <!-- ページネーションリンク -->
             <div class="d-flex justify-content-center mt-4">
                 <ul class="pagination">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">最初</a>
+                        <a class="page-link" href="?page=1&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">最初</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">前へ</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">前へ</a>
                     </li>
                     {% endif %}
                     <!-- ページ番号のセレクトボックス -->
                     <li class="page-item">
-                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}';">
+                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}';">
                             {% for page_num in page_obj.paginator.page_range %}
                                 <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
                             {% endfor %}
@@ -79,16 +86,15 @@
                     </li>
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">次へ</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">次へ</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&sort_order={{ request.GET.sort_order }}">最後</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">最後</a>
                     </li>
                     {% endif %}
                 </ul>
             </div>
             {% endif %}
-
         </div>
     </div>
 </section>
