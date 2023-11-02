@@ -8,10 +8,10 @@
                 <h2>ログアウトしますか？</h2>
                 <p class="lead fw-normal text-muted text-center mb-3" style="font-size: 15px;"><u><font color="#99CC33">{{ request.user.username }}</font></u>からログアウトしてもよろしいですか？</p>
                 <button class="btn btn-lg btn-danger mx-2">
-                    <a class="nav-link" href="{% url 'account_logout' %}">はい、ログアウトする</a>
+                    <a class="nav-link" href="{% url 'account_logout' %}">ログアウト</a>
                 </button>
                 <button class="btn btn-lg btn-3 mx-2">
-                    <a class="nav-link" href="{% url 'toolkeeper_app:index' %}">いいえ、キャンセル</a>
+                    <a class="nav-link" href="{% url 'toolkeeper_app:index' %}">キャンセル</a>
                 </button>
             </div>
         </div>

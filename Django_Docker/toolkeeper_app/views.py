@@ -652,7 +652,7 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
     model = History
     template_name = 'history_list.html'
     context_object_name = 'history_list'
-    paginate_by = 1
+    paginate_by = 9
 
     def get_queryset(self):
         user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
