@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+<section class="py-5">
+    <div class="container px-5">
+        <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-3">
+            <div class="text-center">
+                <h2>ログアウトしますか？</h2>
+                <p class="lead fw-normal text-muted text-center mb-3" style="font-size: 15px;"><u><font color="#99CC33">{{ request.user.username }}</font></u>からログアウトしてもよろしいですか？</p>
+                <button class="btn btn-lg btn-danger mx-2">
+                    <a class="nav-link" href="{% url 'account_logout' %}">はい、ログアウトする</a>
+                </button>
+                <button class="btn btn-lg btn-3 mx-2">
+                    <a class="nav-link" href="{% url 'toolkeeper_app:index' %}">いいえ、キャンセル</a>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

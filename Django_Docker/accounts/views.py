@@ -7,6 +7,10 @@ from toolkeeper_app.models import Group, GroupMember
 from django.contrib.auth import login
 from django.contrib import messages
 
+from django.views import generic
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
 from django.conf import settings
 
 import secrets
@@ -60,3 +64,20 @@ class LoginView(AllauthLoginView):
             group_id = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
             if not Group.objects.filter(group_id=group_id).exists():
                 return group_id
+            
+
+class ConfirmLogoutView(generic.View):
+    template_name = 'account/confirm_logout.html'
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('confirm') == 'yes':
+            # ユーザーがログアウトを確認した場合
+            # Djangoの組み込みのログアウトビューをリダイレクトして呼び出します
+            from django.contrib.auth.views import LogoutView
+            return LogoutView.as_view()(request)
+        else:
+            # ユーザーがログアウトをキャンセルした場合
+            return HttpResponseRedirect(reverse('toolkeeper_app:asset_list'))(request, 'account/confirm_logout.html')
