@@ -62,6 +62,19 @@
         box_in[i].checked = true;
     }
 
+    function switch_scroll() {
+        if (window.innerWidth >= 576) {
+            var max_h = canvas.getBoundingClientRect().height;
+            check_list.style.overflowY = "scroll";
+            check_list.style.overflowX = "none";
+        }
+        else {
+            var max_h = 130;
+            check_list.style.overflowY = "none";
+            check_list.style.overflowX = "scroll";
+        }
+    };
+
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
             console.log("tttt");
