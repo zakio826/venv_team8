@@ -9,7 +9,7 @@
 <div class="container my-5">
     <div class="row justify-content-around mt-4" id="checked" style="display: none;">
         <h3 class="col-12 col-md-9" style="text-align: center; margin-top: 0.5rem;">アイテムが全て入るよう、外枠を囲ってください。</h3>
-        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" onclick="del_box(); auto_fit();">画像読込</button>
+        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" onclick="auto_fit();">画像読込</button>
 
         <hr class="my-3">
     </div>
@@ -147,7 +147,8 @@
 
             set = true;
         }
-        ctx.drawImage(image, 0, 0);
+        // ctx.drawImage(image, 0, 0);
+        draw_box(true);
     };
 
 
