@@ -1,25 +1,25 @@
 {% for item in items reversed %}
+<div class="row justify-content-around w-100 mt-4 mt-md-auto" id="ctrl_{{ forloop.counter0 }}">
+    {% include 'common_history_check_list.html' %}
 
-{% include 'common_history_check_list.html' %}
-        
-<div class="row justify-content-around w-100">
-    <div class="my-check col-12 col-xl-5 my-xl-2">
+    <div class="my-check col-12 col-xl-5 my-xl-2 mt-3">
         <input class="btn-check" type="checkbox" id="check_{{ forloop.counter0 }}" name="check" disabled>
         <label class="btn my-btn-common my-check-green w-100" for="check_{{ forloop.counter0 }}" onclick="check_box('{{ forloop.counter0 }}');">
             <span name="checked">チェック</span>
         </label>
     </div>
-
+    
     <div class="my-check col-12 col-xl-5 my-2 my-xl-2">
         <input class="btn-check" type="checkbox" id="box_{{ forloop.counter0 }}" name="box" disabled>
         <label class="btn my-btn-common my-check-red w-100" for="box_{{ forloop.counter0 }}" onclick="del_box('{{ forloop.counter0 }}');">座標取消</label>
     </div>
+
 </div>
 
-<div id="all_check">
-    <hr>
-    <button class="btn my-btn-common my-btn-green w-100" type="button">一括チェック</button>
-</div>
+<!-- <div class="row justify-content-around w-100">
+</div> -->
+
 
 {% endfor %}
+
 

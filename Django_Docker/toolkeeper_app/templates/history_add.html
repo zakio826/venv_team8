@@ -40,13 +40,21 @@
             </div>
         </div>
         <div class="col-11 col-md-4">
-            <div class="d-inline-block d-md-block" id="check_list" style="overflow: auto; height: 100%;">
-                {% if create == 0 %}
-                    {% include 'common_history_add.html' %}
-                {% else %}
-                    {% include 'common_history_create.html' %}
-                {% endif %}
+            <div id="check_list" style="overflow: auto;">
+                <div class="d-flex d-md-block" id="switch_width" style="height: 100%;">
+                    {% if create == 0 %}
+                        {% include 'common_history_add.html' %}
+                    {% else %}
+                        {% include 'common_history_create.html' %}
+                    {% endif %}
+                </div>
             </div>
+            {% if create == 0 %}
+            <div id="all_check">
+                <hr>
+                <button class="btn my-btn-common my-btn-green w-100" type="button">一括チェック</button>
+            </div>
+            {% endif %}
         </div>
     </div>
 
