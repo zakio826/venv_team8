@@ -84,6 +84,14 @@ class UserFilterForm(forms.Form):
         label=''
     )
 
+    def __init__(self, user, *args, **kwargs):
+        super(UserFilterForm, self).__init__(*args, **kwargs)
+        # ユーザーが所属するすべてのグループを取得
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+        # フォームのユーザー選択肢を、ユーザーが所属するグループのユーザーに制限
+        self.fields['user'].queryset = CustomUser.objects.filter(groupmember__group__in=user_groups).distinct()
+
+
 class AssetFilterForm(forms.Form):
     asset = forms.ModelChoiceField(
         queryset=Asset.objects.all(),
@@ -91,6 +99,15 @@ class AssetFilterForm(forms.Form):
         required=False,
         label=''
     )
+
+    def __init__(self, user, *args, **kwargs):
+        super(AssetFilterForm, self).__init__(*args, **kwargs)
+        # ユーザーが所属するすべてのグループを取得
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+        # フォームのアセット選択肢を、ユーザーが所属するグループのアセットに制限
+        self.fields['asset'].queryset = Asset.objects.filter(group__in=user_groups).distinct()
+
+
 
 
 

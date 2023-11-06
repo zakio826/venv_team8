@@ -655,7 +655,8 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
     paginate_by = 9
 
     def get_queryset(self):
-        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
+        user = self.request.user
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
         history_list = History.objects.filter(group__in=user_groups)
 
         selected_group = self.request.GET.get('group')
@@ -668,7 +669,7 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
 
         selected_asset = self.request.GET.get('asset')
         if selected_asset:
-            history_list = history_list.filter(asset=selected_asset)  # 管理項目で絞り込む条件を追加
+            history_list = history_list.filter(asset=selected_asset)
 
         # ソート条件を取得
         sort_order = self.request.GET.get('sort_order')
@@ -679,19 +680,21 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
 
         return history_list
 
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
         context['sort_form'] = SortForm(data=self.request.GET)
-
-        history_list = History.objects.filter(group__in=user_groups)
-        page = self.request.GET.get('page')
-
+        
+        # user_filter_form = UserFilterForm(user=self.request.user, data=self.request.GET)  # user引数を渡す
+        # asset_filter_form = AssetFilterForm(user=self.request.user, data=self.request.GET)  #            引数を渡す
+        
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
-        context['user_filter_form'] = UserFilterForm(data=self.request.GET)
-        context['asset_filter_form'] = AssetFilterForm(data=self.request.GET)  # 管理項目のフィルターフォームを追加
+        context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
+        context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
 
         return context
+
 
 
 class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
@@ -888,6 +891,19 @@ def group_host(request, group_id):
 
     return render(request, 'group_host.html', {'group': group, 'group_members': group_members})
 
+@login_required
+def group_leave(request, group_id):
+    group = get_object_or_404(Group, pk=group_id)
+    
+    if request.method == 'POST' and 'confirm_leave' in request.POST:
+        group_member = GroupMember.objects.get(group=group, user=request.user)
+        group_member.delete()  # グループからユーザーを削除
+        messages.success(request, 'グループから退会しました。')
+        return redirect('toolkeeper_app:group_list')
+    elif request.method == 'POST' and 'cancel_leave' in request.POST:
+        return redirect('toolkeeper_app:group_detail', group_id=group_id)
+
+    return render(request, 'group_leave.html', {'group': group})
 
 
 

@@ -50,19 +50,24 @@
                 </div>
             </div>
         </div>
+        {% if group.user == request.user %}
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-lg btn-danger" name="delete_group">グループ削除</button>
+                {% if not group.private %}
+                    <button class="btn btn-lg btn-success">
+                        <a class="nav-link" href="{% url 'toolkeeper_app:group_host' group.id %}">ホストを変更</a>
+                    </button>
+                {% endif %}
+            </form>
+        {% endif %}
+        {% if group.user != request.user %}
+            <button class="btn btn-lg btn-danger mb-3">
+                <a class="nav-link" href="{% url 'toolkeeper_app:group_leave' group.id %}">グループを退会</a>
+            </button>
+        {% endif %}
         <div class="d-grid">
-            {% if group.user == request.user %}
-                <form method="post">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-lg btn-danger" name="delete_group">グループ削除</button>
-                    {% if not group.private %}
-                        <button class="btn btn-lg btn-success">
-                            <a class="nav-link" href="{% url 'toolkeeper_app:group_host' group.id %}">ホストを変更</a>
-                        </button>
-                    {% endif %}
-                </form>
-            {% endif %}
-            <button class="btn btn-lg btn-2">
+            <button class="btn btn-lg btn-2 d-grid">
                 <a class="nav-link" href="{% url 'toolkeeper_app:group_list' %}">グループ一覧に戻る</a>
             </button>
         </div>
