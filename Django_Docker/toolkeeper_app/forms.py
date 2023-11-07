@@ -56,7 +56,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 class GroupFilterForm(forms.Form):
     group = forms.ModelChoiceField(
-        queryset=Group.objects.none(),  # 最初は空のクエリセット
+        queryset=Group.objects.none(),
         empty_label='すべてのグループ',
         required=False,
         label='絞り込み'
@@ -65,12 +65,18 @@ class GroupFilterForm(forms.Form):
     def __init__(self, user, *args, **kwargs):
         super(GroupFilterForm, self).__init__(*args, **kwargs)
         # ユーザーが所属しているすべてのグループを取得し、クエリセットを設定
-        self.fields['group'].queryset = Group.objects.filter(groupmember__user=user)
+        user_groups = Group.objects.filter(groupmember__user=user)
+        self.fields['group'].queryset = user_groups
+
+        # グループ名を加工して表示用の選択肢を設定
+        group_choices = [(group.id, group.group_name.split("_")[0]) for group in user_groups]
+
+        self.fields['group'].choices = [(None, self.fields['group'].empty_label)] + group_choices
+
 
 
 class SortForm(forms.Form):
     choices = [
-        ('', 'ソート順を選択'),
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
@@ -91,7 +97,6 @@ class UserFilterForm(forms.Form):
         # フォームのユーザー選択肢を、ユーザーが所属するグループのユーザーに制限
         self.fields['user'].queryset = CustomUser.objects.filter(groupmember__group__in=user_groups).distinct()
 
-
 class AssetFilterForm(forms.Form):
     asset = forms.ModelChoiceField(
         queryset=Asset.objects.all(),
@@ -102,10 +107,18 @@ class AssetFilterForm(forms.Form):
 
     def __init__(self, user, *args, **kwargs):
         super(AssetFilterForm, self).__init__(*args, **kwargs)
+
         # ユーザーが所属するすべてのグループを取得
         user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+
         # フォームのアセット選択肢を、ユーザーが所属するグループのアセットに制限
-        self.fields['asset'].queryset = Asset.objects.filter(group__in=user_groups).distinct()
+        assets = Asset.objects.filter(group__in=user_groups).distinct()
+
+        # アセット名を加工して表示
+        asset_choices = [(asset.id, asset.asset_name.split("_")[-1]) for asset in assets]
+
+        self.fields['asset'].choices = [(None, self.fields['asset'].empty_label)] + asset_choices
+
 
 
 

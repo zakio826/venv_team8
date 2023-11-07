@@ -819,7 +819,7 @@ def join_group(request):
                 messages.error(request, '提供されたグループIDが存在しません。正しいグループIDを入力してください.')
             else:
                 if group.private:
-                    messages.error(request, 'このグループは個人利用グループであり、参加できません.')
+                    messages.error(request, 'このグループは個人利用グループのため参加できません.')
                 else:
                     user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
                     if user_already_in_group:
