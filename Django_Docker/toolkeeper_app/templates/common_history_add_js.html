@@ -99,18 +99,20 @@
 
     function switch_scroll() {
         if (window.innerWidth >= 768) {
-            var max_h = canvas.height;
+            var max_h = canvas.height - all_check.getBoundingClientRect().height - 16;
             switch_width.style.width = "auto";
-            for (let i = 0; i < set.length; i++) {
-                document.getElementById(`ctrl_${i}`).style.margin = "auto";
-            }
+            check_list.style.marginTop = "auto";
+            // for (let i = 0; i < set.length; i++) {
+            //     document.getElementById(`ctrl_${i}`).style.margin = "auto";
+            // }
         }
         else {
             var max_h = 200;
-            switch_width.style.width = "850px";
-            for (let i = 0; i < set.length; i++) {
-                document.getElementById(`ctrl_${i}`).style.margin = "0 2px";
-            }
+            switch_width.style.width = 210 * set.length;
+            check_list.style.marginTop = "30px";
+            // for (let i = 0; i < set.length; i++) {
+            //     document.getElementById(`ctrl_${i}`).style.margin = "auto";
+            // }
         }
         check_list.style.height = max_h;
 
