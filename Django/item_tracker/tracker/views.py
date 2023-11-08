@@ -1,5 +1,6 @@
 from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render,redirect
 
 from django.http import HttpResponse
 
@@ -13,6 +14,7 @@ from .forms import InquiryForm, AssetCreateForm, ItemAddForm, ImageAddForm, Item
 from accounts.models import CustomUser
 from django.db import models
 from .models import Group, GroupMember, Asset, Item, Image, History, Result
+from django.forms import formset_factory
 
 logger = logging.getLogger(__name__)
 from django.contrib import messages
@@ -186,77 +188,29 @@ def wrap_boolean_check(v):
         return not (v is False or v is None or v == '' or v == 0)
 
 class ItemAddView(LoginRequiredMixin, generic.CreateView):
-    model = Asset
     template_name = 'item_add.html'
-    pk_url_kwarg = 'id'
-    # slug_field = "asset_name" # モデルのフィールドの名前
-    # slug_url_kwarg = "asset_name" # urls.pyでのキーワードの名前
     form_class = ItemAddForm
     success_url = reverse_lazy('tracker:asset_list')
 
-    # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
-        # 既存のget_context_dataをコール
         context = super().get_context_data(**kwargs)
         ttt = re.findall(r'\d+', self.request.path)
         self.id = int(ttt[0])
-        print(self.id)
-        print(Asset.objects.get(id=self.id))
         assets = Asset.objects.prefetch_related('group').get(id=self.id)
         context['form'].fields['group'].initial = assets.group
         context['form'].fields['asset'].initial = assets
         return context
 
-    
-
     def form_valid(self, form):
         asset = form.save(commit=False)
         asset.user = self.request.user
         asset.save()
-        # print("asd", form.fields)
-        # print("asdfsda", form.fields['finish'].initial)
-        # print("mmm", form.fields['item_name'])
-        # print("add", form.fields['repeat'].initial)
-        # print("fff", form)
-        # print("sss", self.get_form_kwargs())
-        form_kwargs = self.get_form_kwargs()
-        # print("rrr", form_kwargs)
-        finish = form_kwargs['data']['finish']
-        # print("qqq", finish)
-        # print("ttt", form.fields['finish'])
-        # print("aaa", form.fields['finish'].initial)
-        # print("ppp", form.fields['finish'].choices)
-        # print("ddd", type(form.fields['finish'].initial))
-        # print("aff", form.fields['finish'].widget.check_test)
-        # print("affff", wrap_boolean_check(form.fields['finish'].widget.check_test))
-        # print("a", form.fields['finish'].widget.attrs['value'])
-        # print("d", type(form.fields['finish'].widget.attrs['value']))
-        if finish == '0':
-            print("true")
-            ttt = re.findall(r'\d+', self.request.path)
-            self.id = int(ttt[0])
-            self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-        else:
-            print("false")
-            self.success_url = reverse_lazy('tracker:asset_list')
-            # ttt = re.findall(r'\d+', self.request.path)
-            # self.id = int(ttt[0])
-            # self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
-            
-        # ttt = re.findall(r'\d+', self.request.path)
-        # self.id = int(ttt[0])
-        # self.success_url = reverse_lazy(f'tracker:item_add', kwargs={'id': self.id})
         messages.success(self.request, 'アイテムを追加しました。')
         return super().form_valid(form)
-    
+
     def form_invalid(self, form):
-        print("rrr", form.fields['finish'])
-        print("aaa", form.fields['finish'].initial)
-        print("aaa", form.fields['finish'].choices)
         messages.error(self.request, "アイテムの追加に失敗しました。")
         return super().form_invalid(form)
-
-
 
 
 
