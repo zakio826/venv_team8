@@ -56,6 +56,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 class GroupFilterForm(forms.Form):
     group = forms.ModelChoiceField(
+        widget=forms.Select(attrs={'class': 'filter-form'}),
         queryset=Group.objects.none(),
         empty_label='すべてのグループ',
         required=False,
@@ -80,10 +81,11 @@ class SortForm(forms.Form):
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(choices=choices, required=False, label='ソート順')
+    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート順')
 
 class UserFilterForm(forms.Form):
     user = forms.ModelChoiceField(
+        widget=forms.Select(attrs={'class': 'filter-form'}),
         queryset=CustomUser.objects.all(),
         empty_label='すべてのユーザー',
         required=False,
@@ -99,6 +101,7 @@ class UserFilterForm(forms.Form):
 
 class AssetFilterForm(forms.Form):
     asset = forms.ModelChoiceField(
+        widget=forms.Select(attrs={'class': 'filter-form'}),
         queryset=Asset.objects.all(),
         empty_label='すべての管理項目',
         required=False,

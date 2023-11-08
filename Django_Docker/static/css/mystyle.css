@@ -309,3 +309,22 @@ button:hover .button-text {
   text-shadow: -1px -1px 0 #888888;
   transition: all 250ms linear;
 }
+
+.filter-form {
+  border: 1px solid #ccc;
+  border-radius: 5px; /* 角丸 */
+  background-color: #fff;
+  color: #333;
+  padding: 3px;
+}
+
+/* フォーカス時のスタイル */
+.filter-form:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* ホバー時のスタイル */
+.filter-form:hover {
+  border-color: #999;
+}

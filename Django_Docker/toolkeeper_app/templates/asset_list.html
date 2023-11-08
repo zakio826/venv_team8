@@ -51,7 +51,7 @@
                     <div class="card">
                         <a class="btn" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">
                             <!--badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem">box</div>
+                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.8rem; font-size: 15px;">{{ image.asset.group.group_name }}</div>
                             <!-- Product image-->
                             {% if image.image %}
                                 <img class="card-img-top" src="{{ image.image.url }}" alt="..." />
@@ -68,10 +68,6 @@
                                 </div>
                             </div>
                         </a>
-                        <!-- Product actions-->
-                        <!-- <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                            <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">詳細</a></div>
-                        </div> -->
                     </div>
                 </div>
                 {% empty %}
