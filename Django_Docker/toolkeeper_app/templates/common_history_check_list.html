@@ -1,0 +1,9 @@
+<div class="col col-md-6" id="item_{{ forloop.counter0 }}_name" style="display:flex; align-items: center;">{{ item.item_name }}</div>
+<div class="col-auto my-check">
+    {% if forloop.first %}
+        <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set" checked>
+    {% else %}
+        <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set">
+    {% endif %}
+    <label class="btn my-btn-common my-check-blue" for="set_{{ forloop.counter0 }}" onclick="auto_fit(); draw_box('{{ forloop.counter0 }}');">選択</label>
+</div>
