@@ -124,14 +124,14 @@ class AssetFilterForm(forms.Form):
 
 
 class SearchForm(forms.Form):
-    search_query = forms.CharField(
-        max_length=100,
-        required=False,
-        label='検索',
-    )
+    # search_query = forms.CharField(
+    #     max_length=100,
+    #     required=False,
+    #     label='検索',
+    # )
     checked_at = forms.DateField(
         label='確認日時',
-        widget=forms.DateInput(attrs={'type': 'date'}),  # 日付入力用のウィジェットを指定
+        widget=forms.DateInput(attrs={'type': 'date','class': 'filter-form'}),  # 日付入力用のウィジェットを指定
         required=False
     )
 

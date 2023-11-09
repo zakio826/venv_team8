@@ -660,17 +660,16 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
         history_list = History.objects.filter(group__in=user_groups)
 
-         # テキスト検索のクエリを取得
-        search_query = self.request.GET.get('search_query')
+        # search_query = self.request.GET.get('search_query')
         checked_at = self.request.GET.get('checked_at')
 
         # グループ、ユーザー、管理項目に対して OR 検索を行う
-        if search_query:
-            history_list = history_list.filter(
-                Q(group__group_name__icontains=search_query) |
-                Q(user__username__icontains=search_query) |
-                Q(asset__asset_name__icontains=search_query)
-            )
+        # if search_query:
+        #     history_list = history_list.filter(
+        #         Q(group__group_name__icontains=search_query) |
+        #         Q(user__username__icontains=search_query) |
+        #         Q(asset__asset_name__icontains=search_query)
+        #     )
             
         if checked_at:
             history_list = history_list.filter(checked_at__date=checked_at)
