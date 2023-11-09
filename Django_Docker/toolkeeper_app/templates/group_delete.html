@@ -5,7 +5,8 @@
     <div class="container px-5">
         <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-3">
             <div class="text-center mb-5">
-                <h5 class="mb-5">グループを削除しますか？</h5>
+                <h2 class="mb-5">グループを削除しますか？</h2>
+                <p class="lead fw-normal text-muted text-center mb-3" style="font-size: 15px;"><u><font color="#99CC33">{{ group.group_name }}</font></u>を削除してもよろしいですか？</p>
                 <form method="post">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger mx-2" name="confirm_delete">削除する</button>

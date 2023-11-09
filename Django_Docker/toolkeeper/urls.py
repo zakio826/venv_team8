@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.staticfiles.urls import static
 from django.urls import path, include
-from accounts.views import LoginView
+from accounts.views import LoginView, ConfirmLogoutView
 
 from . import settings_common, settings_dev
 
@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('toolkeeper_app.urls')),
     path('accounts/login/', LoginView.as_view(), name='account_login'),
+    path('accounts/confirm_logout/', ConfirmLogoutView.as_view(), name='confirm_logout'),
     path('accounts/', include('allauth.urls')),
 ]
 

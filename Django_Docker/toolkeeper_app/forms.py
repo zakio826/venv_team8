@@ -56,25 +56,75 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 class GroupFilterForm(forms.Form):
     group = forms.ModelChoiceField(
-        queryset=Group.objects.none(),  # 最初は空のクエリセット
+        widget=forms.Select(attrs={'class': 'filter-form'}),
+        queryset=Group.objects.none(),
         empty_label='すべてのグループ',
         required=False,
-        label='グループ'
+        label='絞り込み'
     )
 
     def __init__(self, user, *args, **kwargs):
         super(GroupFilterForm, self).__init__(*args, **kwargs)
         # ユーザーが所属しているすべてのグループを取得し、クエリセットを設定
-        self.fields['group'].queryset = Group.objects.filter(groupmember__user=user)
+        user_groups = Group.objects.filter(groupmember__user=user)
+        self.fields['group'].queryset = user_groups
+
+        # グループ名を加工して表示用の選択肢を設定
+        group_choices = [(group.id, group.group_name.split("_")[0]) for group in user_groups]
+
+        self.fields['group'].choices = [(None, self.fields['group'].empty_label)] + group_choices
+
 
 
 class SortForm(forms.Form):
     choices = [
-        ('', 'ソート順を選択'),
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(choices=choices, required=False, label='ソート順')
+    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート順')
+
+class UserFilterForm(forms.Form):
+    user = forms.ModelChoiceField(
+        widget=forms.Select(attrs={'class': 'filter-form'}),
+        queryset=CustomUser.objects.all(),
+        empty_label='すべてのユーザー',
+        required=False,
+        label=''
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super(UserFilterForm, self).__init__(*args, **kwargs)
+        # ユーザーが所属するすべてのグループを取得
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+        # フォームのユーザー選択肢を、ユーザーが所属するグループのユーザーに制限
+        self.fields['user'].queryset = CustomUser.objects.filter(groupmember__group__in=user_groups).distinct()
+
+class AssetFilterForm(forms.Form):
+    asset = forms.ModelChoiceField(
+        widget=forms.Select(attrs={'class': 'filter-form'}),
+        queryset=Asset.objects.all(),
+        empty_label='すべての管理項目',
+        required=False,
+        label=''
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        super(AssetFilterForm, self).__init__(*args, **kwargs)
+
+        # ユーザーが所属するすべてのグループを取得
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+
+        # フォームのアセット選択肢を、ユーザーが所属するグループのアセットに制限
+        assets = Asset.objects.filter(group__in=user_groups).distinct()
+
+        # アセット名を加工して表示
+        asset_choices = [(asset.id, asset.asset_name.split("_")[-1]) for asset in assets]
+
+        self.fields['asset'].choices = [(None, self.fields['asset'].empty_label)] + asset_choices
+
+
+
+
 
 
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
