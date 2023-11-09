@@ -211,7 +211,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
 
         # フォームのgroupフィールドのクエリセットを設定
         context['form'].fields['group'].queryset = groups
-
+        
         # 追加のコンテキスト情報を設定
         extra = {
             "object": self.object,

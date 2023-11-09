@@ -74,6 +74,9 @@ class GroupFilterForm(forms.Form):
 
         self.fields['group'].choices = [(None, self.fields['group'].empty_label)] + group_choices
 
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-select'
+
 
 
 class SortForm(forms.Form):
@@ -82,6 +85,12 @@ class SortForm(forms.Form):
         ('desc', '降順'),
     ]
     sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート順')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-select'
 
 class UserFilterForm(forms.Form):
     user = forms.ModelChoiceField(
@@ -98,6 +107,9 @@ class UserFilterForm(forms.Form):
         user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
         # フォームのユーザー選択肢を、ユーザーが所属するグループのユーザーに制限
         self.fields['user'].queryset = CustomUser.objects.filter(groupmember__group__in=user_groups).distinct()
+        
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-select'
 
 class AssetFilterForm(forms.Form):
     asset = forms.ModelChoiceField(
@@ -122,7 +134,8 @@ class AssetFilterForm(forms.Form):
 
         self.fields['asset'].choices = [(None, self.fields['asset'].empty_label)] + asset_choices
 
-
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-select'
 
 
 
@@ -135,8 +148,8 @@ class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # kwargs={'instance': self.request.user}
         super().__init__(*args, **kwargs)
-        self.fields['group'].widget.attrs['class'] = 'form-control'
         self.fields['asset_name'].widget.attrs['class'] = 'form-control'
+        self.fields['group'].widget.attrs['class'] = 'form-control'
 
 
 class ImageAddForm(forms.ModelForm):

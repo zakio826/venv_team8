@@ -16,14 +16,14 @@ class Group(models.Model):
     """グループモデル"""
     
     user = models.ForeignKey(CustomUser, verbose_name='ホストユーザー', on_delete=models.PROTECT)
-    group_name = models.CharField(verbose_name='グループ名', max_length=40, blank=False, null=True)
+    group_name = models.CharField(verbose_name='グループ名', max_length=15, blank=False, null=True)
     private = models.BooleanField(verbose_name='個人利用', default=True)
     group_id = models.CharField(verbose_name='グループID', max_length=12, unique=True)
     class Meta:
         verbose_name_plural = 'Group'
     
     def __str__(self):
-        return self.group_name + "_" + self.user.username
+        return self.group_name # + "_" + self.user.username
 
 class GroupMember(models.Model):
     """グループメンバーモデル"""
@@ -41,7 +41,7 @@ class Asset(models.Model):
     """管理項目モデル"""
     
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.CASCADE)
-    asset_name = models.CharField(verbose_name='管理名', max_length=40)
+    asset_name = models.CharField(verbose_name='管理名', max_length=12)
 
     drive_folder_id = models.CharField(verbose_name='フォルダID', blank=True, null=True)
     learning_model = models.FileField(
@@ -55,7 +55,7 @@ class Asset(models.Model):
         verbose_name_plural = 'Asset'
     
     def __str__(self):
-        return self.group.group_name + "_" + self.asset_name
+        return self.asset_name  + "_" + self.group.group_name
     
     def save(self, *args, **kwargs):
         os.makedirs(os.path.join(settings.MEDIA_ROOT, 'learning'), exist_ok=True)
