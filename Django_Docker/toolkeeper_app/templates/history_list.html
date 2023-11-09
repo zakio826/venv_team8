@@ -11,15 +11,21 @@
             <h2>履歴一覧</h2>
         </div>
         <form method="get">
+            <div class="mb-1">
+                {{ search_form }}
+                <button type="button" class="mb-1 btn btn-secondary" onclick="clearSearch()"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
             <div class="mb-3">            
                 <div class="mb-1">
                     {{ group_filter_form }}｜{{ user_filter_form }}｜{{ asset_filter_form }}
+                    <button type="button" class="mb-1 btn btn-secondary" onclick="clearFilters()"><i class="bi bi-arrow-clockwise"></i></button>
                 </div>
                 {{ sort_form.as_p }}
             </div>
             <div>
-                <button type="submit" class="btn btn-3">絞り込みとソート</button>
+                <button type="submit" class="btn btn-3">検索とソート</button>
             </div>
+            
         </form>
         <hr>
 
@@ -41,12 +47,12 @@
                                         <!-- Product name-->
                                         <h5 class="fw-bolder">{{ history.asset.asset_name }}</h5>
                                         <!-- Product reviews-->
-                                        <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <div class="small text-warning mb-2">
                                             確認日時: {{ history.checked_at }}
                                             <br>
                                             <!-- 更新日時: {{ history.updated_at }}
                                             <br> -->
-                                            ユーザー: {{ history.user }}
+                                            <!-- ユーザー: {{ history.user }} -->
                                         </div>
                                     </div>
                                 </div>
@@ -66,15 +72,15 @@
                 <ul class="pagination">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">最初</a>
+                        <a class="page-link" href="?page=1&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">最初</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">前へ</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">前へ</a>
                     </li>
                     {% endif %}
                     <!-- ページ番号のセレクトボックス -->
                     <li class="page-item">
-                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}';">
+                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}';">
                             {% for page_num in page_obj.paginator.page_range %}
                                 <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
                             {% endfor %}
@@ -82,10 +88,10 @@
                     </li>
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">次へ</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">次へ</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}">最後</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">最後</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -94,5 +100,24 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block js %}
+<script>
+
+
+function clearFilters() {
+    document.getElementById("id_group").value = "";
+    document.getElementById("id_user").value = "";
+    document.getElementById("id_asset").value = "";
+}
+
+function clearSearch() {
+    document.getElementById("id_search_query").value = "";
+    document.getElementById("id_checked_at").value = "";
+}
+
+</script>
+
 {% endblock %}
 

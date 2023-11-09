@@ -81,7 +81,7 @@ class SortForm(forms.Form):
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート順')
+    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート')
 
 class UserFilterForm(forms.Form):
     user = forms.ModelChoiceField(
@@ -123,10 +123,19 @@ class AssetFilterForm(forms.Form):
         self.fields['asset'].choices = [(None, self.fields['asset'].empty_label)] + asset_choices
 
 
+class SearchForm(forms.Form):
+    search_query = forms.CharField(
+        max_length=100,
+        required=False,
+        label='検索',
+    )
+    checked_at = forms.DateField(
+        label='確認日時',
+        widget=forms.DateInput(attrs={'type': 'date'}),  # 日付入力用のウィジェットを指定
+        required=False
+    )
 
-
-
-
+    
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
         model = Asset
