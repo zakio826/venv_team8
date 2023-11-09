@@ -659,6 +659,20 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
         history_list = History.objects.filter(group__in=user_groups)
 
+        # search_query = self.request.GET.get('search_query')
+        checked_at = self.request.GET.get('checked_at')
+
+        # グループ、ユーザー、管理項目に対して OR 検索を行う
+        # if search_query:
+        #     history_list = history_list.filter(
+        #         Q(group__group_name__icontains=search_query) |
+        #         Q(user__username__icontains=search_query) |
+        #         Q(asset__asset_name__icontains=search_query)
+        #     )
+            
+        if checked_at:
+            history_list = history_list.filter(checked_at__date=checked_at)
+        
         selected_group = self.request.GET.get('group')
         if selected_group:
             history_list = history_list.filter(group=selected_group)
@@ -688,7 +702,7 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         
         # user_filter_form = UserFilterForm(user=self.request.user, data=self.request.GET)  # user引数を渡す
         # asset_filter_form = AssetFilterForm(user=self.request.user, data=self.request.GET)  #            引数を渡す
-        
+        context['search_form'] = SearchForm(data=self.request.GET)
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
         context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
         context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)

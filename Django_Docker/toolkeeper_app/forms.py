@@ -84,7 +84,7 @@ class SortForm(forms.Form):
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート順')
+    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -137,8 +137,23 @@ class AssetFilterForm(forms.Form):
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-select'
 
+class SearchForm(forms.Form):
+    # search_query = forms.CharField(
+    #     max_length=100,
+    #     required=False,
+    #     label='検索',
+    # )
+    checked_at = forms.DateField(
+        label='確認日時',
+        widget=forms.DateInput(attrs={'type': 'date','class': 'filter-form'}),  # 日付入力用のウィジェットを指定
+        required=False
+    )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-select'
 
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:
