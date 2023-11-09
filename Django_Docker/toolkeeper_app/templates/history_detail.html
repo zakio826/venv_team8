@@ -1,104 +1,115 @@
 {% extends 'base.html' %}
+{% block title %}履歴詳細 | ToolKeeper{% endblock %}
 
-{% block title %}History Detail{% endblock %}
+{% block active_asset_list %}active{% endblock %}
 
 {% block contents %}
-<h2>履歴詳細</h2>
+<section class="py-5">
+    <div class="container px-4 px-lg-5 mt-3">
+        <div class="text-center mb-3">
+            <h2>履歴詳細</h2>
+        </div>
 
-
-<div class="container my-5">
-    <div class="row">
-        <div class="col-8" style="position: relative;">
-            <div class="col-3 col-lg-2">
-                <strong>写真</strong>
+        <div class="container my-5">
+            <hr>
+            <div class="row">
+                <div class="col-8">
+                    <strong>写真</strong>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <strong>アイテム一覧/詳細結果</strong>
+                    </div>
+                </div>
             </div>
-            <div class="col-9 col-lg-10">
-                <img id="image" src="{{ history.image.url }}" style="display: none;"/>
+            <div class="row">
+                <div class="col-8">
+                    <img src="{{ image.image.url }}" width="100%"/>
+                </div>
+                <div class="col" id="check_list" style="position: relative;">
+                    <div class="row" style="position: absolute; overflow-y: scroll; max-height: 100%;">
+                        {% for result in history.result_set.all %}
+                            {% if result.result_class != 9 %}
+                            <li class="mb-2">
+                                {{ result.item.item_name }}：
+                                {% if result.result_class == 0 %}
+                                    <u><font color="#ff6347">無し</font></u>
+                            
+                                {% elif result.result_class == 1 %}
+                                    <u><font color="#99CC33">有り</font></u>
+                                {% else %}
+                                    {{ result.result_class }}
+                                {% endif %}
+                                
+                            </li>
+                            {% endif %}
+                        {% empty %}
+                            <p>履歴が存在しません</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
             </div>
-        </div>
-        <div class="col" id="check_list" style="overflow-y: scroll;">
-            <div>
-                <strong>アイテム一覧</strong>
+
+            <hr>
+
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>グループ</strong>
+                </div>
+                <div class="col-9 col-lg-10">
+                    {{ history.group.group_name }}
+                </div>
             </div>
-            <div class="col-9 col-lg-10">
-                {% for result in history.result_set.all %}
-                    {% if result.result_class != 9 %}
-                    <li>
-                        {{ result.item.item_name }} [詳細結果:
-                        {% if result.result_class == 0 %}
-                            無し
-                        {% elif result.result_class == 1 %}
-                            有り
-                        {% else %}
-                            {{ result.result_class }}
-                        {% endif %}
-                        ]
-                    </li>
-                    {% endif %}
-                {% empty %}
-                    <p>履歴が存在しません</p>
-                {% endfor %}
+            
+            <hr>
+
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>ユーザー</strong>
+                </div>
+                <div class="col-9 col-lg-10">
+                    {{ history.user.username }}
+                </div>
             </div>
-        </div>
+            
+            <hr>
 
-    </div>
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>管理名</strong>
+                </div>
+                <div class="col-9 col-lg-10">
+                    {{ history.asset.asset_name }}
+                </div>
+            </div>
+            
+            <hr>
 
-    <hr>
+            <div class="row">
+                <div class="col-3 col-lg-2">
+                    <strong>確認日時</strong>
+                </div> <div class="col-9 col-lg-10">
+                    {{ history.checked_at }}
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- <div class="row">
+                <div class="col-3">
+                    <strong>更新日時</strong>
+                </div>
+                <div class="col-9">
+                    {{ history.updated_at }}
+                </div>
+            </div>
+            <hr> -->
 
-    <div class="row">
-        <div class="col-3 col-lg-2">
-            <strong>グループ</strong>
-        </div>
-        <div class="col-9 col-lg-10">
-            {{ history.group.group_name }}
-        </div>
-    </div>
-    
-    <hr>
-
-    <div class="row">
-        <div class="col-3 col-lg-2">
-            <strong>ユーザー</strong>
-        </div>
-        <div class="col-9 col-lg-10">
-            {{ history.user.username }}
-        </div>
-    </div>
-    
-    <hr>
-
-    <div class="row">
-        <div class="col-3 col-lg-2">
-            <strong>管理名</strong>
-        </div>
-        <div class="col-9 col-lg-10">
-            {{ history.asset.asset_name }}
-        </div>
-    </div>
-    
-    <hr>
-
-    <div class="row">
-        <div class="col-3">
-            <strong>確認日時</strong>
-        </div> <div class="col-9">
-            {{ history.checked_at }}
+            <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
         </div>
     </div>
-    
-    <hr>
-    
-    <div class="row">
-        <div class="col-3">
-            <strong>更新日時</strong>
-        </div>
-        <div class="col-9">
-            {{ history.updated_at }}
-        </div>
-    </div>
-</div>
-
-<a class="btn btn-primary float-right" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
+</section>
 
 {% endblock %}
 

@@ -8,99 +8,305 @@ footer {
     margin-top: auto;
 }
 
+/* css変数の初期化 */
+:root {
+    --my-red: rgba(230, 0, 70, 1);
+    --my-red-hover: rgba(230, 0, 70, 0.6);
+    --my-red-active: rgba(230, 0, 70, 0.4);
+
+    --my-blue: rgba(13, 110, 253, 1);
+    --my-blue-hover: rgba(13, 110, 253, 0.6);
+    --my-blue-active: rgba(13, 110, 253, 0.4);
+
+    --my-green: rgba(0, 210, 60, 1);
+    --my-green-hover: rgba(0, 210, 60, 0.6);
+    --my-green-active: rgba(0, 210, 60, 0.4);
+}
+
 .my-div-style {
     margin-top: 3rem;
     margin-bottom: -1rem;
 }
 
-.my-btn {
-    transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+
+.my-btn-common {
+    font-weight: bold;
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    box-shadow: 0px 2px 0 rgba(36, 36, 36, 0.2), 2px 4px 6px rgba(33, 37, 41, 0.6);
+}
+.my-btn-common:active {
+    transition: none;
+    box-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
+}
+.my-check .btn-check:disabled + .my-btn-common, .my-btn-common:hover, .my-btn-common:disabled {
+    transition: all 0.25s cubic-bezier(0.65, 0, 0.076, 1);
+    box-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2);
 }
 
-.my-check-red {
-    color: rgba(230, 0, 70, 1) !important;
-    background-color: rgba(255, 255, 255, 0);
-    border-color: rgba(230, 0, 70, 1);
-    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+
+.my-check-red, .my-btn-red:disabled {
+    color: var(--my-red) !important;
+    background-color: rgba(255, 255, 255, 1) !important;
+    border-color: var(--my-red) !important;
 }
 .my-check-red:hover {
-    color: rgba(230, 0, 70, 0.6) !important;
-    background-color: rgba(255, 255, 255, 0);
-    border-color: rgba(230, 0, 70, 0.6);
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+    color: var(--my-red-hover);
+    border-color: var(--my-red-hover);
 }
 .my-check-red:active {
-    color: rgba(230, 0, 70, 0.4) !important;
-    background-color: rgba(255, 255, 255, 0);
-    border-color: rgba(230, 0, 70, 0.4);
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+    color: var(--my-red-active);
+    border-color: var(--my-red-active);
 }
-.my-btn-red, .my-btn .btn-check:checked + .my-check-red {
-    color: rgba(255, 255, 255, 0) !important;
-    background-color: rgba(230, 0, 70, 1) !important;
-    border-color: rgba(230, 0, 70, 1) !important;
-    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+.my-btn-red, .my-check .btn-check:checked + .my-check-red {
+    color: rgba(255, 255, 255, 1) !important;
+    background-color: var(--my-red) !important;
+    border-color: var(--bs-btn-border-color) !important;
 }
-.my-btn-red:hover, .my-btn .btn-check:checked + .my-check-red:hover {
-    color: rgba(255, 255, 255, 0) !important;
-    background-color: rgba(230, 0, 70, 0.6) !important;
-    border-color: rgba(230, 0, 70, 0.6) !important;
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+.my-btn-red:hover, .my-check .btn-check:checked + .my-check-red:hover {
+    background-color: var(--my-red-hover) !important;
 }
-.my-btn-red:active, .my-btn .btn-check:checked + .my-check-red:active {
-    color: rgba(255, 255, 255, 0) !important;
-    background-color: rgba(230, 0, 70, 0.4) !important;
-    border-color: rgba(230, 0, 70, 0.4) !important;
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+.my-btn-red:active, .my-check .btn-check:checked + .my-check-red:active {
+    background-color: var(--my-red-active) !important;
 }
 
-.my-check-blue {
-    color: rgba(230, 0, 70, 1) !important;
-    background-color: rgba(255, 255, 255, 0);
-    border-color: rgba(230, 0, 70, 1);
-    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+
+.my-check-blue, .my-btn-blue:disabled {
+    color: var(--my-blue) !important;
+    background-color: rgba(255, 255, 255, 1) !important;
+    border-color: var(--my-blue) !important;
 }
 .my-check-blue:hover {
-    color: rgba(230, 0, 70, 0.6) !important;
-    background-color: rgba(255, 255, 255, 0);
-    border-color: rgba(230, 0, 70, 0.6);
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+    color: var(--my-blue-hover);
+    border-color: var(--my-blue-hover);
 }
 .my-check-blue:active {
-    color: rgba(230, 0, 70, 0.4) !important;
-    background-color: rgba(255, 255, 255, 0);
-    border-color: rgba(230, 0, 70, 0.4);
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+    color: var(--my-blue-active);
+    border-color: var(--my-blue-active);
 }
-.my-btn-blue, .my-btn .btn-check:checked + .my-check-blue {
-    color: rgba(255, 255, 255, 0) !important;
-    background-color: rgba(230, 0, 70, 1) !important;
-    border-color: rgba(230, 0, 70, 1) !important;
-    box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+.my-btn-blue, .my-check .btn-check:checked + .my-check-blue {
+    color: rgba(255, 255, 255, 1) !important;
+    background-color: var(--my-blue) !important;
+    border-color: var(--bs-btn-border-color) !important;
 }
-.my-btn-blue:hover, .my-btn .btn-check:checked + .my-check-blue:hover {
-    color: rgba(255, 255, 255, 0) !important;
-    background-color: rgba(230, 0, 70, 0.6) !important;
-    border-color: rgba(230, 0, 70, 0.6) !important;
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+.my-btn-blue:hover, .my-check .btn-check:checked + .my-check-blue:hover {
+    background-color: var(--my-blue-hover) !important;
 }
-.my-btn-blue:active, .my-btn .btn-check:checked + .my-check-blue:active {
-    color: rgba(255, 255, 255, 0) !important;
-    background-color: rgba(230, 0, 70, 0.4) !important;
-    border-color: rgba(230, 0, 70, 0.4) !important;
-    box-shadow: 1px 1px 2px rgbaa(255,255,255,0, 1.2);
+.my-btn-blue:active, .my-check .btn-check:checked + .my-check-blue:active {
+    background-color: var(--my-blue-active) !important;
 }
 
 
-.my-btn-green {
-    background-color: rgba(0, 220, 60, 1) !important;
-    border-color: rgba(0, 220, 60, 1) !important;
+.my-check-green, .my-btn-green:disabled {
+    color: var(--my-green) !important;
+    background-color: rgba(255, 255, 255, 1) !important;
+    border-color: var(--my-green) !important;
 }
-.my-btn-green:hover {
-    background-color: rgba(0, 190, 55, 1) !important;
-    border-color: rgba(0, 190, 55, 1) !important;
+.my-check-green:hover {
+    color: var(--my-green-hover);
+    border-color: var(--my-green-hover);
 }
-.my-btn-green:active {
-    background-color: rgba(0, 150, 50, 1) !important;
-    border-color: rgba(0, 150, 50, 1) !important;
+.my-check-green:active {
+    color: var(--my-green-active);
+    border-color: var(--my-green-active);
+}
+.my-btn-green, .my-check .btn-check:checked + .my-check-green {
+    color: rgba(255, 255, 255, 1) !important;
+    background-color: var(--my-green) !important;
+    border-color: var(--bs-btn-border-color) !important;
+}
+.my-btn-green:hover, .my-check .btn-check:checked + .my-check-green:hover {
+    background-color: var(--my-green-hover) !important;
+}
+.my-btn-green:active, .my-check .btn-check:checked + .my-check-green:active {
+    background-color: var(--my-green-active) !important;
+}
+
+
+
+
+
+
+
+/* ホバーに合わせて伸びるボタン */
+@import url('https://fonts.googleapis.com/css?family=Mukta:700');
+* {
+  box-sizing: border-box;
+}
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+button {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  outline: none;
+  border: 0;
+  vertical-align: middle;
+  text-decoration: none;
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+button.learn-more {
+  width: 12rem;
+  height: auto;
+}
+button.learn-more .circle {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  position: relative;
+  display: block;
+  margin: 0;
+  width: 3rem;
+  height: 3rem;
+  background: #212529;
+  border-radius: 1.625rem;
+}
+button.learn-more .circle .icon {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  background: #fff;
+}
+button.learn-more .circle .icon.arrow {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  left: 0.625rem;
+  width: 1.125rem;
+  height: 0.125rem;
+  background: none;
+}
+button.learn-more .circle .icon.arrow::before {
+  position: absolute;
+  content: '';
+  top: -0.25rem;
+  right: 0.0625rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-top: 0.125rem solid #fff;
+  border-right: 0.125rem solid #fff;
+  transform: rotate(45deg);
+}
+button.learn-more .button-text {
+  transition: all 0.45s cubic-bezier(0.65,0,0.076,1);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.75rem 0;
+  margin: 0 0 0 1.85rem;
+  color: #212529;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+  text-transform: uppercase;
+}
+button:hover .circle {
+  width: 100%;
+}
+button:hover .circle .icon.arrow {
+  background: #fff;
+  transform: translate(1rem,0);
+}
+button:hover .button-text {
+  color: #fff;
+}
+
+
+.scrollable-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.scrollable-detail {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.scroll {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.scrollasset {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,100,900);
+
+.btn-2 {
+    background: #212529;
+    letter-spacing: 0;
+    color: #fff;
+}
+.btn-2:hover,
+.btn-2:active {
+    background: #212529;
+    letter-spacing: 5px;
+    color: #fff;
+}
+.btn-2:after,
+.btn-2:before {
+    background: #666666;
+    backface-visibility: hidden;
+    border: 1px solid rgba(255,255,255,0);
+    bottom: 0px;
+    content: " ";
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    transition: all 280ms ease-in-out;
+    width: 0;
+    color: #fff;
+}
+.btn-2:hover:after,
+.btn-2:hover:before {
+    background: #666666;
+    backface-visibility: hidden;
+    border-color: #fff;
+    transition: width 350ms ease-in-out;
+    width: 70%;
+    color: #fff;
+}
+.btn-2:hover:before {
+    background: #666666;
+    bottom: auto;
+    top: 0;
+    width: 70%;
+    color: #fff;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+.btn:hover {
+  text-decoration: none;
+}
+.btn-3 {
+  background: #212529;
+  border: 1px solid #212529;
+  box-shadow: 0px 2px 0 #212529, 2px 4px 6px #212529;
+  font-weight: 900;
+  letter-spacing: 1px;
+  transition: all 150ms linear;
+  color: #fff;
+}
+.btn-3:hover {
+  background: #666666;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 1px 1px 2px rgba(255,255,255,0.2);
+  color: #ffffff;
+  text-decoration: none;
+  text-shadow: -1px -1px 0 #888888;
+  transition: all 250ms linear;
 }

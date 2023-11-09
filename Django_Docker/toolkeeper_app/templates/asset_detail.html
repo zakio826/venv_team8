@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}管理項目詳細 | ToolKeeper{% endblock %}
+
+{% block active_asset_list %}active{% endblock %}
+
+{% block contents %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-3 col-lg-2">
+            <strong>管理名</strong>
+        </div>
+        <div class="col-9 col-lg-10">
+            {{ object.asset_name }}
+        </div>
+    </div>
+    
+    <hr>
+    
+    <div class="row mb-3">
+        <div class="col-9">
+            <strong>写真</strong>
+            {% for image in image_list %}
+                {% if image.image %}
+                    <img src="{{ image.image.url }}" width="100%" height="auto"/>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col">
+            <div class="row">
+                <div class="mb-3">
+                    <strong>アイテム一覧</strong>
+                </div>
+                <div class="col mb-4">
+                    <div class="row">
+                        {% for item in item_list %}
+                            <span class="row mb-2 ms-1">{{ forloop.counter }}. {{ item.item_name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a class="btn btn-3" href="{% url 'toolkeeper_app:check_image_add' asset_id %}"> チェックする</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -11,6 +11,7 @@
     const create = document.getElementById("create").innerText;
 
     const check_list = document.getElementById("check_list");
+    const switch_width = document.getElementById("switch_width");
 
     const box_x_min = Number(document.getElementById("box_x_min").innerText);
     const box_y_min = Number(document.getElementById("box_y_min").innerText);
@@ -22,6 +23,8 @@
     const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
     
     const preview = document.getElementById("preview");
+    
+    const confirmation = document.getElementById("confirmation");
 
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
@@ -41,9 +44,11 @@
 
 
     // バウンディングボックスの座標を初期化
+    let item_name = [];
     let x_min, x_max, y_min, y_max;
     let box_li = [];
     for (let i = 0; i < set.length; i++) {
+        item_name[i] = document.getElementById(`item_${i}_name`).innerText;
         box_li[i] = [0,0,0,0,0];
     }
 
@@ -61,6 +66,30 @@
         box_in[i].disabled = false;
         box_in[i].checked = true;
     }
+
+    function switch_scroll() {
+        if (window.innerWidth >= 768) {
+            var max_h = canvas.height;
+            switch_width.style.width = "auto";
+            for (let i = 0; i < set.length; i++) {
+                document.getElementById(`ctrl_${i}`).style.margin = "auto";
+            }
+        }
+        else {
+            var max_h = 145;
+            switch_width.style.width = "850px";
+            for (let i = 0; i < set.length; i++) {
+                document.getElementById(`ctrl_${i}`).style.margin = "0 2px";
+            }
+        }
+        check_list.style.height = max_h;
+
+        for (let i = 0; i < set.length; i++) {
+            console.log(window.innerWidth);
+            console.log(document.getElementById(`ctrl_${i}`).style.width);
+        }
+    };
+
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
@@ -83,9 +112,10 @@
             x_min_fit = box_x_min * x_fit;
             y_min_fit = box_y_min * y_fit;
             
-            check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
             ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
         }
+        
+        switch_scroll();
 
         console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
         console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
@@ -95,8 +125,25 @@
         console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
         console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
         console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
-        
     };
+
+
+    function set_confirmation() {
+        if (isDrawing) return;
+        confirmation.innerHTML = null;
+        for (let i = 0; i < set.length; i++) {
+            if (!box_in[i].checked) {
+                if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML}、`;
+                var tag = document.createElement('span');
+                tag.setAttribute('style', 'color: red;');
+                tag.innerText = `${item_name[i]}`;
+                confirmation.appendChild(tag);
+            }
+        }
+        if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML} がチェックされていません。`;
+        else confirmation.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> がチェック済みです。';
+    };
+
 
     // 選択済みのバウンディングボックスを描画
     function draw_box(order=-1) {
@@ -124,6 +171,7 @@
                 box_li[i][3] - box_li[i][1],
             );
         }
+        set_confirmation();
     };
 
     // 画像の読み込みが完了したらキャンバスに描画
@@ -141,7 +189,7 @@
         let x_min_fit = box_x_min * x_fit;
         let y_min_fit = box_y_min * y_fit;
 
-        check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
+        auto_fit();
 
         draw_box();
     };
@@ -179,7 +227,6 @@
             draw_box(order=-2);
         } else {
             submit.disabled = true;
-            draw_box();
         }
     }
 
@@ -259,5 +306,27 @@
             submit.disabled = true;
         }
         out_box(i);
+    };
+
+
+    const width_xxl = 1400;
+    const width_xl = 1200;
+    const width_lg = 992;
+    const width_md = 768;
+    const width_sm = 576;
+
+    let width_class = window.innerWidth;
+
+    // ウィンドウのリサイズ時にスクロール状態を切り替える
+    window.onresize = () => {
+        if (width_class != width_xxl && window.innerWidth >= width_xxl) width_class = width_xxl;
+        else if (width_class != width_xl && window.innerWidth < width_xxl && window.innerWidth >= width_xl) width_class = width_xl;
+        else if (width_class != width_lg && window.innerWidth < width_xl && window.innerWidth >= width_lg) width_class = width_lg;
+        else if (width_class != width_md && window.innerWidth < width_lg && window.innerWidth >= width_md) width_class = width_md;
+        else if (width_class != width_sm && window.innerWidth < width_md) width_class = width_sm;
+        else return;
+
+        auto_fit();
+        draw_box();
     };
 </script>

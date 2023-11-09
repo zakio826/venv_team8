@@ -2,19 +2,20 @@
 
 {% load static %}
 
-{% block title %}日々の確認作業を簡単に | toolkeeper{% endblock %}
+{% block title %}いつも使う物を大切に。 | ToolKeeper{% endblock %}
 
 {% block active_index %}active{% endblock %}
 
 {% block header %}
 <!-- Header-->
 <header class="bg-dark py-5">
-    <div class="container px-5">
-        <div class="row gx-5 align-items-center justify-content-center">
-            <div class="col-lg-8 col-xl-7 col-xxl-6">
+    <div class="container px-5 px-sm-3 px-xl-4">
+        <div class="row gx-5 justify-content-around">
+            <div class="col-md-10 col-lg-8 d-block d-xl-none text-center"><img class="img-fluid rounded-3" src="{% static 'assets/toolkeeper.png' %}" alt="..." width="100%" height="auto"/></div>
+            <div class="col-lg-8 col-xl-auto">
                 <div class="my-5 text-center text-xl-start">
-                    <h1 class="display-5 fw-bolder text-white mb-2">現代のビジネス向けのブートストラップ5テンプレート</h1>
-                    <p class="lead fw-normal text-white-50 mb-4">世界で最も人気のあるフロントエンドのオープンソースツールキットであるBootstrapを使用して、レスポンシブモバイルファーストサイトをすばやく設計およびカスタマイズします！</p>
+                    <h1 class="display-5 fw-bolder text-white mb-2">いつも使う物を大切に。<br>ToolKeeper</h1>
+                    <p class="lead fw-normal text-white-50 mb-4">ToolKeeperは、あなたがいつも使う物を管理できるwebアプリです。<br>物を使った後の確認や、以前使った時の状態を見返せるほか、<br>AIによって確認作業をより効率的に行うことができます。</p>
                     <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xl-start">
                         {% if user.is_authenticated %}
                             <a class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧</a>
@@ -25,7 +26,9 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="img-fluid rounded-3 my-5" src="https://dummyimage.com/600x400/343a40/6c757d" alt="..." /></div>
+            <div class="col-xl col-xxl-6 d-none d-xl-block my-3 text-center">
+                <img class="img-fluid rounded-3 h-100" src="{% static 'assets/toolkeeper.png' %}" alt="..." width="auto" height="100%"/>
+            </div>
         </div>
     </div>
 </header>
@@ -36,28 +39,28 @@
 <section class="py-5" id="features">
     <div class="container px-5 my-5">
         <div class="row gx-5">
-            <div class="col-lg-4 mb-5 mb-lg-0"><h2 class="fw-bolder mb-0">かさばる物を管理します。</h2></div>
+            <div class="col-lg-4 mb-5 mb-lg-0"><h2 class="fw-bolder mb-0">あなたの物を管理できます。</h2></div>
             <div class="col-lg-8">
                 <div class="row gx-5 row-cols-1 row-cols-md-2">
                     <div class="col mb-5 h-100">
-                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-collection"></i></div>
+                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-check2-square"></i></div>
                         <h2 class="h5">日々の確認作業を簡単に</h2>
                         <p class="mb-0">物をまとめて撮影して一度に確認ができます。<br>手作業で確認する手間が省けるほか、再確認も手軽です。</p>
                     </div>
                     <div class="col mb-5 h-100">
-                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-building"></i></div>
-                        <h2 class="h5">色んな管理をこれ1つで</h2>
-                        <p class="mb-0">複数の管理内容を登録し、切り替えて確認ができます。<br></p>
+                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-journal-bookmark"></i></div>
+                        <h2 class="h5">いろんな管理をこれ1つで</h2>
+                        <p class="mb-0">複数の管理内容を登録し、切り替えて確認ができます。<br>確認後は履歴が残るので、以前の状態を見返せます。</p>
                     </div>
                     <div class="col mb-5 mb-md-0 h-100">
-                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-toggles2"></i></div>
+                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-stars"></i></div>
                         <h2 class="h5">AIが確認作業のお手伝い</h2>
-                        <p class="mb-0">確認作業を重ねることで、AIが自動で確認します。</p>
+                        <p class="mb-0">AIが日々の確認作業を学習し、自動で確認してくれます。<br>確認作業を重ねることで、AIの確認も更に正確になります。</p>
                     </div>
                     <div class="col h-100">
-                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-toggles2"></i></div>
-                        <h2 class="h5">特集タイトル</h2>
-                        <p class="mb-0">見出しを説明するために、見出しの下のテキストの段落。これがもう少しテキストです。</p>
+                        <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3"><i class="bi bi-people"></i></div>
+                        <h2 class="h5">グループで管理を共有</h2>
+                        <p class="mb-0">グループを作成し、管理内容や確認作業を共有できます。<br>家族や組織での共同管理に向いています。</p>
                     </div>
                 </div>
             </div>

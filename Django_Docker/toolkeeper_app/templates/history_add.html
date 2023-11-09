@@ -1,29 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}アイテムチェック | toolkeeper{% endblock %}
+{% block title %}アイテム確認 | ToolKeeper{% endblock %}
 
-{% block active_diary_list %}active{% endblock %}
+{% block active_asset_list %}active{% endblock %}
 
 {% block contents %}
 <div class="container my-5">
-
-    <div style="display: flex; width: 100%; justify-content: center;">
-        <div class="row justify-content-between align-items-center mb-3 mx-0" style="width: 80%;">
-<<<<<<< HEAD
-            <h5 class="col col-lg-auto align-self-start" style="text-align: center; margin-top: 0.5rem;">全てのアイテムが入るように、外枠を囲ってください。</h5>
-            <button class="col-auto col-lg-2 align-self-end btn btn-3 my-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
-=======
-            <h5 class="col col-lg-auto align-self-start" style="text-align: center; margin-top: 0.5rem;">すべてのアイテムを囲ってください。</h5>
-            <button class="col-auto col-lg-2 align-self-end btn btn-primary my-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
->>>>>>> 1b57c6da734e73e94f6c59c49f44be87bdf44282
-        </div>
+    <div class="row justify-content-around mt-4" style="text-align: center;">
+        <h3 class="col-12 col-md-8 col-lg-6" style="text-align: center; margin-top: 0.5rem;">登録したアイテムを全て囲ってください。</h3>
+        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
     </div>
     
     <hr>
 
-    <div class="row">
-        <div class="col-8" style="position: relative;">
+    <div class="row justify-content-around">
+        <div class="col-11 col-md-8" style="position: relative;">
             <div id="preview" style="width: 100%; height: auto;">
                 <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
                 <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
@@ -47,11 +39,21 @@
                 <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-11 col-md-4">
+            <div class="position-relative" id="check_list" style="overflow: auto;">
+                <div class="position-absolute d-flex d-md-block" id="switch_width" style="height: 100%;">
+                    {% if create == 0 %}
+                        {% include 'common_history_add.html' %}
+                    {% else %}
+                        {% include 'common_history_create.html' %}
+                    {% endif %}
+                </div>
+            </div>
             {% if create == 0 %}
-                {% include 'common_history_add.html' %}
-            {% else %}
-                {% include 'common_history_create.html' %}
+            <div id="all_check">
+                <hr>
+                <button class="btn my-btn-common my-btn-green w-100" type="button">一括チェック</button>
+            </div>
             {% endif %}
         </div>
     </div>
@@ -67,7 +69,7 @@
     
     <form method="POST" enctype='multipart/form-data'>
         {% csrf_token %}
-        <button class="btn btn-3 w-100" type="submit" id="submit" disabled>終了する</button>
+        <button class="btn btn-2 w-100" type="submit" id="submit" disabled>終了する</button>
         <table class="table">
             {{ result_add_form.as_table }}
         </table>

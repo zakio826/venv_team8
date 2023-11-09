@@ -19,7 +19,7 @@ from django.contrib.staticfiles.urls import static
 from django.urls import path, include
 from accounts.views import LoginView
 
-from . import settings, settings_common, settings_dev
+from . import settings_common, settings_dev
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,9 +28,5 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
 ]
 
-if settings.DEBUG:
-    # 開発サーバーでメディアを配信できるようにする設定
-    urlpatterns += static(settings_common.MEDIA_URL, document_root=settings_dev.MEDIA_ROOT)
-else:
-    urlpatterns += static(settings_common.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings_common.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# 開発サーバーでメディアを配信できるようにする設定
+urlpatterns += static(settings_common.MEDIA_URL, document_root=settings_dev.MEDIA_ROOT)
