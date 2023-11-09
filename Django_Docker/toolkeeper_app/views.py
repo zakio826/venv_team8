@@ -785,6 +785,7 @@ def create_group(request):
             group = form.save(commit=False)
             group.user = request.user
             group.group_id = group_id
+            group.private = False
             group.save()
 
             GroupMember.objects.create(user=request.user, group=group)
@@ -816,10 +817,10 @@ def join_group(request):
             try:
                 group = Group.objects.get(group_id=group_id)
             except Group.DoesNotExist:
-                messages.error(request, '提供されたグループIDが存在しません。正しいグループIDを入力してください.')
+                messages.error(request, 'このグループIDは存在しません。正しいグループIDを入力してください.')
             else:
                 if group.private:
-                    messages.error(request, 'このグループは個人利用グループのため参加できません.')
+                    messages.error(request, 'このグループは個人利用のため参加できません.')
                 else:
                     user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
                     if user_already_in_group:
