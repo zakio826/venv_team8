@@ -116,22 +116,38 @@
         }
         check_list.style.height = max_h;
 
-        for (let i = 0; i < set.length; i++) {
-            console.log(window.innerWidth);
-            console.log(document.getElementById(`ctrl_${i}`).style.width);
-        }
+        // for (let i = 0; i < set.length; i++) {
+        //     console.log(window.innerWidth);
+        //     console.log(document.getElementById(`ctrl_${i}`).style.width);
+        // }
     };
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
             console.log("tttt");
+            
+            console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
+            console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
+            console.log(`canvas.width:  ${canvas.width} px`);
+            console.log(`canvas.height: ${canvas.height} px`);
+            console.log(`x_min_fit: ${x_min_fit.toFixed()} px`);
+            console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
+            console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
+            console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
+            console.log(`width:  ${(preview.getBoundingClientRect().width / canvas.width)} px`);
+            console.log(`height: ${(preview.getBoundingClientRect().height / canvas.height)} px`);
 
             for (let i = 0; i < set.length; i++) {
-                box_li[i][0] *= preview.getBoundingClientRect().width / canvas.width;
-                box_li[i][1] *= preview.getBoundingClientRect().height / canvas.height;
-                box_li[i][2] *= preview.getBoundingClientRect().width / canvas.width;
-                box_li[i][3] *= preview.getBoundingClientRect().height / canvas.height;
-                console.log(box_li[i]);
+                // console.log("b "+box_li[i]);
+                // box_li[i][0] = ((box_li[i][0]) * (preview.getBoundingClientRect().width / canvas.width))-50;
+                // box_li[i][1] = ((box_li[i][1]) * (preview.getBoundingClientRect().height / canvas.height))-50;
+                // box_li[i][2] = ((box_li[i][2] + box_x_min) * (preview.getBoundingClientRect().width / canvas.width))-50;
+                // box_li[i][3] = ((box_li[i][3] + box_y_min) * (preview.getBoundingClientRect().height / canvas.height))-50;
+                box_li[i][0] *= (preview.getBoundingClientRect().width / canvas.width);
+                box_li[i][1] *= (preview.getBoundingClientRect().height / canvas.height);
+                box_li[i][2] *= (preview.getBoundingClientRect().width / canvas.width);
+                box_li[i][3] *= (preview.getBoundingClientRect().height / canvas.height);
+                console.log("a "+box_li[i]);
             }
 
             canvas.width = preview.getBoundingClientRect().width.toFixed();
@@ -359,6 +375,9 @@
             submit.disabled = true;
         } else {
             checked[i].innerText = "チェック済み";
+
+            box_li[i][4] = 1;
+            document.getElementById(`id_form-${i}-result_class`).value = 1;
 
             auto_set_box(i);
             finish_check(i);

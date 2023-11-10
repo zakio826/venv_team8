@@ -453,7 +453,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
+        results1 = model.predict(save=True, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
@@ -465,6 +465,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 self.box[round(classNums[i])]['box_x_max'] = boxes[i][2]
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
+                print(i, self.box[round(classNums[i])])
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -553,6 +554,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     # フォームが有効な場合の処理
     def form_valid(self, form):
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.kwargs[self.pk_url_kwarg])
+        outer_edged = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
 
         ctx = self.get_context_data()
         items = Item.objects.filter(asset=history.asset, outer_edge=False)
@@ -576,14 +578,21 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 result.save()
 
                 if int(form.data[f'form-{i}-result_class']):
+                    # print()
+                    # print()
+                    # print(type(float(form.data[f'form-{i}-box_x_min'])))
+                    # # print(type(form.data[f'form-{i}-box_x_min']))
+                    # print(type(outer_edged.box_x_min))
+                    # print()
+                    # print()
                     labelList.append(chengeLabel(
                             w_size=history.image.image.width,
                             h_size=history.image.image.height,
                             classNum=i + 1,
-                            w_min=form.data[f'form-{i}-box_x_min'],
-                            h_min=form.data[f'form-{i}-box_y_min'],
-                            w_max=form.data[f'form-{i}-box_x_max'],
-                            h_max=form.data[f'form-{i}-box_y_max']
+                            w_min=str(float(form.data[f'form-{i}-box_x_min'])-outer_edged.box_x_min),
+                            h_min=str(float(form.data[f'form-{i}-box_y_min'])-outer_edged.box_y_min),
+                            w_max=str(float(form.data[f'form-{i}-box_x_max'])-outer_edged.box_x_min),
+                            h_max=str(float(form.data[f'form-{i}-box_y_max'])-outer_edged.box_y_min)
                     ))
                     history_coordinate.write('\n')
                     history_coordinate.write(
@@ -591,10 +600,10 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                                 w_size=history.image.image.width,
                                 h_size=history.image.image.height,
                                 classNum=i + 1,
-                                w_min=form.data[f'form-{i}-box_x_min'],
-                                h_min=form.data[f'form-{i}-box_y_min'],
-                                w_max=form.data[f'form-{i}-box_x_max'],
-                                h_max=form.data[f'form-{i}-box_y_max']
+                                w_min=str(float(form.data[f'form-{i}-box_x_min'])-outer_edged.box_x_min),
+                                h_min=str(float(form.data[f'form-{i}-box_y_min'])-outer_edged.box_y_min),
+                                w_max=str(float(form.data[f'form-{i}-box_x_max'])-outer_edged.box_x_min),
+                                h_max=str(float(form.data[f'form-{i}-box_y_max'])-outer_edged.box_y_min)
                         ))
                     )
             history_coordinate.close()
