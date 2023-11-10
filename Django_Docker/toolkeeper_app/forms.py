@@ -145,7 +145,7 @@ class SearchForm(forms.Form):
     # )
     checked_at = forms.DateField(
         label='確認日時',
-        widget=forms.DateInput(attrs={'type': 'date','class': 'filter-form'}),  # 日付入力用のウィジェットを指定
+        widget=forms.DateInput(attrs={'type': 'date', 'required pattern': '\d{4}-\d{2}-\d{2}'}),  # 日付入力用のウィジェットを指定
         required=False
     )
 
@@ -153,7 +153,7 @@ class SearchForm(forms.Form):
         super().__init__(*args, **kwargs)
 
         for field in self.fields.values():
-            field.widget.attrs['class'] = 'form-select'
+            field.widget.attrs['class'] = 'form-control'
 
 class AssetCreateForm(LoginRequiredMixin, forms.ModelForm):
     class Meta:

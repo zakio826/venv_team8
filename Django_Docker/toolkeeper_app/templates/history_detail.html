@@ -18,9 +18,7 @@
                     <strong>写真</strong>
                 </div>
                 <div class="col">
-                    <div class="mb-3">
-                        <strong>アイテム一覧/詳細結果</strong>
-                    </div>
+                    <div class="mb-3"><strong>アイテム一覧/詳細結果</strong></div>
                 </div>
             </div>
 
@@ -28,25 +26,26 @@
                 <div class="col-12 col-lg-8">
                     <span class="d-block d-lg-none mb-3"><strong>写真</strong></span>
                     <img src="{{ image.image.url }}" width="100%"/>
+                    <span class="d-block d-lg-none mt-4 mb-3"><hr><strong>アイテム一覧/詳細結果</strong></span>
                 </div>
 
-                <div class="col-8 col-md-6 col-lg position-relative" id="check_list">
-                    <span class="d-block d-lg-none mb-3"><strong>アイテム一覧/詳細結果</strong></span>
-                    <ol class="position-lg-absolute" style="overflow-y: auto; max-height: 100%;">
+                <div class="col-12 col-lg position-relative ps-4 ps-lg-0" id="check_list">
+                    <ol class="row row-cols-1 row-cols-md-2 row-cols-lg-1 align-items-start d-lg-block w-100 mb-0 ps-5 my-position-lg-absolute" style="overflow: auto;">
                         {% for result in history.result_set.all %}
                             {% if result.result_class != 9 %}
-                            <li class="row mb-2">
-                                {{ result.item.item_name }}：
-                                {% if result.result_class == 0 %}
-                                    <u><font color="#ff6347">無し</font></u>
-                            
-                                {% elif result.result_class == 1 %}
-                                    <u><font color="#99CC33">有り</font></u>
-
-                                {% else %}
-                                    {{ result.result_class }}
-                                {% endif %}
-                                
+                            <li class="col mb-2 ps-1 pe-3 pe-sm-4 pe-lg-0">
+                                <div class="row row-cols-2 mx-auto pe-2 pe-xl-4">
+                                    <span class="col w-auto me-auto ps-0">{{ result.item.item_name }}</span>
+                                    <span class="col-auto me-sm-0 ps-0">：
+                                        {% if result.result_class == 0 %}
+                                            <u><font color="#ff6347">無し</font></u>
+                                        {% elif result.result_class == 1 %}
+                                            <u><font color="#99CC33">有り</font></u>
+                                        {% else %}
+                                            {{ result.result_class }}
+                                        {% endif %}
+                                    </span>
+                                </div>
                             </li>
                             {% endif %}
                         {% empty %}

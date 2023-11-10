@@ -28,6 +28,22 @@ footer {
     margin-bottom: -1rem;
 }
 
+.my-position-md-absolute, .my-position-lg-absolute {
+    position: static;
+    max-height: 16rem;
+}
+@media (min-width: 992px) {
+    .my-position-lg-absolute {
+        position: absolute;
+        max-height: 100%;
+    }
+}
+@media (min-width: 768px) {
+    .my-position-md-absolute {
+        position: absolute;
+        max-height: 100%;
+    }
+}
 
 .my-btn-common {
     font-weight: bold;
