@@ -84,7 +84,7 @@ class SortForm(forms.Form):
         ('asc', '昇順'),
         ('desc', '降順'),
     ]
-    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート')
+    sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート（確認日時）')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

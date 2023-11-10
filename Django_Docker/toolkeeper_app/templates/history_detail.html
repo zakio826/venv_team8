@@ -13,7 +13,7 @@
 
         <div class="container my-5">
             <hr>
-            <div class="row">
+            <div class="row d-none d-lg-flex">
                 <div class="col-8">
                     <strong>写真</strong>
                 </div>
@@ -23,21 +23,26 @@
                     </div>
                 </div>
             </div>
+
             <div class="row">
-                <div class="col-8">
+                <div class="col-12 col-lg-8">
+                    <span class="d-block d-lg-none mb-3"><strong>写真</strong></span>
                     <img src="{{ image.image.url }}" width="100%"/>
                 </div>
-                <div class="col" id="check_list" style="position: relative;">
-                    <div class="row" style="position: absolute; overflow-y: scroll; max-height: 100%;">
+
+                <div class="col-8 col-md-6 col-lg position-relative" id="check_list">
+                    <span class="d-block d-lg-none mb-3"><strong>アイテム一覧/詳細結果</strong></span>
+                    <ol class="position-lg-absolute" style="overflow-y: auto; max-height: 100%;">
                         {% for result in history.result_set.all %}
                             {% if result.result_class != 9 %}
-                            <li class="mb-2">
+                            <li class="row mb-2">
                                 {{ result.item.item_name }}：
                                 {% if result.result_class == 0 %}
                                     <u><font color="#ff6347">無し</font></u>
                             
                                 {% elif result.result_class == 1 %}
                                     <u><font color="#99CC33">有り</font></u>
+
                                 {% else %}
                                     {{ result.result_class }}
                                 {% endif %}
@@ -47,7 +52,7 @@
                         {% empty %}
                             <p>履歴が存在しません</p>
                         {% endfor %}
-                    </div>
+                    </ol>
                 </div>
 
             </div>
