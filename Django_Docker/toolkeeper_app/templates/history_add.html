@@ -51,9 +51,12 @@
                 </div>
             </div>
             {% if create == 0 %}
-            <div id="all_check">
+            <div id="check_ctrl">
                 <hr>
-                <button class="btn my-btn-common my-btn-green w-100" type="button">一括チェック</button>
+                <div class="row row-cols-2 row-cols-md-1 row-cols-lg-2">
+                    <div class="col"><button class="btn my-btn-common my-btn-green w-100" type="button" id="all_check">一括チェック</button></div>
+                    <div class="col mt-0 mt-md-3 mt-lg-0"><button class="btn my-btn-common my-check-green w-100 px-2" type="button" id="all_check_out">一括チェック解除</button></div>
+                </div>
             </div>
             {% endif %}
         </div>
@@ -61,8 +64,8 @@
 
     <hr>
 
-    <h5 id="confirmation" style="text-align: center;"></h5>
-    <div style="display: flex; width: 100%; justify-content: center;">
+    <div class="h5 text-sm-center px-5 px-lg-2" id="confirmation"></div>
+    <div class="d-flex w-100 justify-content-center">
         <label class="w-auto my-4" for="finish">
             <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> すべてのアイテムをチェックしました。
         </label>

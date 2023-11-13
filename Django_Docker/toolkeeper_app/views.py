@@ -153,8 +153,9 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         # Assetモデルのインスタンスを取得し、関連するデータを取得
         self.asset = get_object_or_404(Asset, id=self.object.id)
-        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
+        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('updated_at')
         self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
+        print(self.pt_file_name)
         
         # Google Driveからファイルをダウンロードするためのセットアップ
         if self.asset.drive_folder_id:
@@ -327,14 +328,6 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         image_form.save()
         image = Image.objects.get(id=image_form.id)
 
-        img_path = os.path.join(settings.MEDIA_ROOT, image.image.name)
-        img = cv2.imread(img_path)
-        img_cut = img[
-            round(float(form.data['box_y_min'])) : round(float(form.data['box_y_max'])),
-            round(float(form.data['box_x_min'])) : round(float(form.data['box_x_max']))
-        ]
-        cv2.imwrite(img_path, img_cut)
-
         if ttts[0] == '/asset-create/image-add/':
             item_form = self.item_add_form(self.request.POST)
             item_form = item_form.save(commit=False)
@@ -365,6 +358,14 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             ))
         )
         history_coordinate.close()
+
+        img_path = os.path.join(settings.MEDIA_ROOT, image.image.name)
+        img = cv2.imread(img_path)
+        img_cut = img[
+            round(float(form.data['box_y_min'])) : round(float(form.data['box_y_max'])),
+            round(float(form.data['box_x_min'])) : round(float(form.data['box_x_max']))
+        ]
+        cv2.imwrite(img_path, img_cut)
 
         result = self.result_add_form(self.request.POST).save(commit=False)
         result.history = history

@@ -228,7 +228,7 @@ class ResultAddForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
-            # field.widget = forms.HiddenInput()
+            field.widget = forms.HiddenInput()
 
 
 class GroupForm(forms.ModelForm):

@@ -26,7 +26,10 @@
     const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
     
     const preview = document.getElementById("preview");
+    const check_ctrl = document.getElementById("check_ctrl");
     const all_check = document.getElementById("all_check");
+    const all_check_out = document.getElementById("all_check_out");
+    
 
     const confirmation = document.getElementById("confirmation");
 
@@ -99,7 +102,7 @@
 
     function switch_scroll() {
         if (window.innerWidth >= 768) {
-            var max_h = canvas.height - all_check.getBoundingClientRect().height - 16;
+            var max_h = canvas.height - check_ctrl.getBoundingClientRect().height - 16;
             switch_width.style.width = "auto";
             check_list.style.marginTop = "auto";
             // for (let i = 0; i < set.length; i++) {
@@ -126,16 +129,16 @@
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
             console.log("tttt");
             
-            console.log(`preview.width :  ${preview.getBoundingClientRect().width} px`);
-            console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
-            console.log(`canvas.width  :  ${canvas.width} px`);
-            console.log(`canvas.height : ${canvas.height} px`);
+            // console.log(`preview.width :  ${preview.getBoundingClientRect().width} px`);
+            // console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
+            // console.log(`canvas.width  :  ${canvas.width} px`);
+            // console.log(`canvas.height : ${canvas.height} px`);
             // console.log(`x_min_fit: ${x_min_fit.toFixed()} px`);
             // console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
             // console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
             // console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
-            console.log(`width         :  ${(preview.getBoundingClientRect().width / canvas.width)} px`);
-            console.log(`height        : ${(preview.getBoundingClientRect().height / canvas.height)} px`);
+            // console.log(`width         :  ${(preview.getBoundingClientRect().width / canvas.width)} px`);
+            // console.log(`height        : ${(preview.getBoundingClientRect().height / canvas.height)} px`);
 
             for (let i = 0; i < set.length; i++) {
                 // console.log("b "+box_li[i]);
@@ -147,7 +150,7 @@
                 box_li[i][1] *= (preview.getBoundingClientRect().height / canvas.height);
                 box_li[i][2] *= (preview.getBoundingClientRect().width / canvas.width);
                 box_li[i][3] *= (preview.getBoundingClientRect().height / canvas.height);
-                console.log("a "+box_li[i]);
+                // console.log("a "+box_li[i]);
             }
 
             canvas.width = preview.getBoundingClientRect().width.toFixed();
@@ -180,20 +183,32 @@
 
     function set_confirmation() {
         if (isDrawing) return;
+
         confirmation.innerHTML = null;
+        var div = null;
         for (let i = 0; i < set.length; i++) {
             if (checked[i].innerText != "チェック済み") {
-                if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML}、`;
+                if (confirmation.innerHTML) {
+                    div.innerHTML += "、";
+                    confirmation.appendChild(div);
+                }
                 var tag = document.createElement('span');
                 if (box_li[i][4] > threshold_conf) tag.setAttribute('style', 'color: blue;');
                 else if (box_li[i][4] > 0) tag.setAttribute('style', 'color: orange;');
                 else tag.setAttribute('style', 'color: red;');
                 tag.innerText = `${item_name[i]}`;
-                confirmation.appendChild(tag);
+
+                div = document.createElement('div');
+                div.setAttribute('class', 'd-inline-block');
+                div.appendChild(tag);
+
+                confirmation.appendChild(div);
             }
         }
-        if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML} がチェックされていません。`;
-        else confirmation.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> がチェック済みです。';
+        if (confirmation.innerHTML) {
+            confirmation.appendChild(div);
+            confirmation.innerHTML = `${confirmation.innerHTML} <span class="d-block d-sm-inline-block mt-2 mt-sm-0">がチェックされていません。</span>`;
+        } else confirmation.innerHTML = '<span class="d-inline-block" style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">がチェック済みです。</span>';
     };
 
     
@@ -417,6 +432,22 @@
             }
         }
         draw_box(-2);
+        finish_check();
+    };
+
+    all_check_out.onclick = () => {
+        for (let i = 0; i < set.length; i++) {
+            if (check[i].checked) {
+                document.getElementById(`id_form-${i}-box_x_min`).value = null;
+                document.getElementById(`id_form-${i}-box_y_min`).value = null;
+                document.getElementById(`id_form-${i}-box_x_max`).value = null;
+                document.getElementById(`id_form-${i}-box_y_max`).value = null;
+                
+                check[i].checked = false;
+                checked[i].innerText = "チェック";
+            }
+        }
+        draw_box(-1);
         finish_check();
     };
 
