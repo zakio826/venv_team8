@@ -208,7 +208,12 @@
         if (confirmation.innerHTML) {
             confirmation.appendChild(div);
             confirmation.innerHTML = `${confirmation.innerHTML} <span class="d-block d-sm-inline-block mt-2 mt-sm-0">がチェックされていません。</span>`;
-        } else confirmation.innerHTML = '<span class="d-inline-block" style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">がチェック済みです。</span>';
+        } else {
+            div = document.createElement('div');
+            div.setAttribute('class', 'text-center');
+            div.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">がチェック済みです。</span>';
+            confirmation.appendChild(div);
+        }
     };
 
     
@@ -221,7 +226,7 @@
         // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         
         for (let i = 0; i < set.length; i++) {
-            if (i == order) ctx.lineWidth = 2;
+            if (i == order) ctx.lineWidth = 5;
             else ctx.lineWidth = 1;
             
             if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
@@ -235,7 +240,7 @@
                     220,
                     50
                 )`;
-                if (order == -2) ctx.lineWidth = 2;
+                if (order == -2) ctx.lineWidth = 3;
             }
 
             ctx.strokeRect(
@@ -303,7 +308,7 @@
 
         // 矩形を青い線で描画
         ctx.strokeStyle = "blue";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 7;
         ctx.strokeRect(startX, startY, width, height);
     });
 

@@ -134,18 +134,35 @@
 
     function set_confirmation() {
         if (isDrawing) return;
+
         confirmation.innerHTML = null;
+        var div = null;
         for (let i = 0; i < set.length; i++) {
             if (!box_in[i].checked) {
-                if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML}、`;
+                if (confirmation.innerHTML) {
+                    div.innerHTML += "、";
+                    confirmation.appendChild(div);
+                }
                 var tag = document.createElement('span');
                 tag.setAttribute('style', 'color: red;');
                 tag.innerText = `${item_name[i]}`;
-                confirmation.appendChild(tag);
+
+                div = document.createElement('div');
+                div.setAttribute('class', 'd-inline-block');
+                div.appendChild(tag);
+
+                confirmation.appendChild(div);
             }
         }
-        if (confirmation.innerHTML) confirmation.innerHTML = `${confirmation.innerHTML} がチェックされていません。`;
-        else confirmation.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> がチェック済みです。';
+        if (confirmation.innerHTML) {
+            confirmation.appendChild(div);
+            confirmation.innerHTML = `${confirmation.innerHTML} <span class="d-block d-sm-inline-block mt-2 mt-sm-0">がチェックされていません。</span>`;
+        } else {
+            div = document.createElement('div');
+            div.setAttribute('class', 'text-center');
+            div.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">がチェック済みです。</span>';
+            confirmation.appendChild(div);
+        }
     };
 
 
@@ -159,7 +176,7 @@
         // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         
         for (let i = 0; i < set.length; i++) {
-            if (i == order) ctx.lineWidth = 2;
+            if (i == order) ctx.lineWidth = 5;
             else ctx.lineWidth = 1;
             
             // 緑色の線で描画
@@ -168,7 +185,7 @@
                 220,
                 50
             )`;
-            if (order == -2) ctx.lineWidth = 2;
+            if (order == -2) ctx.lineWidth = 3;
 
             ctx.strokeRect(
                 box_li[i][0],
@@ -225,7 +242,7 @@
 
         // 矩形を青い線で描画
         ctx.strokeStyle = "blue";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 7;
         ctx.strokeRect(startX, startY, width, height);
     });
 
