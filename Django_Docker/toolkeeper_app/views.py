@@ -511,6 +511,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "box_y_max": result.box_y_max,
             "model_check": False,
         }]
+        # model_checked = False
 
         # 判定モードを設定
         if ttts[0] == '/asset-check/':
@@ -533,16 +534,17 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
                     self.box.append({
-                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit) + result.box_x_min,
-                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
-                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
-                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit),
+                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit),
+                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit),
+                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit),
                         "conf": 0,
                     })
             
             if history.asset.learning_model:
                 self.box[0]['model_check'] = True
                 self.model_check(history.asset, history.image)
+                # model_checked = True
         else:
             result_class = 1
 
@@ -551,6 +553,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "image": history.image.image,
             "items": items.order_by('-id'),
             "results": self.box,
+            # "model_check": model_checked,
             "threshold_conf": 0.79,
             "result_add_form": result_add_form(
                 initial = [
@@ -604,10 +607,10 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                             w_size=history.image.image.width,
                             h_size=history.image.image.height,
                             classNum=i + 1,
-                            w_min=str(float(form.data[f'form-{i}-box_x_min'])-outer_edged.box_x_min),
-                            h_min=str(float(form.data[f'form-{i}-box_y_min'])-outer_edged.box_y_min),
-                            w_max=str(float(form.data[f'form-{i}-box_x_max'])-outer_edged.box_x_min),
-                            h_max=str(float(form.data[f'form-{i}-box_y_max'])-outer_edged.box_y_min)
+                            w_min=str(float(form.data[f'form-{i}-box_x_min'])),
+                            h_min=str(float(form.data[f'form-{i}-box_y_min'])),
+                            w_max=str(float(form.data[f'form-{i}-box_x_max'])),
+                            h_max=str(float(form.data[f'form-{i}-box_y_max']))
                     ))
                     history_coordinate.write('\n')
                     history_coordinate.write(
@@ -615,10 +618,10 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                                 w_size=history.image.image.width,
                                 h_size=history.image.image.height,
                                 classNum=i + 1,
-                                w_min=str(float(form.data[f'form-{i}-box_x_min'])-outer_edged.box_x_min),
-                                h_min=str(float(form.data[f'form-{i}-box_y_min'])-outer_edged.box_y_min),
-                                w_max=str(float(form.data[f'form-{i}-box_x_max'])-outer_edged.box_x_min),
-                                h_max=str(float(form.data[f'form-{i}-box_y_max'])-outer_edged.box_y_min)
+                                w_min=str(float(form.data[f'form-{i}-box_x_min'])),
+                                h_min=str(float(form.data[f'form-{i}-box_y_min'])),
+                                w_max=str(float(form.data[f'form-{i}-box_x_max'])),
+                                h_max=str(float(form.data[f'form-{i}-box_y_max']))
                         ))
                     )
             history_coordinate.close()
@@ -783,6 +786,7 @@ def chengeLabel(w_size, h_size, classNum, w_min, h_min, w_max, h_max):
     box_height = y_max - y_min
 
     label = [str(classNum), str(x_center), str(y_center), str(box_width), str(box_height)]
+    print(label)
     return label
 
 def chengeBox(w_size, h_size, label):

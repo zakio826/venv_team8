@@ -20,6 +20,7 @@
                 <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
                 <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
                 <span id="create" style="display: none;">{{ create }}</span>
+                <!-- <span id="model_check" style="display: none;">{{ result.model_check }}</span> -->
                 {% for result in results %}
                     {% if forloop.first %}
                         <span id="item_box" style="display: none;">{{ results|length }}</span>
