@@ -156,11 +156,11 @@
         }
         if (confirmation.innerHTML) {
             confirmation.appendChild(div);
-            confirmation.innerHTML = `${confirmation.innerHTML} <span class="d-block d-sm-inline-block mt-2 mt-sm-0">がチェックされていません。</span>`;
+            confirmation.innerHTML = `${confirmation.innerHTML} <span class="d-block d-sm-inline-block mt-2 mt-sm-0">が座標登録されていません。</span>`;
         } else {
             div = document.createElement('div');
             div.setAttribute('class', 'text-center');
-            div.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">がチェック済みです。</span>';
+            div.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">が座標登録済みです。</span>';
             confirmation.appendChild(div);
         }
     };
