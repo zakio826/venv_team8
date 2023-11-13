@@ -38,6 +38,7 @@ from googleapiclient.http import MediaIoBaseDownload
 import shutil
 
 from ultralytics import YOLO
+import cv2
 
 
 class IndexView(generic.TemplateView):
@@ -325,6 +326,14 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
             image_form.front = True
         image_form.save()
         image = Image.objects.get(id=image_form.id)
+
+        img_path = os.path.join(settings.MEDIA_ROOT, image.image.name)
+        img = cv2.imread(img_path)
+        img_cut = img[
+            round(float(form.data['box_y_min'])) : round(float(form.data['box_y_max'])),
+            round(float(form.data['box_x_min'])) : round(float(form.data['box_x_max']))
+        ]
+        cv2.imwrite(img_path, img_cut)
 
         if ttts[0] == '/asset-create/image-add/':
             item_form = self.item_add_form(self.request.POST)
