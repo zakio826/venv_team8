@@ -409,13 +409,19 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         extra = {
             "object": self.object,
             "image": history.image.image,
-            "box_x_min": result.box_x_min,
-            "box_y_min": result.box_y_min,
-            "box_x_max": result.box_x_max,
-            "box_y_max": result.box_y_max,
+            # "box_x_min": result.box_x_min,
+            # "box_y_min": result.box_y_min,
+            # "box_x_max": result.box_x_max,
+            # "box_y_max": result.box_y_max,
             "formset": self.formset,
         }
-        print(settings.MEDIA_ROOT)
+
+        print()
+        print("image_width :", history.image.image.width)
+        print("image_height:", history.image.image.height)
+        print("box_width   :", result.box_x_max - result.box_x_min)
+        print("box_height  :", result.box_y_max - result.box_y_min)
+        print()
 
         # コンテキスト情報を更新
         context.update(extra)
