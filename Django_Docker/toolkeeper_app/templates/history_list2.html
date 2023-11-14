@@ -36,29 +36,30 @@
             <div>
                 <button type="submit" class="btn btn-3">絞り込みとソート</button>
             </div>
-            
         </form>
 
-        <button class="btn btn-danger">
-            <a class="nav-link" href="{% url 'toolkeeper_app:history_list2' %}">異常な履歴一覧</a>
+        <button class="btn btn-3">
+            <a class="nav-link" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧</a>
         </button>
-
+        
         <hr>
 
-        {% if history_list %}
-            <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">履歴をクリックすると詳細へ移ります</p></div>
+        {% if not zero_result_class_history and not other_result_class_history %}
+            <p>異常な管理項目がありません</p>
         {% endif %}
 
-        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-            
-            {% for history in history_list %}
+        {% if zero_result_class_history %}
+        <h5 class="text-center text-warning">※以下の管理項目に異常があります※</h5>
+            <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+                
+                <!-- 「無し（0）」の result_class を持つ履歴を表示 -->
+                {% for history in zero_result_class_history %}
                 <a class="btn" href="{% url 'toolkeeper_app:history_detail' history.pk %}">
                     <div class="col">
                         <div class="card">
                             <!--badge-->
                             <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ history.group.group_name }}</div>
                             <div class="badge bg-dark text-danger position-absolute" style="top: 0.5rem; left: 0.5rem; font-size: 20px;"><i class="bi bi-exclamation-circle"></i></div>
-                            <!-- Product image-->
                             {% if history.image.image %}
                                 <img class="card-img-top" src="{{ history.image.image.url }}" alt="..." />
                             {% endif %}
@@ -66,7 +67,7 @@
                             <div class="card-body">
                                 <div class="text-center">
                                     <!-- Product name-->
-                                    <h5 class="fw-bolder">{{ history.asset.asset_name }}</h5>
+                                    <h5 class="fw-bolder text-danger">{{ history.asset.asset_name }}</h5>
                                     <!-- Product reviews-->
                                     <div class="d-flex justify-content-center small mb-2">
                                         確認日時：{{ history.checked_at }}
@@ -80,12 +81,10 @@
                         </div>
                     </div>
                 </a>
-                {% empty %}
-                <p>履歴が存在しません</p>
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
 
-
+        {% endif %}
         <!-- ページネーションリンクの表示 -->
         <!-- ページネーションリンク -->
         {% if page_obj.paginator.count > 0 %}

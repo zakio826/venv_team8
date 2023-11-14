@@ -714,7 +714,7 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
             history_list = history_list.filter(asset=selected_asset)
 
         # ソート条件を取得
-        sort_order = self.request.GET.get('sort_order')
+        sort_order = self.request.GET.get('sort_order','desc')
         if sort_order == 'asc':
             history_list = history_list.order_by('updated_at')
         elif sort_order == 'desc':
@@ -734,6 +734,64 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
         context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
         context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
+
+        return context
+    
+class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
+    model = History
+    template_name = 'history_list2.html'
+    context_object_name = 'history_list'
+    paginate_by = 2
+
+    def get_queryset(self):
+        user = self.request.user
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+        all_history_list = History.objects.filter(group__in=user_groups)
+
+        checked_at = self.request.GET.get('checked_at')
+            
+        if checked_at:
+            all_history_list = all_history_list.filter(checked_at__date=checked_at)
+        
+        selected_group = self.request.GET.get('group')
+        if selected_group:
+            all_history_list = all_history_list.filter(group=selected_group)
+
+        selected_user = self.request.GET.get('user')
+        if selected_user:
+            all_history_list = all_history_list.filter(user=selected_user)
+
+        selected_asset = self.request.GET.get('asset')
+        if selected_asset:
+            all_history_list = all_history_list.filter(asset=selected_asset)
+
+        # ソート条件を取得
+        sort_order = self.request.GET.get('sort_order','desc')
+        if sort_order == 'asc':
+            all_history_list = all_history_list.order_by('updated_at')
+        elif sort_order == 'desc':
+            all_history_list = all_history_list.order_by('-updated_at')
+
+        # 「無し（0）」の result_class を持つ履歴とそれ以外の履歴を分ける
+        zero_result_class_history = all_history_list.filter(result__result_class=0)
+        other_result_class_history = all_history_list.exclude(result__result_class=0)
+
+        return zero_result_class_history, other_result_class_history
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
+        context['sort_form'] = SortForm(data=self.request.GET)
+        
+        context['search_form'] = SearchForm(data=self.request.GET)
+        context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
+        context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
+        context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
+
+        # コンテキストに「無し（0）」の result_class を持つ履歴とそれ以外の履歴を追加
+        context['zero_result_class_history'] = context['history_list'][0]
+        context['other_result_class_history'] = context['history_list'][1]
 
         return context
 
