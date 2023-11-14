@@ -407,6 +407,8 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.kwargs[self.pk_url_kwarg])
         result = Result.objects.get(history=history)
 
+        print(self.formset)
+
         extra = {
             "object": self.object,
             "image": history.image.image,
@@ -469,7 +471,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(save=True, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
+        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()

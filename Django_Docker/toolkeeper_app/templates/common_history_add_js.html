@@ -29,10 +29,10 @@
     const check_ctrl = document.getElementById("check_ctrl");
     const all_check = document.getElementById("all_check");
     const all_check_out = document.getElementById("all_check_out");
-    
 
     const confirmation = document.getElementById("confirmation");
 
+    
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
     let startX, startY, width, height;
@@ -102,7 +102,7 @@
 
     function switch_scroll() {
         if (window.innerWidth >= 768) {
-            var max_h = canvas.height - check_ctrl.getBoundingClientRect().height - 16;
+            var max_h = canvas.height;
             switch_width.style.width = "auto";
             check_list.style.marginTop = "auto";
             // for (let i = 0; i < set.length; i++) {
@@ -111,8 +111,8 @@
         }
         else {
             var max_h = 200;
-            switch_width.style.width = 210 * set.length;
-            check_list.style.marginTop = "30px";
+            switch_width.style.width = 200 * set.length;
+            check_list.style.marginTop = "20px";
             // for (let i = 0; i < set.length; i++) {
             //     document.getElementById(`ctrl_${i}`).style.margin = "auto";
             // }
@@ -465,23 +465,8 @@
     };
 
     
-    const width_xxl = 1400;
-    const width_xl = 1200;
-    const width_lg = 992;
-    const width_md = 768;
-    const width_sm = 576;
-
-    let width_class = window.innerWidth;
-
-    // ウィンドウのリサイズ時にスクロール状態を切り替える
-    window.onresize = () => {
-        if (width_class != width_xxl && window.innerWidth >= width_xxl) width_class = width_xxl;
-        else if (width_class != width_xl && window.innerWidth < width_xxl && window.innerWidth >= width_xl) width_class = width_xl;
-        else if (width_class != width_lg && window.innerWidth < width_xl && window.innerWidth >= width_lg) width_class = width_lg;
-        else if (width_class != width_md && window.innerWidth < width_lg && window.innerWidth >= width_md) width_class = width_md;
-        else if (width_class != width_sm && window.innerWidth < width_md) width_class = width_sm;
-        else return;
-
+    // bootstrapでのデフォルトのブレークポイントで発
+    function transition_class () {
         auto_fit();
         draw_box();
     };
