@@ -11,6 +11,7 @@
     const create = document.getElementById("create").innerText;
 
     const check_list = document.getElementById("check_list");
+    const switch_width = document.getElementById("switch_width");
 
     const box_x_min = Number(document.getElementById("box_x_min").innerText);
     const box_y_min = Number(document.getElementById("box_y_min").innerText);
@@ -22,6 +23,8 @@
     const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
     
     const preview = document.getElementById("preview");
+    
+    const confirmation = document.getElementById("confirmation");
 
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
@@ -30,20 +33,22 @@
     const x_fix = box_x_max - box_x_min;
     const y_fix = box_y_max - box_y_min;
 
-    canvas.width = x_fix;
-    canvas.height = y_fix;
+    // canvas.width = x_fix;
+    // canvas.height = y_fix;
 
-    let x_fit = canvas.width / x_fix;
-    let y_fit = canvas.height / y_fix;
+    // let x_fit = canvas.width / x_fix;
+    // let y_fit = canvas.height / y_fix;
 
-    let x_min_fit = box_x_min;
-    let y_min_fit = box_y_min;
+    // let x_min_fit = box_x_min;
+    // let y_min_fit = box_y_min;
 
 
     // バウンディングボックスの座標を初期化
+    let item_name = [];
     let x_min, x_max, y_min, y_max;
     let box_li = [];
     for (let i = 0; i < set.length; i++) {
+        item_name[i] = document.getElementById(`item_${i}_name`).innerText;
         box_li[i] = [0,0,0,0,0];
     }
 
@@ -53,14 +58,38 @@
         let w = x_fix / canvas.width;
         let h = y_fix / canvas.height;
         
-        document.getElementById(`id_form-${i}-box_x_min`).value = (box_li[i][0] * w) + box_x_min;
-        document.getElementById(`id_form-${i}-box_y_min`).value = (box_li[i][1] * h) + box_y_min;
-        document.getElementById(`id_form-${i}-box_x_max`).value = (box_li[i][2] * w) + box_x_min;
-        document.getElementById(`id_form-${i}-box_y_max`).value = (box_li[i][3] * h) + box_y_min;
+        document.getElementById(`id_form-${i}-box_x_min`).value = box_li[i][0] * w;
+        document.getElementById(`id_form-${i}-box_y_min`).value = box_li[i][1] * h;
+        document.getElementById(`id_form-${i}-box_x_max`).value = box_li[i][2] * w;
+        document.getElementById(`id_form-${i}-box_y_max`).value = box_li[i][3] * h;
 
         box_in[i].disabled = false;
         box_in[i].checked = true;
     }
+
+    function switch_scroll() {
+        if (window.innerWidth >= 768) {
+            var max_h = canvas.height;
+            switch_width.style.width = "auto";
+            for (let i = 0; i < set.length; i++) {
+                document.getElementById(`ctrl_${i}`).style.margin = "auto";
+            }
+        }
+        else {
+            var max_h = 145;
+            switch_width.style.width = "850px";
+            for (let i = 0; i < set.length; i++) {
+                document.getElementById(`ctrl_${i}`).style.margin = "0 2px";
+            }
+        }
+        check_list.style.height = max_h;
+
+        for (let i = 0; i < set.length; i++) {
+            // console.log(window.innerWidth);
+            // console.log(document.getElementById(`ctrl_${i}`).style.width);
+        }
+    };
+
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
@@ -77,36 +106,77 @@
             canvas.width = preview.getBoundingClientRect().width.toFixed();
             canvas.height = canvas.width * (y_fix / x_fix);
 
-            x_fit = canvas.width / x_fix;
-            y_fit = canvas.height / y_fix;
+            // x_fit = canvas.width / x_fix;
+            // y_fit = canvas.height / y_fix;
 
-            x_min_fit = box_x_min * x_fit;
-            y_min_fit = box_y_min * y_fit;
+            // x_min_fit = box_x_min * x_fit;
+            // y_min_fit = box_y_min * y_fit;
             
-            check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
-            ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
+            
+            // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
+            ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
         }
-
-        console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
-        console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
-        console.log(`canvas.width:  ${canvas.width} px`);
-        console.log(`canvas.height: ${canvas.height} px`);
-        console.log(`x_min_fit: ${x_min_fit.toFixed()} px`);
-        console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
-        console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
-        console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
         
+        switch_scroll();
+
+        console.log(`preview.width : ${preview.getBoundingClientRect().width} px`);
+        console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
+        console.log(`canvas.width  : ${canvas.width} px`);
+        console.log(`canvas.height : ${canvas.height} px`);
+        // console.log(`x_min_fit     : ${x_min_fit.toFixed()} px`);
+        // console.log(`y_min_fit     : ${y_min_fit.toFixed()} px`);
+        // console.log(`x_max_fit     : ${(x_min_fit + canvas.width).toFixed()} px`);
+        // console.log(`y_max_fit     : ${(y_min_fit + canvas.height).toFixed()} px`);
+        console.log(`image.width   : ${(image.width).toFixed()} px`);
+        console.log(`image.height  : ${(image.height).toFixed()} px`);
     };
+
+
+    function set_confirmation() {
+        if (isDrawing) return;
+
+        confirmation.innerHTML = null;
+        var div = null;
+        for (let i = 0; i < set.length; i++) {
+            if (!box_in[i].checked) {
+                if (confirmation.innerHTML) {
+                    div.innerHTML += "、";
+                    confirmation.appendChild(div);
+                }
+                var tag = document.createElement('span');
+                tag.setAttribute('style', 'color: red;');
+                tag.innerText = `${item_name[i]}`;
+
+                div = document.createElement('div');
+                div.setAttribute('class', 'd-inline-block');
+                div.appendChild(tag);
+
+                confirmation.appendChild(div);
+            }
+        }
+        if (confirmation.innerHTML) {
+            confirmation.appendChild(div);
+            confirmation.innerHTML = `${confirmation.innerHTML} <span class="d-block d-sm-inline-block mt-2 mt-sm-0">が座標登録されていません。</span>`;
+        } else {
+            div = document.createElement('div');
+            div.setAttribute('class', 'text-center');
+            div.innerHTML = '<span style="color: rgb(0, 220, 50)">すべてのアイテム</span> <span class="d-inline-block">が座標登録済みです。</span>';
+            confirmation.appendChild(div);
+        }
+    };
+
 
     // 選択済みのバウンディングボックスを描画
     function draw_box(order=-1) {
 
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
+        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
+        // ctx.drawImage(image, 0, 0);
+        // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         
         for (let i = 0; i < set.length; i++) {
-            if (i == order) ctx.lineWidth = 2;
+            if (i == order) ctx.lineWidth = 5;
             else ctx.lineWidth = 1;
             
             // 緑色の線で描画
@@ -115,7 +185,7 @@
                 220,
                 50
             )`;
-            if (order == -2) ctx.lineWidth = 2;
+            if (order == -2) ctx.lineWidth = 3;
 
             ctx.strokeRect(
                 box_li[i][0],
@@ -124,24 +194,27 @@
                 box_li[i][3] - box_li[i][1],
             );
         }
+        set_confirmation();
     };
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
 
-        const x_fix = box_x_max - box_x_min;
-        const y_fix = box_y_max - box_y_min;
+        // const x_fix = image.width;
+        // const y_fix = image.height;
 
-        canvas.width = preview.getBoundingClientRect().width.toFixed();
-        canvas.height = canvas.width * (y_fix / x_fix);
+        // canvas.width = preview.getBoundingClientRect().width.toFixed();
+        // canvas.height = canvas.width * (y_fix / x_fix);
+        canvas.width = image.width;
+        canvas.height = image.height;
 
-        let x_fit = canvas.width / x_fix;
-        let y_fit = canvas.height / y_fix;
+        // let x_fit = canvas.width / x_fix;
+        // let y_fit = canvas.height / y_fix;
 
-        let x_min_fit = box_x_min * x_fit;
-        let y_min_fit = box_y_min * y_fit;
+        // let x_min_fit = box_x_min * x_fit;
+        // let y_min_fit = box_y_min * y_fit;
 
-        check_list.style = `overflow-y: scroll; height: ${canvas.height};`;
+        auto_fit();
 
         draw_box();
     };
@@ -169,7 +242,7 @@
 
         // 矩形を青い線で描画
         ctx.strokeStyle = "blue";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 7;
         ctx.strokeRect(startX, startY, width, height);
     });
 
@@ -179,7 +252,6 @@
             draw_box(order=-2);
         } else {
             submit.disabled = true;
-            draw_box();
         }
     }
 
@@ -259,5 +331,27 @@
             submit.disabled = true;
         }
         out_box(i);
+    };
+
+
+    const width_xxl = 1400;
+    const width_xl = 1200;
+    const width_lg = 992;
+    const width_md = 768;
+    const width_sm = 576;
+
+    let width_class = window.innerWidth;
+
+    // ウィンドウのリサイズ時にスクロール状態を切り替える
+    window.onresize = () => {
+        if (width_class != width_xxl && window.innerWidth >= width_xxl) width_class = width_xxl;
+        else if (width_class != width_xl && window.innerWidth < width_xxl && window.innerWidth >= width_xl) width_class = width_xl;
+        else if (width_class != width_lg && window.innerWidth < width_xl && window.innerWidth >= width_lg) width_class = width_lg;
+        else if (width_class != width_md && window.innerWidth < width_lg && window.innerWidth >= width_md) width_class = width_md;
+        else if (width_class != width_sm && window.innerWidth < width_md) width_class = width_sm;
+        else return;
+
+        auto_fit();
+        draw_box();
     };
 </script>

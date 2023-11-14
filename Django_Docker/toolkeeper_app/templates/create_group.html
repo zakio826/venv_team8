@@ -18,16 +18,28 @@
                 <div class="col-lg-8 col-xl-6">
                     <form method="post">
                         {% csrf_token %}
-                        <h5 class="mb-4">ホストユーザー：{{ user.username }}</h5>
-                        <h5 class="mb-4">{{ form.as_p }}</h5>
-                        <button class="btn btn-3" type="submit">作成</button>
+
+                        {{ form.non_field_errors }}
+                    
+                        <h5 class="mb-3">作成するグループの名前を入力：</h5>
+                        <div class="form-floating mb-4">
+                            {{ form.group_name }}
+                            {{ form.group_name.errors }}
+                            <label for="{{ form.group_name.id_for_label }}">
+                                {{ form.group_name.label }}
+                            </label>
+                        </div>
+
+                        <!-- <h5 class="mb-4">ホストユーザー：{{ user.username }}</h5>
+                        <h5 class="mb-4">{{ form.as_p }}</h5> -->
+                        <button class="btn btn-3 px-4" type="submit">作成する</button>
                     </form>
                 </div>
             </div>
         </div>
         <div class="d-grid">
             <button class="btn btn-lg btn-2">
-                <a class="nav-link" href="{% url 'toolkeeper_app:join_group' %}">グループへ参加</a>
+                <a class="nav-link" href="{% url 'toolkeeper_app:join_group' %}">グループ参加</a>
             </button>
         </div>
     </div>

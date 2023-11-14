@@ -9,12 +9,13 @@
 {% block header %}
 <!-- Header-->
 <header class="bg-dark py-5">
-    <div class="container px-5">
-        <div class="row gx-5 align-items-center justify-content-center">
-            <div class="col-lg-8 col-xl-7 col-xxl-6">
+    <div class="container px-5 px-sm-3 px-xl-4">
+        <div class="row gx-5 justify-content-around">
+            <div class="col-md-10 col-lg-8 d-block d-xl-none text-center"><img class="img-fluid rounded-3" src="{% static 'assets/toolkeeper.png' %}" alt="..." width="100%" height="auto"/></div>
+            <div class="col-lg-8 col-xl-auto">
                 <div class="my-5 text-center text-xl-start">
                     <h1 class="display-5 fw-bolder text-white mb-2">いつも使う物を大切に。<br>ToolKeeper</h1>
-                    <p class="lead fw-normal text-white-50 mb-4">ToolKeeperは、あなたがいつも使う物を管理できるwebアプリです。<br>物を使った後の確認や、以前使った時の状態を見返せるほか、AIによって確認作業をより効率的に行うことができます。</p>
+                    <p class="lead fw-normal text-white-50 mb-4">ToolKeeperは、あなたがいつも使う物を管理できるwebアプリです。<br>物を使った後の確認や、以前使った時の状態を見返せるほか、<br>AIによって確認作業をより効率的に行うことができます。</p>
                     <div class="d-grid gap-3 d-sm-flex justify-content-sm-center justify-content-xl-start">
                         {% if user.is_authenticated %}
                             <a class="btn btn-primary btn-lg px-4 me-sm-3" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧</a>
@@ -25,7 +26,9 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-5 col-xxl-6 d-none d-xl-block text-center"><img class="img-fluid rounded-3 my-5" src="{% static 'assets/toolkeeper.png' %}" alt="..." width="600px" height="400px"/></div>
+            <div class="col-xl col-xxl-6 d-none d-xl-block my-3 text-center">
+                <img class="img-fluid rounded-3 h-100" src="{% static 'assets/toolkeeper.png' %}" alt="..." width="auto" height="100%"/>
+            </div>
         </div>
     </div>
 </header>

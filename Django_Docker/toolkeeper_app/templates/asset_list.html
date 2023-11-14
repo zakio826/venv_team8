@@ -11,29 +11,32 @@
 <!-- Section-->
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
-        <div class="text-center mb-3">
-            <h2>管理項目一覧</h2>
-        </div>
-        <div class="row d-flex justify-content-end mb-4">
-            <button class="col-auto learn-more">
-                <span class="circle" aria-hidden="true">
-                  <span class="icon arrow"></span>
-                </span>
-                <span class="col-auto button-text">
-                    <a class="nav-link" href="{% url 'toolkeeper_app:asset_create' %}">新規作成</a>
-                </span>
-            </button>
-            <button class="learn-more">
-                <span class="circle" aria-hidden="true">
-                  <span class="icon arrow"></span>
-                </span>
-                <span class="button-text">
-                    <a class="nav-link" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧</a>
-                </span>
-            </button>
+        <div class="row row-cols-1 row-cols-md-2 justify-content-center justify-content-md-between d-flex mb-4">
+            <h2 class="col w-auto mb-4 my-md-auto">管理項目一覧</h2>
+            <div class="col row justify-content-center w-auto mx-auto mx-md-0 ms-md-auto">
+                <button class="col-auto learn-more my-2">
+                    <span class="circle" aria-hidden="true">
+                      <span class="icon arrow"></span>
+                    </span>
+                    <span class="col-auto button-text ps-2">
+                        <a class="nav-link" href="{% url 'toolkeeper_app:asset_create' %}">新規作成</a>
+                    </span>
+                </button>
+                <button class="col-auto learn-more my-2">
+                    <span class="circle" aria-hidden="true">
+                      <span class="icon arrow"></span>
+                    </span>
+                    <span class="button-text ps-2">
+                        <a class="nav-link" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧</a>
+                    </span>
+                </button>
+            </div>
         </div>
         <form method="get">
-            {{ group_filter_form.as_p }}
+            <div class="row row-cols-1 row-cols-md-3">
+                {{ group_filter_form.as_p }}
+            </div>
+            
             <button class="btn btn-3" type="submit">絞り込み</button>
         </form>
         <script>
@@ -48,7 +51,7 @@
         {% if image_list %}
             <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">管理項目をクリックすると詳細へ移ります</p></div>
         {% endif %}
-        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
+        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
             {% for image in page_obj %}
                 <div class="col mb-5">
                     <div class="card">
@@ -60,7 +63,7 @@
                                 <img class="card-img-top" src="{{ image.image.url }}" alt="..." />
                             {% endif %}
                             <!-- Product details-->
-                            <div class="card-body">
+                            <div class="card-body px-2">
                                 <div class="text-center">
                                     <!-- Product name-->
                                     <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>

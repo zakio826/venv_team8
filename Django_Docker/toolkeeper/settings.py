@@ -26,7 +26,7 @@ ALLOWED_HOSTS = [f"www.{os.environ.get('ALLOWED_HOSTS')}", os.environ.get('ALLOW
 STATIC_ROOT = '/usr/share/nginx/html/static'
 MEDIA_ROOT = '/usr/share/nginx/html/media'
 
-SERVICE_ACCOUNT_KEY_ROOT = os.path.join(BASE_DIR, SERVICE_ACCOUNT_KEY_NAME)
+SERVICE_ACCOUNT_KEY_ROOT = f'/code/{SERVICE_ACCOUNT_KEY_NAME}'
 
 # ロギング設定
 LOGGING = {
@@ -77,4 +77,3 @@ LOGGING = {
         },
     }
 }
-

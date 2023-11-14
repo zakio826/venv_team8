@@ -1,31 +1,47 @@
 {% extends 'base.html' %}
 
+{% block title %}グループ詳細 | ToolKeeper{% endblock %}
+
+{% block active_group_list %}active{% endblock %}
+
 {% block contents %}
 
 <!-- Page content-->
 <section class="py-5">
-    <div class="container px-5">
-        <div class="bg-light rounded-3 py-5 px-4 px-md-5 mb-3">
+    <div class="container px-3 px-md-5">
+        <div class="bg-light rounded-3 py-5 px-5 mb-3">
             <div class="row">
                 <div class="d-grid mb-5">
-                    <h2><u>{{ group.group_name }}（ホスト: {% if group.user == request.user %} あなた） {% else %} {{ group.user.username }}） {% endif %}</u></h2>
-                    <p><strong>グループID：
-                            {% if group.user == request.user %}<u id="text">{{ group.group_id }}</u>
-                            <button class="mx-1 mb-1" id="copybutton">
-                                <svg id="copyfont" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2Zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6ZM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2Z"/>
-                                </svg>
-                            </button>
+                    <h2>
+                        <u>{{ group.group_name }}
+                            <span class="d-inline-block fs-4 mt-2">
+                                （ホスト：{% if group.user == request.user %}あなた{% else %}{{ group.user.username }}{% endif %}）
+                            </span>
+                        </u>
+                    </h2>
+                    <p class="pt-2">
+                        <strong class="row px-3"><span class="col-auto px-0">グループID：</span>
+                            {% if group.private %}
+                            <span class="col-auto text-muted">個人利用グループのため、IDは表示されません</span>
+                            {% elif group.user == request.user %}
+                            <span class="col-auto">
+                                <u class="w-auto" id="text">{{ group.group_id }}</u>
+                                <button class="px-2" id="copybutton">
+                                    <svg id="copyfont" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2Zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6ZM2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1h1v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1v1H2Z"/>
+                                    </svg>
+                                </button>
+                            </span>
                             {% else %}
-                            <span class="text-muted">ホストではないためIDは表示されません</span>
+                            <span class="text-muted col-auto">ホストではないため、IDは表示されません</span>
                             {% endif %}
                         </strong>
                     </p>
                 </div>
-                <div class="col-6">
-                    <h5 class="mb-2">メンバー[{{ members_count }}名]</h5>
+                <div class="d-grid d-sm-block col-sm-6 mb-5 mb-sm-auto">
+                    <h5 class="mb-2">メンバー [ {{ members_count }}名 ]</h5>
                     <hr>
-                    <div class="scrollable-detail">
+                    <div class="scrollable-detail px-2 px-sm-0">
                         <ul>
                             {% for member in group.groupmember_set.all %}
                                 <li><h5>
@@ -38,19 +54,19 @@
                         </ul>
                     </div>
                 </div>
-                <div class="col">
+                <div class="d-grid d-sm-block col-sm">
                     <h5 class="mb-2">管理項目一覧</h5>
                     <hr>
-                    <div class="scrollable-detail">
+                    <div class="scrollable-detail px-2 px-sm-0">
+                        {% if assets %}
                         <ul>
-                            {% if assets %}
-                                {% for asset in assets %}
-                                    <li><h5>{{ asset.asset_name }}</h5></li>
-                                {% endfor %}
-                            {% else %}
-                                <h5>このグループには管理項目がありません。</h5>
-                            {% endif %}
+                            {% for asset in assets %}
+                            <li><h5>{{ asset.asset_name }}</h5></li>
+                            {% endfor %}
                         </ul>
+                        {% else %}
+                        <h5 class="px-2">このグループには管理項目がありません。</h5>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -59,7 +75,7 @@
             <form method="post">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-lg btn-danger" name="delete_group">グループ削除</button>
-                {% if not group.private %}
+                {% if members_count > 1 %}
                     <button class="btn btn-lg btn-success">
                         <a class="nav-link" href="{% url 'toolkeeper_app:group_host' group.id %}">ホストを変更</a>
                     </button>

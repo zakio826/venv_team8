@@ -7,22 +7,20 @@
 
 {% block contents %}
 <div class="container my-5">
-
-    <div style="display: flex; width: 100%; justify-content: center;">
-        <div class="row justify-content-between align-items-center mb-3 mx-0" style="width: 80%;">
-            <h5 class="col col-lg-auto align-self-start" style="text-align: center; margin-top: 0.5rem;">すべてのアイテムを囲ってください。</h5>
-            <button class="col-auto col-lg-2 align-self-end btn btn-3 my-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
-        </div>
+    <div class="row justify-content-around mt-4" style="text-align: center;">
+        <h3 class="col-12 col-md-8 col-lg-6" style="text-align: center; margin-top: 0.5rem;">登録したアイテムを全て囲ってください。</h3>
+        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
     </div>
     
     <hr>
 
-    <div class="row">
-        <div class="col-8" style="position: relative;">
+    <div class="row justify-content-around">
+        <div class="col-11 col-md-8" style="position: relative;">
             <div id="preview" style="width: 100%; height: auto;">
                 <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
                 <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
                 <span id="create" style="display: none;">{{ create }}</span>
+                <!-- <span id="model_check" style="display: none;">{{ result.model_check }}</span> -->
                 {% for result in results %}
                     {% if forloop.first %}
                         <span id="item_box" style="display: none;">{{ results|length }}</span>
@@ -42,19 +40,32 @@
                 <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-11 col-md-4">
+            <div class="position-relative" id="check_list" style="overflow: auto;">
+                <div class="position-absolute d-flex d-md-block" id="switch_width" style="height: 100%;">
+                    {% if create == 0 %}
+                        {% include 'common_history_add.html' %}
+                    {% else %}
+                        {% include 'common_history_create.html' %}
+                    {% endif %}
+                </div>
+            </div>
             {% if create == 0 %}
-                {% include 'common_history_add.html' %}
-            {% else %}
-                {% include 'common_history_create.html' %}
+            <div id="check_ctrl">
+                <hr>
+                <div class="row row-cols-2 row-cols-md-1 row-cols-lg-2">
+                    <div class="col"><button class="btn my-btn-common my-btn-green w-100" type="button" id="all_check">一括チェック</button></div>
+                    <div class="col mt-0 mt-md-3 mt-lg-0"><button class="btn my-btn-common my-check-green w-100 px-2" type="button" id="all_check_out">一括チェック解除</button></div>
+                </div>
+            </div>
             {% endif %}
         </div>
     </div>
 
     <hr>
 
-    <h5 id="confirmation" style="text-align: center;"></h5>
-    <div style="display: flex; width: 100%; justify-content: center;">
+    <div class="h5 text-sm-center px-5 px-lg-2" id="confirmation"></div>
+    <div class="d-flex w-100 justify-content-center">
         <label class="w-auto my-4" for="finish">
             <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> すべてのアイテムをチェックしました。
         </label>

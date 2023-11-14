@@ -7,123 +7,131 @@
 {% block contents %}
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
-        <div class="text-center mb-3">
-            <h2>履歴一覧</h2>
+        <div class="row mb-4">
+            <h2 class="col-auto my-auto">履歴一覧</h2>
+            <button class="col-auto ms-auto learn-more">
+                <span class="circle" aria-hidden="true">
+                  <span class="icon arrow"></span>
+                </span>
+                <span class="col-auto button-text ps-2">
+                    <a class="nav-link" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧</a>
+                </span>
+            </button>
         </div>
         <form method="get">
-            <div class="mb-1">
-                {{ search_form }}
-                <button type="button" class="mb-1 btn btn-secondary" onclick="clearSearch()"><i class="bi bi-arrow-clockwise"></i></button>
-            </div>
-            <div class="mb-3">            
-                <div class="mb-1">
-                    {{ group_filter_form }}｜{{ user_filter_form }}｜{{ asset_filter_form }}
-                    <button type="button" class="mb-1 btn btn-secondary" onclick="clearFilters()"><i class="bi bi-arrow-clockwise"></i></button>
+            <div class="mb-3">
+                <div class="row row-cols-1 row-cols-md-3">
+                    <div class="col mt-2 mt-md-auto">{{ group_filter_form }}</div>
+                    <div class="col mt-2 mt-md-auto">{{ user_filter_form }}</div>
+                    <div class="col mt-2 mt-md-auto">{{ asset_filter_form }}</div>
+                    <!-- <div class="col mt-3 mt-lg-auto">{{ search_form }}</div> -->
+                    <!-- <button type="button" class="col mt-2 mt-md-auto btn btn-secondary" style="width: 60px; height: 38px;" onclick="clearFilters()"><i class="bi bi-arrow-clockwise"></i></button> -->
                 </div>
-                {{ sort_form.as_p }}
+                <div class="row row-cols-1 row-cols-md-3">
+                    <div class="col mt-3">{{ sort_form }}</div>
+                    <!-- <div class="col mt-3">{{ search_form }}</div> -->
+                    <!-- <button type="button" class="col mt-2 mt-md-auto btn btn-secondary" style="width: 60px; height: 38px;" onclick="clearSearch()"><i class="bi bi-arrow-clockwise"></i></button> -->
+                </div>
             </div>
             <div>
-                <button type="submit" class="btn btn-3">検索とソート</button>
+                <button type="submit" class="btn btn-3">絞り込みとソート</button>
             </div>
-            
         </form>
         <hr>
 
         {% if history_list %}
             <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">履歴をクリックすると詳細へ移ります</p></div>
         {% endif %}
-        <div class="container px-4 px-lg-5 mt-3">
-            <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-3">
-                
-                {% for history in history_list %}
-                    <a class="btn" href="{% url 'toolkeeper_app:history_detail' history.pk %}">
-                        <div class="col">
-                            <div class="card">
-                                <!--badge-->
-                                <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ history.group.group_name }}</div>
-                                <!-- Product details-->
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <!-- Product name-->
-                                        <h5 class="fw-bolder">{{ history.asset.asset_name }}</h5>
-                                        <!-- Product reviews-->
-                                        <div class="small text-warning mb-2">
-                                            確認日時: {{ history.checked_at }}
-                                            <br>
-                                            <!-- 更新日時: {{ history.updated_at }}
-                                            <br> -->
-                                            <!-- ユーザー: {{ history.user }} -->
-                                        </div>
+        
+        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+            
+            {% for history in history_list %}
+                <a class="btn" href="{% url 'toolkeeper_app:history_detail' history.pk %}">
+                    <div class="col">
+                        <div class="card">
+                            <!--badge-->
+                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ history.group.group_name }}</div>
+                            <!-- Product image-->
+                            {% if history.image.image %}
+                                <img class="card-img-top" src="{{ history.image.image.url }}" alt="..." />
+                            {% endif %}
+                            <!-- Product details-->
+                            <div class="card-body">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <h5 class="fw-bolder">{{ history.asset.asset_name }}</h5>
+                                    <!-- Product reviews-->
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        確認日時：{{ history.checked_at }}
+                                        <br>
+                                        <!-- 更新日時: {{ history.updated_at }}
+                                        <br> -->
+                                        ユーザー：{{ history.user }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </a>
-                    {% empty %}
-                    <p>履歴が存在しません</p>
-                {% endfor %}
-            </div>
-
-            <!-- ページネーションリンクの表示 -->
-            <!-- ページネーションリンク -->
-            {% if page_obj.paginator.count > 0 %}
-            <!-- ページネーションリンク -->
-            <div class="d-flex justify-content-center mt-4">
-                <ul class="pagination">
-                    {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">最初</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">前へ</a>
-                    </li>
-                    {% endif %}
-                    <!-- ページ番号のセレクトボックス -->
-                    <li class="page-item">
-                        <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}';">
-                            {% for page_num in page_obj.paginator.page_range %}
-                                <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
-                            {% endfor %}
-                        </select>
-                    </li>
-                    {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">次へ</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">最後</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-            {% endif %}
-
-            <div class="d-grid mt-3">
-                <button class="btn btn-lg btn-2 d-grid">
-                    <a class="nav-link" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧に戻る</a>
-                </button>
-            </div>
+                    </div>
+                </a>
+                {% empty %}
+                <p>履歴が存在しません</p>
+            {% endfor %}
         </div>
+
+        <!-- ページネーションリンクの表示 -->
+        <!-- ページネーションリンク -->
+        {% if page_obj.paginator.count > 0 %}
+        <!-- ページネーションリンク -->
+        <div class="d-flex justify-content-center mt-4">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">最初</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">前へ</a>
+                </li>
+                {% endif %}
+                <!-- ページ番号のセレクトボックス -->
+                <li class="page-item">
+                    <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}';">
+                        {% for page_num in page_obj.paginator.page_range %}
+                            <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
+                        {% endfor %}
+                    </select>
+                </li>
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">次へ</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}&user={{ request.GET.user }}&asset={{ request.GET.asset }}&sort_order={{ request.GET.sort_order }}&search_query={{ request.GET.search_query }}">最後</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
     </div>
 </section>
+
 {% endblock %}
+
 
 {% block js %}
 <script>
 
 
-function clearFilters() {
-    document.getElementById("id_group").value = "";
-    document.getElementById("id_user").value = "";
-    document.getElementById("id_asset").value = "";
-}
+    function clearFilters() {
+        document.getElementById("id_group").value = "";
+        document.getElementById("id_user").value = "";
+        document.getElementById("id_asset").value = "";
+    }
 
-function clearSearch() {
-    // document.getElementById("id_search_query").value = "";
-    document.getElementById("id_checked_at").value = "";
-}
+    function clearSearch() {
+        // document.getElementById("id_search_query").value = "";
+        document.getElementById("id_checked_at").value = "";
+    }
 
 </script>
 
 {% endblock %}
-

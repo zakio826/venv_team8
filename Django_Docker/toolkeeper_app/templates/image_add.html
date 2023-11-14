@@ -7,9 +7,11 @@
 
 {% block contents %}
 <div class="container my-5">
-    <div class="row justify-content-between my-4" id="checked" style="display: none;">
-        <h5 class="col-10" style="text-align: center; margin-top: 0.5rem;">全てのアイテムが入るように、外枠を囲ってください。</h5>
-        <button class="col-2 btn btn-3 my-auto" type="button" onclick="auto_fit();">画像読込</button>
+    <div class="row justify-content-around mt-4" id="checked" style="display: none;">
+        <h3 class="col-12 col-md-9" style="text-align: center; margin-top: 0.5rem;">アイテムが全て入るよう、外枠を囲ってください。</h3>
+        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" onclick="auto_fit();">画像読込</button>
+
+        <hr class="my-3">
     </div>
 
     <div id="preview" style="position: relative; width: 100%; margin: auto;">
@@ -20,7 +22,7 @@
 
     <div class="my-check row w-50 mt-4 mb-5 mx-auto" id="control" style="display: none;">
         <input class="btn-check" type="checkbox" id="check" disabled>
-        <label class="btn my-btn-common my-check-red" for="check" onclick="del_box();">外枠をリセット</label>
+        <label class="btn my-btn-common my-check-red" for="check" onclick="del_box(); auto_fit();">外枠をリセット</label>
     </div>
     
     <div class="row">
@@ -118,6 +120,7 @@
             image.src = canvas.toDataURL('image/jpeg');
             ctx.drawImage(image, 0, 0);
         };
+        // auto_fit();
     });
     
 
@@ -144,7 +147,8 @@
 
             set = true;
         }
-        ctx.drawImage(image, 0, 0);
+        // ctx.drawImage(image, 0, 0);
+        draw_box(true);
     };
 
 

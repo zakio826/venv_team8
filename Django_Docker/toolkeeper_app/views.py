@@ -38,6 +38,7 @@ from googleapiclient.http import MediaIoBaseDownload
 import shutil
 
 from ultralytics import YOLO
+import cv2
 
 
 class IndexView(generic.TemplateView):
@@ -152,8 +153,9 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         # Assetモデルのインスタンスを取得し、関連するデータを取得
         self.asset = get_object_or_404(Asset, id=self.object.id)
-        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
+        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('updated_at')
         self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
+        print(self.pt_file_name)
         
         # Google Driveからファイルをダウンロードするためのセットアップ
         if self.asset.drive_folder_id:
@@ -211,7 +213,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
 
         # フォームのgroupフィールドのクエリセットを設定
         context['form'].fields['group'].queryset = groups
-
+        
         # 追加のコンテキスト情報を設定
         extra = {
             "object": self.object,
@@ -357,6 +359,14 @@ class ImageAddView(LoginRequiredMixin, generic.CreateView):
         )
         history_coordinate.close()
 
+        img_path = os.path.join(settings.MEDIA_ROOT, image.image.name)
+        img = cv2.imread(img_path)
+        img_cut = img[
+            round(float(form.data['box_y_min'])) : round(float(form.data['box_y_max'])),
+            round(float(form.data['box_x_min'])) : round(float(form.data['box_x_max']))
+        ]
+        cv2.imwrite(img_path, img_cut)
+
         result = self.result_add_form(self.request.POST).save(commit=False)
         result.history = history
         result.item = item
@@ -400,13 +410,19 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         extra = {
             "object": self.object,
             "image": history.image.image,
-            "box_x_min": result.box_x_min,
-            "box_y_min": result.box_y_min,
-            "box_x_max": result.box_x_max,
-            "box_y_max": result.box_y_max,
+            # "box_x_min": result.box_x_min,
+            # "box_y_min": result.box_y_min,
+            # "box_x_max": result.box_x_max,
+            # "box_y_max": result.box_y_max,
             "formset": self.formset,
         }
-        print(settings.MEDIA_ROOT)
+
+        print()
+        print("image_width :", history.image.image.width)
+        print("image_height:", history.image.image.height)
+        print("box_width   :", result.box_x_max - result.box_x_min)
+        print("box_height  :", result.box_y_max - result.box_y_min)
+        print()
 
         # コンテキスト情報を更新
         context.update(extra)
@@ -453,7 +469,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
+        results1 = model.predict(save=True, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
@@ -465,6 +481,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 self.box[round(classNums[i])]['box_x_max'] = boxes[i][2]
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
+                print(i, self.box[round(classNums[i])])
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -495,6 +512,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "box_y_max": result.box_y_max,
             "model_check": False,
         }]
+        # model_checked = False
 
         # 判定モードを設定
         if ttts[0] == '/asset-check/':
@@ -517,16 +535,17 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
                     self.box.append({
-                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit) + result.box_x_min,
-                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit) + result.box_y_min,
-                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit) + result.box_x_min,
-                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit) + result.box_y_min,
+                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit),
+                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit),
+                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit),
+                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit),
                         "conf": 0,
                     })
             
             if history.asset.learning_model:
                 self.box[0]['model_check'] = True
                 self.model_check(history.asset, history.image)
+                # model_checked = True
         else:
             result_class = 1
 
@@ -535,6 +554,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "image": history.image.image,
             "items": items.order_by('-id'),
             "results": self.box,
+            # "model_check": model_checked,
             "threshold_conf": 0.79,
             "result_add_form": result_add_form(
                 initial = [
@@ -553,6 +573,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     # フォームが有効な場合の処理
     def form_valid(self, form):
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.kwargs[self.pk_url_kwarg])
+        outer_edged = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
 
         ctx = self.get_context_data()
         items = Item.objects.filter(asset=history.asset, outer_edge=False)
@@ -576,14 +597,21 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 result.save()
 
                 if int(form.data[f'form-{i}-result_class']):
+                    # print()
+                    # print()
+                    # print(type(float(form.data[f'form-{i}-box_x_min'])))
+                    # # print(type(form.data[f'form-{i}-box_x_min']))
+                    # print(type(outer_edged.box_x_min))
+                    # print()
+                    # print()
                     labelList.append(chengeLabel(
                             w_size=history.image.image.width,
                             h_size=history.image.image.height,
                             classNum=i + 1,
-                            w_min=form.data[f'form-{i}-box_x_min'],
-                            h_min=form.data[f'form-{i}-box_y_min'],
-                            w_max=form.data[f'form-{i}-box_x_max'],
-                            h_max=form.data[f'form-{i}-box_y_max']
+                            w_min=str(float(form.data[f'form-{i}-box_x_min'])),
+                            h_min=str(float(form.data[f'form-{i}-box_y_min'])),
+                            w_max=str(float(form.data[f'form-{i}-box_x_max'])),
+                            h_max=str(float(form.data[f'form-{i}-box_y_max']))
                     ))
                     history_coordinate.write('\n')
                     history_coordinate.write(
@@ -591,10 +619,10 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                                 w_size=history.image.image.width,
                                 h_size=history.image.image.height,
                                 classNum=i + 1,
-                                w_min=form.data[f'form-{i}-box_x_min'],
-                                h_min=form.data[f'form-{i}-box_y_min'],
-                                w_max=form.data[f'form-{i}-box_x_max'],
-                                h_max=form.data[f'form-{i}-box_y_max']
+                                w_min=str(float(form.data[f'form-{i}-box_x_min'])),
+                                h_min=str(float(form.data[f'form-{i}-box_y_min'])),
+                                w_max=str(float(form.data[f'form-{i}-box_x_max'])),
+                                h_max=str(float(form.data[f'form-{i}-box_y_max']))
                         ))
                     )
             history_coordinate.close()
@@ -647,7 +675,6 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         messages.error(self.request, "履歴の追加に失敗しました.")
         return super().form_invalid(form)
 
-from django.db.models import Q
 
 class HistoryListView(LoginRequiredMixin, generic.ListView):
     model = History
@@ -673,7 +700,7 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
             
         if checked_at:
             history_list = history_list.filter(checked_at__date=checked_at)
-
+        
         selected_group = self.request.GET.get('group')
         if selected_group:
             history_list = history_list.filter(group=selected_group)
@@ -700,8 +727,10 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         context = super().get_context_data(**kwargs)
         user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
         context['sort_form'] = SortForm(data=self.request.GET)
+        
+        # user_filter_form = UserFilterForm(user=self.request.user, data=self.request.GET)  # user引数を渡す
+        # asset_filter_form = AssetFilterForm(user=self.request.user, data=self.request.GET)  #            引数を渡す
         context['search_form'] = SearchForm(data=self.request.GET)
-
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
         context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
         context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
@@ -758,6 +787,7 @@ def chengeLabel(w_size, h_size, classNum, w_min, h_min, w_max, h_max):
     box_height = y_max - y_min
 
     label = [str(classNum), str(x_center), str(y_center), str(box_width), str(box_height)]
+    print(label)
     return label
 
 def chengeBox(w_size, h_size, label):
@@ -798,6 +828,7 @@ def create_group(request):
             group = form.save(commit=False)
             group.user = request.user
             group.group_id = group_id
+            group.private = False
             group.save()
 
             GroupMember.objects.create(user=request.user, group=group)
@@ -829,10 +860,10 @@ def join_group(request):
             try:
                 group = Group.objects.get(group_id=group_id)
             except Group.DoesNotExist:
-                messages.error(request, '提供されたグループIDが存在しません。正しいグループIDを入力してください.')
+                messages.error(request, 'このグループIDは存在しません。正しいグループIDを入力してください.')
             else:
                 if group.private:
-                    messages.error(request, 'このグループは個人利用グループのため参加できません.')
+                    messages.error(request, 'このグループは個人利用のため参加できません.')
                 else:
                     user_already_in_group = GroupMember.objects.filter(user=request.user, group=group).exists()
                     if user_already_in_group:

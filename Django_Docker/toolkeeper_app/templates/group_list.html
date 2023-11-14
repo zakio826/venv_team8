@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 
+{% block title %}グループ一覧 | ToolKeeper{% endblock %}
+
+{% block active_group_list %}active{% endblock %}
+
 {% block contents %}
 <!-- Page content-->
 <section class="py-5">
@@ -11,27 +15,35 @@
                 <hr>
             </div>
             <div class="row gx-5 justify-content-center">
-                <div class="col-lg-8 col-xl-6">
-                    <p class="lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">グループ名をクリックすると詳細画面へ移ります</p>
-                    <ul class="scrollable-list">
+                <div class="col-lg-9 col-xxl-8">
+                    <p class="row justify-content-center lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">
+                        <span class="col-auto px-0">グループ名をクリックすると、</span>
+                        <span class="col-auto px-0">詳細画面へ移ります</span>
+                    </p>
+                    <div class="scrollable-list justify-content-center px-3 px-sm-5">
                         {% for user_group in user_groups %}
                         <div class="col mb-3">
                             <div class="card h-10">
                                 <div class="card-body text-center">
-                                    <a class="fw-bolderd nav-link" href="{% url 'toolkeeper_app:group_detail' user_group.group.id %}">
-                                        <u>{{ user_group.group.group_name }}（ホスト：{% if user_group.group.user == request.user %}あなた）{% else %}{{ user_group.group.user.username }}）{% endif %}</u>
+                                    <a class="fw-bolderd nav-link w-100" href="{% url 'toolkeeper_app:group_detail' user_group.group.id %}">
+                                        <u class="row justify-content-center px-3">
+                                            <span class="col-auto px-0 py-1">{{ user_group.group.group_name }}</span>
+                                            <span class="col-auto px-0 py-1">
+                                                （ホスト：{% if user_group.group.user == request.user %}あなた）{% else %}{{ user_group.group.user.username }}）{% endif %}
+                                            </span>
+                                        </u>
                                     </a>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="d-grid">
             <button class="btn btn-lg btn-2">
-                <a class="nav-link" href="{% url 'toolkeeper_app:join_group' %}">グループ登録</a>
+                <a class="nav-link" href="{% url 'toolkeeper_app:join_group' %}">グループ参加・作成</a>
             </button>
         </div>
         <br>

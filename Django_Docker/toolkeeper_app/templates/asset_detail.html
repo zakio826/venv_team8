@@ -18,29 +18,25 @@
     
     <hr>
     
-    <div class="row mb-3">
-        <div class="col-9">
-            <strong>写真</strong>
+    <div class="row row-cols-1 row-cols-md-2 mb-3">
+        <div class="col col-md-9">
+            <div class="mb-3"><strong>写真</strong></div>
             {% for image in image_list %}
                 {% if image.image %}
                     <img src="{{ image.image.url }}" width="100%" height="auto"/>
                 {% endif %}
             {% endfor %}
         </div>
-        <div class="col">
-            <div class="row">
-                <div class="mb-3">
-                    <strong>アイテム一覧</strong>
+        <div class="col-auto w-auto mt-5 mt-md-0">
+            <div class="mb-3"><strong>アイテム一覧</strong></div>
+            <div class="mb-4">
+                <div class="w-auto">
+                    {% for item in item_list %}
+                        <span class="d-inline-block d-md-block mb-2 mx-2 ">{{ forloop.counter }}. {{ item.item_name }}</span>
+                    {% endfor %}
                 </div>
-                <div class="col mb-4">
-                    <div class="row">
-                        {% for item in item_list %}
-                            <span class="row mb-2 ms-1">{{ forloop.counter }}. {{ item.item_name }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                <a class="btn btn-3" href="{% url 'toolkeeper_app:check_image_add' asset_id %}"> チェックする</a>
             </div>
+            <a class="btn btn-3" href="{% url 'toolkeeper_app:check_image_add' asset_id %}"> チェックする</a>
         </div>
     </div>
 </div>
