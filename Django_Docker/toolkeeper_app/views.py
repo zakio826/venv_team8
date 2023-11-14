@@ -407,8 +407,6 @@ class ItemAddView(LoginRequiredMixin, generic.CreateView):
         history = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').get(id=self.kwargs[self.pk_url_kwarg])
         result = Result.objects.get(history=history)
 
-        print(self.formset)
-
         extra = {
             "object": self.object,
             "image": history.image.image,
