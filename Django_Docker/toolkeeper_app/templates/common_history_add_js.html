@@ -102,7 +102,7 @@
 
     function switch_scroll() {
         if (window.innerWidth >= 768) {
-            var max_h = canvas.height;
+            var max_h = canvas.height - check_ctrl.getBoundingClientRect().height - 16;;
             switch_width.style.width = "auto";
             check_list.style.marginTop = "auto";
             // for (let i = 0; i < set.length; i++) {
