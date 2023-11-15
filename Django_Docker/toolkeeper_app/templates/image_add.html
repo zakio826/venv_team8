@@ -169,9 +169,115 @@
         );
     };
 
+    let mouseEvent = true;
+    let seeked_x, seeked_y;
+
+    const mobile_move = (e) => {
+        if (!isDrawing) return;
+
+        const touchObject = e.changedTouches[0];
+
+        // 要素の位置を取得
+        const rect = touchObject.target.getBoundingClientRect();
+
+        // 要素内におけるタッチ位置を計算
+        const x = touchObject.pageX - rect.left;
+        const y = touchObject.pageY - rect.top;
+
+        width = x - startX;
+        height = y - startY;
+
+        seeked_x = parseFloat((x/rect.width).toFixed(6));
+        seeked_y = parseFloat((y/rect.height).toFixed(6));
+            
+        draw_box(false); // バウンディングボックスの描画
+
+        // 矩形を赤い線で描画
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(startX, startY, width, height);
+    };
+
+
+    window.onload = function() {
+        canvas.addEventListener('touchmove', mobile_move);
+        
+        // スクロールを禁止にする関数
+        function disableScroll(event) { event.preventDefault(); };
+
+        canvas.addEventListener('touchstart', (e) => {
+            auto_fit();
+
+            mouseEvent = false;
+            isDrawing = true;
+
+            startX = e.changedTouches[0].pageX - canvas.getBoundingClientRect().left;
+            startY = e.changedTouches[0].pageY - canvas.getBoundingClientRect().top;
+
+            seeked_x = 0.5;
+            seeked_y = 0.5;
+
+            canvas.addEventListener('touchmove', mobile_move);
+            document.addEventListener('touchmove', disableScroll, { passive: false }); // スクロール禁止
+        });
+
+        function mobile_end() {
+            mouseEvent = true;
+            isDrawing = false;
+
+            canvas.removeEventListener('touchmove', mobile_move);
+            document.removeEventListener('touchmove', disableScroll, { passive: false }); // スクロール解除
+
+            // 描画した矩形の座標を表示
+            x_min = startX;
+            x_max = startX + width;
+            if (width < 0) {
+                x_min += width;
+                x_max -= width;
+            }
+
+            y_min = startY;
+            y_max = startY + height;
+            if (height < 0) {
+                y_min += height;
+                y_max -= height;
+            }
+
+            box_li = [
+                x_min,
+                y_min,
+                x_max,
+                y_max
+            ];
+            console.log(box_li);
+
+            auto_set_box();
+
+            check.checked = true;
+            check.disabled = false;
+            submit.disabled = false;
+
+            draw_box(true);
+        };
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (!isDrawing) return;
+
+            if (seeked_x <= 0 || seeked_x >= 1 || seeked_y <= 0 || seeked_y >= 1) mobile_end();
+        });
+        
+        canvas.addEventListener('touchend', () => {
+            mobile_end()
+        });
+        canvas.addEventListener("touchcancel", () => {
+            mobile_end()
+        });
+    };
+
 
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
+        if (!mouseEvent) return;
         auto_fit();
 
         isDrawing = true;
@@ -182,6 +288,7 @@
 
     // マウスムーブイベントのリスナーを追加
     canvas.addEventListener("mousemove", (e) => {
+        if (!mouseEvent) return;
         if (!isDrawing) return;
 
         const x = e.clientX - canvas.getBoundingClientRect().left;
@@ -194,7 +301,7 @@
 
         // 矩形を赤い線で描画
         ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.strokeRect(startX, startY, width, height);
     });
 
@@ -237,6 +344,7 @@
 
     // マウスアウトイベントのリスナーを追加
     canvas.addEventListener("mouseout", () => {
+        if (!mouseEvent) return;
         isDrawing = false;
     });
 
