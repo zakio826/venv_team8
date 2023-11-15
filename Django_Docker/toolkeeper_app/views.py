@@ -735,7 +735,15 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
         context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
 
+        # 新しい機能の実装
+        abnormal_history_list = History.objects.filter(
+            group__in=user_groups,
+            result__result_class=0  # 詳細結果が0の履歴を検索
+        ).distinct()
+
+        context['abnormal_history_list'] = abnormal_history_list
         return context
+
     
 class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
     model = History
@@ -774,6 +782,10 @@ class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
 
         # 「無し（0）」の result_class を持つ履歴とそれ以外の履歴を分ける
         zero_result_class_history = all_history_list.filter(result__result_class=0)
+
+        # 同じ管理項目の異常な履歴が複数ある場合は、最新の履歴のみを表示
+        zero_result_class_history = zero_result_class_history.order_by('asset', '-updated_at').distinct('asset')
+
         other_result_class_history = all_history_list.exclude(result__result_class=0)
 
         return zero_result_class_history, other_result_class_history
@@ -804,13 +816,22 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
         # history オブジェクトを正しく取得
         history = context['history']
         # 関連する image オブジェクトを取得
         image = history.image
         context['image'] = image  # テンプレートに image を追加
         context.update(context)
+
+        abnormal_history_list = History.objects.filter(
+            group__in=user_groups,
+            result__result_class=0  # 詳細結果が0の履歴を検索
+        ).distinct()
+
+        context['abnormal_history_list'] = abnormal_history_list
         return context
+
 
 
 

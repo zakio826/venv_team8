@@ -60,14 +60,12 @@
                             <!--badge-->
                             <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ history.group.group_name }}</div>
                             <div class="badge bg-dark text-danger position-absolute" style="top: 0.5rem; left: 0.5rem; font-size: 20px;"><i class="bi bi-exclamation-circle"></i></div>
-                            {% if history.image.image %}
-                                <img class="card-img-top" src="{{ history.image.image.url }}" alt="..." />
-                            {% endif %}
                             <!-- Product details-->
                             <div class="card-body">
                                 <div class="text-center">
                                     <!-- Product name-->
                                     <h5 class="fw-bolder text-danger">{{ history.asset.asset_name }}</h5>
+                                    <hr>
                                     <!-- Product reviews-->
                                     <div class="d-flex justify-content-center small mb-2">
                                         確認日時：{{ history.checked_at }}

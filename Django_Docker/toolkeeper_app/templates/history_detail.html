@@ -112,6 +112,9 @@
             <hr> -->
 
             <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
+            {% if history in abnormal_history_list %}
+            <a class="btn btn-danger" href="{% url 'toolkeeper_app:asset_detail' history.asset.id %}">管理項目詳細へ</a>
+            {% endif %}
         </div>
     </div>
 </section>
