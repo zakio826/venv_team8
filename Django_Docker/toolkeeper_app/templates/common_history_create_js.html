@@ -81,19 +81,20 @@
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
-            canvas.width = preview.getBoundingClientRect().width.toFixed();
-            canvas.height = canvas.width * (y_fix / x_fix);
 
-            x_fit = canvas.width / x_fix;
-            y_fit = canvas.height / y_fix;
+            x_fit = preview.getBoundingClientRect().width.toFixed() / canvas.width;
+            y_fit = preview.getBoundingClientRect().height.toFixed() / canvas.height;
 
             for (let i = 0; i < set.length; i++) {
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
                 box_li[i][2] *= x_fit;
                 box_li[i][3] *= y_fit;
-                console.log(box_li[i]);
+                console.log(`box_li[${i}]: ` + box_li[i]);
             }
+
+            canvas.width = preview.getBoundingClientRect().width.toFixed();
+            canvas.height = canvas.width * (y_fix / x_fix);
 
             ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
         }

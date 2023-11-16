@@ -43,6 +43,9 @@
     canvas.width = x_fix;
     canvas.height = y_fix;
 
+    let x_fit = canvas.width / x_fix;
+    let y_fit = canvas.height / y_fix;
+
 
     // バウンディングボックスの座標を初期化
     let item_name = [];
@@ -109,18 +112,20 @@
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
-            canvas.width = preview.getBoundingClientRect().width.toFixed();
-            canvas.height = canvas.width * (y_fix / x_fix);
 
-            x_fit = canvas.width / x_fix;
-            y_fit = canvas.height / y_fix;
+            x_fit = preview.getBoundingClientRect().width.toFixed() / canvas.width;
+            y_fit = preview.getBoundingClientRect().height.toFixed() / canvas.height;
 
             for (let i = 0; i < set.length; i++) {
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
                 box_li[i][2] *= x_fit;
                 box_li[i][3] *= y_fit;
+                console.log(`box_li[${i}]: ` + box_li[i]);
             }
+            
+            canvas.width = preview.getBoundingClientRect().width.toFixed();
+            canvas.height = canvas.width * (y_fix / x_fix);
 
             ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
         }
@@ -171,7 +176,7 @@
 
     
     // 選択済みのバウンディングボックスを描画
-    function draw_box(order) {
+    function draw_box(order=-1) {
 
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -206,8 +211,8 @@
         canvas.width = image.width;
         canvas.height = image.height;
 
-        let x_fit = canvas.width / x_fix;
-        let y_fit = canvas.height / y_fix;
+        x_fit = canvas.width / x_fix;
+        y_fit = canvas.height / y_fix;
 
         for (let i = 0; i < set.length; i++) {
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
@@ -219,7 +224,7 @@
                 box_li[i][3] *= y_fit;
             }
         }
-        switch_scroll();
+        auto_fit();
 
         draw_box(-1);
     };
