@@ -72,22 +72,22 @@
             </div>
         </div>
         {% if not group.private %}
-        <div class="row row-cols-auto row-cols-sm-2 justify-content-center justify-content-md-start">
+        <div class="row row-cols-auto row-cols-md-2 justify-content-center justify-content-md-start">
             {% if group.user == request.user %}
-                <form method="post" class="col col-md-3 mb-3">
+                <form method="post" class="col col-sm-6 col-md-4 col-lg-3 mb-3">
                     {% csrf_token %}
                     <button type="submit" class="w-100 px-5 px-sm-0 btn btn-lg btn-danger" name="delete_group">グループ削除</button>
                 </form>
                 {% if members_count > 1 %}
-                <div class="col col-md-3 mb-3">
+                <div class="col col-sm-6 col-md-4 col-lg-3 mb-3">
                     <button class="w-100 px-5 px-sm-0 btn btn-lg btn-success">
                         <a class="nav-link" href="{% url 'toolkeeper_app:group_host' group.id %}">ホストを変更</a>
                     </button>
                 </div>
                 {% endif %}
             {% else %}
-                <div class="col col-sm-6 col-md-3 mb-3">
-                    <button class="w-100 btn btn-lg btn-danger mb-3">
+                <div class="col-8 col-md-4 mb-3">
+                    <button class="w-100 btn btn-lg btn-danger">
                         <a class="nav-link" href="{% url 'toolkeeper_app:group_leave' group.id %}">グループを退会</a>
                     </button>
                 </div>
