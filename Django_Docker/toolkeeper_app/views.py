@@ -749,7 +749,7 @@ class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
     model = History
     template_name = 'history_list2.html'
     context_object_name = 'history_list'
-    paginate_by = 2
+    paginate_by = 9
 
     def get_queryset(self):
         user = self.request.user
@@ -783,8 +783,31 @@ class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
         # 「無し（0）」の result_class を持つ履歴とそれ以外の履歴を分ける
         zero_result_class_history = all_history_list.filter(result__result_class=0)
 
-        # 同じ管理項目の異常な履歴が複数ある場合は、最新の履歴のみを表示
-        zero_result_class_history = zero_result_class_history.order_by('asset', '-updated_at').distinct('asset')
+        asset_to_keep = set()
+        to_remove = []
+        for history in zero_result_class_history.order_by('asset', '-updated_at'):
+            if history.asset in asset_to_keep:
+                to_remove.append(history)
+            else:
+                asset_to_keep.add(history.asset)
+
+        zero_result_class_history = zero_result_class_history.exclude(pk__in=[entry.pk for entry in to_remove])
+
+         # 同じ管理項目の最新の履歴が「普通の履歴」だった場合、その管理項目の異常な履歴を削除
+        for asset in Asset.objects.all():
+            # 最新の「普通の履歴」を取得
+            latest_normal_history = all_history_list.filter(
+                asset=asset,
+                result__result_class__gt=0
+            ).order_by('-updated_at').first()
+
+            # 最新の「普通の履歴」が存在する場合
+            if latest_normal_history:
+                # その日時よりも古い「異常な履歴」を削除
+                zero_result_class_history = zero_result_class_history.exclude(
+                    asset=asset,
+                    updated_at__lt=latest_normal_history.updated_at
+                )
 
         other_result_class_history = all_history_list.exclude(result__result_class=0)
 

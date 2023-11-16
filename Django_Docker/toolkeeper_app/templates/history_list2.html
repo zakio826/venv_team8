@@ -8,7 +8,7 @@
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
         <div class="row mb-4">
-            <h2 class="col-auto my-auto">履歴一覧</h2>
+            <h2 class="col-auto my-auto">異常な管理項目</h2>
             <button class="col-auto ms-auto learn-more">
                 <span class="circle" aria-hidden="true">
                   <span class="icon arrow"></span>
@@ -44,8 +44,8 @@
         
         <hr>
 
-        {% if not zero_result_class_history and not other_result_class_history %}
-            <p>異常な管理項目がありません</p>
+        {% if not zero_result_class_history %}
+            <p>現在異常な管理項目がありません</p>
         {% endif %}
 
         {% if zero_result_class_history %}

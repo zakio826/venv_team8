@@ -81,8 +81,8 @@ class GroupFilterForm(forms.Form):
 
 class SortForm(forms.Form):
     choices = [
-        ('asc', '昇順'),
         ('desc', '降順'),
+        ('asc', '昇順'),
     ]
     sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート（確認日時）')
 
