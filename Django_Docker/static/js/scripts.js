@@ -31,6 +31,6 @@ window.onresize = () => {
 
     console.log("\ntransition_class: " + Object.keys(BREAKPOINT).find((key) => BREAKPOINT[key] == class_width));
 
-    let block_js = document.getElementById("block_js");
-    if (block_js.innerHTML) transition_class();
+    // let block_js = document.getElementById("block_js");
+    // if (block_js.innerHTML) transition_class();
 };
