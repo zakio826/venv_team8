@@ -30,6 +30,5 @@ urlpatterns = [
     path('history2/', views.HistoryListdangerView.as_view(), name='history_list2'),
     path('history/<int:pk>/', views.HistoryDetailView.as_view(), name='history_detail'),
 
-
     path('test-page/<int:id>/', views.TestPageView.as_view(), name="test_page"),
 ]

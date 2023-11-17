@@ -716,9 +716,9 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         # ソート条件を取得
         sort_order = self.request.GET.get('sort_order','desc')
         if sort_order == 'asc':
-            history_list = history_list.order_by('updated_at')
+            history_list = history_list.order_by('checked_at')
         elif sort_order == 'desc':
-            history_list = history_list.order_by('-updated_at')
+            history_list = history_list.order_by('-checked_at')
 
         return history_list
 
@@ -735,13 +735,13 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
         context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
 
-        # 新しい機能の実装
         abnormal_history_list = History.objects.filter(
             group__in=user_groups,
             result__result_class=0  # 詳細結果が0の履歴を検索
         ).distinct()
 
         context['abnormal_history_list'] = abnormal_history_list
+        
         return context
 
     
@@ -776,22 +776,12 @@ class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
         # ソート条件を取得
         sort_order = self.request.GET.get('sort_order','desc')
         if sort_order == 'asc':
-            all_history_list = all_history_list.order_by('updated_at')
+            all_history_list = all_history_list.order_by('checked_at')
         elif sort_order == 'desc':
-            all_history_list = all_history_list.order_by('-updated_at')
+            all_history_list = all_history_list.order_by('-checked_at')
 
         # 「無し（0）」の result_class を持つ履歴とそれ以外の履歴を分ける
-        zero_result_class_history = all_history_list.filter(result__result_class=0)
-
-        asset_to_keep = set()
-        to_remove = []
-        for history in zero_result_class_history.order_by('asset', '-updated_at'):
-            if history.asset in asset_to_keep:
-                to_remove.append(history)
-            else:
-                asset_to_keep.add(history.asset)
-
-        zero_result_class_history = zero_result_class_history.exclude(pk__in=[entry.pk for entry in to_remove])
+        zero_result_class_history = all_history_list.filter(result__result_class=0).distinct()
 
          # 同じ管理項目の最新の履歴が「普通の履歴」だった場合、その管理項目の異常な履歴を削除
         for asset in Asset.objects.all():
@@ -799,20 +789,20 @@ class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
             latest_normal_history = all_history_list.filter(
                 asset=asset,
                 result__result_class__gt=0
-            ).order_by('-updated_at').first()
+            ).order_by('-checked_at').first()
 
             # 最新の「普通の履歴」が存在する場合
             if latest_normal_history:
                 # その日時よりも古い「異常な履歴」を削除
                 zero_result_class_history = zero_result_class_history.exclude(
                     asset=asset,
-                    updated_at__lt=latest_normal_history.updated_at
+                    checked_at__lt=latest_normal_history.checked_at
                 )
 
         other_result_class_history = all_history_list.exclude(result__result_class=0)
 
         return zero_result_class_history, other_result_class_history
-
+    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
