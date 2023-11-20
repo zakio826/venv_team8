@@ -39,10 +39,8 @@
                                     <span class="col-auto me-sm-0 ps-0">：
                                         {% if result.result_class == 0 %}
                                             <u><font color="#ff6347">無し</font></u>
-                                        {% elif result.result_class == 1 %}
+                                        {% elif result.result_class != 9 %}
                                             <u><font color="#99CC33">有り</font></u>
-                                        {% else %}
-                                            {{ result.result_class }}
                                         {% endif %}
                                     </span>
                                 </div>
