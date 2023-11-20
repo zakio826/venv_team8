@@ -71,14 +71,24 @@
                                 <div class="text-center">
                                     <!-- Product name-->
                                     <h5 class="fw-bolder text-danger">{{ history.asset.asset_name }}</h5>
-                                    <hr>
                                     <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small mb-2">
+                                    <div class="justify-content-center small mb-2">
                                         確認日時：{{ history.checked_at }}
                                         <br>
                                         <!-- 更新日時: {{ history.updated_at }}
                                         <br> -->
                                         ユーザー：{{ history.user }}
+                                        <br>
+                                        <hr>
+                                        <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap;">
+                                            {% for result in history.result_set.all %}
+                                                {% if result.result_class != 9 and result.result_class != 1 %}
+                                                    {% if result.result_class == 0 %}
+                                                        <strong><h6 style="display: inline;"><font color="#ff6347">{{ result.item.item_name }}</font>｜</h6></strong>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
