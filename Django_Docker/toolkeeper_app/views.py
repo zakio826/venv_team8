@@ -460,6 +460,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     fields = ()
     success_url = reverse_lazy('toolkeeper_app:asset_list')
+    threshold_conf = 0.79
+    warning_conf = 0.25
 
     # 物体検出を行うヘルパーメソッド
     def model_check(self, asset, image):
@@ -469,7 +471,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
+        results1 = model.predict(save=False, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=self.warning_conf)
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
@@ -524,21 +526,27 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
             results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])
 
-            for i, r in enumerate(results):
-                result_history = historys.get(id=r.history.id)
-                if not i:
-                    item_x_fix = (r.box_x_max - r.box_x_min) / result_history.image.image.width
-                    item_y_fix = (r.box_y_max - r.box_y_min) / result_history.image.image.height
-                    item_x_min = r.box_x_min
-                    item_y_min = r.box_y_min
-                else:
+            item_x_fix = (results[0].box_x_max - results[0].box_x_min) / result_history.image.image.width
+            item_y_fix = (results[0].box_y_max - results[0].box_y_min) / result_history.image.image.height
+
+            for i, item in enumerate(items):
+                print(item)
+                if item.id == results[i+1].item.id:
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
                     self.box.append({
-                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit),
-                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit),
-                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit),
-                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit),
+                        "box_x_min": (results[i+1].box_x_min * item_x_fit),
+                        "box_y_min": (results[i+1].box_y_min * item_y_fit),
+                        "box_x_max": (results[i+1].box_x_max * item_x_fit),
+                        "box_y_max": (results[i+1].box_y_max * item_y_fit),
+                        "conf": self.warning_conf,
+                    })
+                else:
+                    self.box.append({
+                        "box_x_min": 0,
+                        "box_y_min": 0,
+                        "box_x_max": 0,
+                        "box_y_max": 0,
                         "conf": 0,
                     })
             
@@ -555,7 +563,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "items": items.order_by('-id'),
             "results": self.box,
             # "model_check": model_checked,
-            "threshold_conf": 0.79,
+            "threshold_conf": self.threshold_conf,
+            "warning_conf": self.warning_conf,
             "result_add_form": result_add_form(
                 initial = [
                     {
