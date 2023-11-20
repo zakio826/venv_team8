@@ -8,7 +8,7 @@
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-3">
         <div class="row row-cols-1 row-cols-md-2 justify-content-center justify-content-md-between d-flex mb-4">
-            <h2 class="col w-auto mb-4 my-md-auto">履歴一覧</h2>
+            <h2 class="col w-auto mb-4 my-md-auto">異常な履歴一覧</h2>
             <div class="col row justify-content-center w-auto mx-auto mx-md-0 ms-md-auto">
                 <button class="col-auto learn-more my-2">
                     <span class="circle" aria-hidden="true">
@@ -22,56 +22,65 @@
                     <span class="circle" aria-hidden="true">
                     <span class="icon arrow"></span>
                     </span>
-                    <span class="col-auto button-text ps-2 text-danger">
-                        <a class="nav-link" href="{% url 'toolkeeper_app:history_list2' %}">異常な履歴</a>
+                    <span class="col-auto button-text ps-2">
+                        <a class="nav-link" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧</a>
                     </span>
                 </button>
             </div>
         </div>
-        
         <form method="get">{% include 'common_history_list.html' %}</form>
-
+        
         <hr>
 
-        {% if history_list %}
-            <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">履歴をクリックすると詳細へ移ります</p></div>
+        {% if not zero_result_class_history %}
+            <p>現在異常な管理項目がありません</p>
         {% endif %}
 
-        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-            
-            {% for history in history_list %}
+        {% if zero_result_class_history %}
+        <h5 class="text-center text-warning">※以下の管理項目に異常があります※</h5>
+            <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+                
+                <!-- 「無し（0）」の result_class を持つ履歴を表示 -->
+                {% for history in zero_result_class_history %}
                 <div class="col mb-5">
                     <div class="card">
                         <a class="btn px-0 py-2" href="{% url 'toolkeeper_app:history_detail' history.pk %}">
                             <!--badge-->
                             <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ history.group.group_name }}</div>
-                            {% if history in abnormal_history_list %}
                             <div class="badge bg-dark text-danger position-absolute" style="top: 0.5rem; left: 0.5rem; font-size: 20px;"><i class="bi bi-exclamation-circle"></i></div>
-                            {% endif %}
                             <!-- Product details-->
                             <div class="card-body px-0">
                                 <div class="text-center">
                                     <!-- Product name-->
-                                    <p class="h5 pt-4 pb-1 {% if history in abnormal_history_list %}text-danger{% else %}text-success{% endif %}">{{ history.asset.asset_name }}</p>
+                                    <p class="h5 pt-4 pb-1 text-danger">{{ history.asset.asset_name }}</p>
                                     <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small">
+                                    <div class="justify-content-center small mb-2">
                                         確認日時：{{ history.checked_at }}
                                         <br>
                                         <!-- 更新日時: {{ history.updated_at }}
                                         <br> -->
                                         ユーザー：{{ history.user }}
+                                        <br>
+                                        <hr>
+                                        <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap;">
+                                            {% for result in history.result_set.all %}
+                                                {% if result.result_class != 9 and result.result_class != 1 %}
+                                                    {% if result.result_class == 0 %}
+                                                        <strong><h6 style="display: inline;"><font color="#ff6347">{{ result.item.item_name }}</font>｜</h6></strong>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </a>
                     </div>
                 </div>
-                {% empty %}
-                <p>履歴が存在しません</p>
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
 
-
+        {% endif %}
         <!-- ページネーションリンクの表示 -->
         <!-- ページネーションリンク -->
         {% if page_obj.paginator.count > 0 %}

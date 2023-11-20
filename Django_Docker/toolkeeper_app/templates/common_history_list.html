@@ -1,12 +1,17 @@
-{% for history in historys %}
-    <!-- <h3>管理名： {{ history.asset.asset_name }} - <span style="font-size: smaller; font-weight: lighter;">{{ history.group }}</span></h3> -->
-    <!-- <img src="{{ history.image.image.url }}"/> -->
-    <p>{{ history.checked_at }} - {{ history.user.username }}</p>
-    {% if forloop.finish %}
-        <!-- <a href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">
-        </a> -->
-    {% endif %}
-
-    {% empty %}
-    <p>履歴がありません。</p>
-{% endfor %}
+<div class="mb-3">
+    <div class="row row-cols-1 row-cols-md-3">
+        <div class="col mt-2 mt-md-auto">{{ group_filter_form }}</div>
+        <div class="col mt-2 mt-md-auto">{{ user_filter_form }}</div>
+        <div class="col mt-2 mt-md-auto">{{ asset_filter_form }}</div>
+        <!-- <div class="col mt-3 mt-lg-auto">{{ search_form }}</div> -->
+        <!-- <button type="button" class="col mt-2 mt-md-auto btn btn-secondary" style="width: 60px; height: 38px;" onclick="clearFilters()"><i class="bi bi-arrow-clockwise"></i></button> -->
+    </div>
+    <div class="row row-cols-1 row-cols-md-3">
+        <div class="col mt-3">{{ sort_form }}</div>
+        <!-- <div class="col mt-3">{{ search_form }}</div> -->
+        <!-- <button type="button" class="col mt-2 mt-md-auto btn btn-secondary" style="width: 60px; height: 38px;" onclick="clearSearch()"><i class="bi bi-arrow-clockwise"></i></button> -->
+    </div>
+</div>
+<div>
+    <button type="submit" class="btn btn-3">絞り込みとソート</button>
+</div>

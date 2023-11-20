@@ -27,6 +27,7 @@ urlpatterns = [
     path('group_detail/<int:group_id>/leave/', views.group_leave, name='group_leave'),
 
     path('history/', views.HistoryListView.as_view(), name='history_list'),
+    path('history2/', views.HistoryListdangerView.as_view(), name='history_list2'),
     path('history/<int:pk>/', views.HistoryDetailView.as_view(), name='history_detail'),
 
 
