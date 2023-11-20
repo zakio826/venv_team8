@@ -202,7 +202,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
         group_list = []
 
         for b in belongs:
-            group_list.append(Group.objects.filter(id=b.group.id))
+            group_list.append(Group.objects.filter(id=b.group.id, user=self.request.user))
 
         groups = group_list[0]
 
