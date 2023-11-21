@@ -56,7 +56,7 @@ class InquiryView(generic.FormView):
         logger.info('Inquiry sent by {}'.format(form.cleaned_data['name']))
         return super().form_valid(form)
 
-
+from django.db.models import Max
 class AssetListView(LoginRequiredMixin, generic.ListView):
     model = Asset
     template_name = 'asset_list.html'
@@ -84,6 +84,12 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
         # フォームをユーザー情報とともにインスタンス化
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
+
+        # 最新の履歴を取得
+        latest_history_ids = Result.objects.values('history__asset').annotate(latest=Max('history__checked_at')).values_list('latest', flat=True)
+        latest_result_class_zero_assets = Asset.objects.filter(history__checked_at__in=latest_history_ids, history__result__result_class=0).distinct()
+
+        context['latest_result_class_zero_assets'] = latest_result_class_zero_assets
 
         return context
 

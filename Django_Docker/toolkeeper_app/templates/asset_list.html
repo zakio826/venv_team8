@@ -47,6 +47,26 @@
           }
         </script>
         <hr>
+        
+            {% for image in page_obj %}
+                {% if image.asset in latest_result_class_zero_assets %}
+                    <div class="row gx-lg-5 row-cols-lg-3">
+                        <div class="col mb-3">
+                            <div class="card" style="padding: 5px;">
+                                <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>
+                                <div class="badge text-black position-absolute" style="top: 0.2rem; right: 0.1rem; font-size: 15px;">{{ image.asset.history_set.last.checked_at|date:"m月d日 H:i:s" }}</div>
+                                <div style="overflow: auto; white-space: nowrap;">
+                                    {% for item in image.asset.history_set.last.result_set.all %}
+                                        {% if item.result_class != 9 and item.result_class != 1 %}
+                                            <strong><h6 style="display: inline;"><font color="#ff6347">{{ item.item.item_name }}</font>,</h6></strong>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
 
         {% if image_list %}
             <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">管理項目をクリックすると詳細へ移ります</p></div>
