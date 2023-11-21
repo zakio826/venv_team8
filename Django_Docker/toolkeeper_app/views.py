@@ -64,16 +64,19 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         group = self.request.GET.get('group')  # フォームから選択されたグループ
-
+        
         belong = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
         images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
+
+        assets = Asset.objects.filter(models.Q(group__in=Group.objects.filter(user=self.request.user))|models.Q(user=self.request.user))
+        images = images.filter(asset__in=assets)
         
         if group and group != 'all':  # 特定のグループが選択された場合
             images = images.filter(group=group)
         elif len(belong) >= 1:
             user_groups = [group.group for group in belong]
             images = images.filter(group__in=user_groups)
-
+        
         return images
 
     def get_context_data(self, **kwargs):
@@ -202,7 +205,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
         group_list = []
 
         for b in belongs:
-            group_list.append(Group.objects.filter(id=b.group.id, user=self.request.user))
+            group_list.append(Group.objects.filter(id=b.group.id))
 
         groups = group_list[0]
 
@@ -226,6 +229,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
     # フォームが有効な場合の処理
     def form_valid(self, form):
         asset = form.save(commit=False)
+        asset.user = self.request.user
         asset.save()
 
         # 成功時のリダイレクトURLを設定
