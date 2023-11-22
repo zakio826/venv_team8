@@ -109,7 +109,14 @@
             </div>
             <hr> -->
 
-            <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
+            <div class="row row-cols-1 row-cols-sm-2 justify-content-center justify-content-md-start">
+                <div class="col-10 col-sm col-md-4 col-lg-3 py-4 py-sm-3">
+                    <a class="btn btn-3 float-right w-100 py-2" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧に戻る</a>
+                </div>
+                <div class="col-10 col-sm col-md-4 col-lg-3 py-2 py-sm-3">
+                    <a class="btn btn-3 float-right w-100 py-2" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
+                </div>
+            </div>
         </div>
     </div>
 </section>

@@ -6,26 +6,28 @@
 
 {% block contents %}
 <section class="py-5">
-    <div class="container px-4 px-lg-5 mt-3">
-        <div class="row row-cols-1 row-cols-md-2 justify-content-center justify-content-md-between d-flex mb-4">
-            <h2 class="col w-auto mb-4 my-md-auto">履歴一覧</h2>
-            <div class="col row justify-content-center w-auto mx-auto mx-md-0 ms-md-auto">
+    <div class="container px-4 px-lg-5 pt-2">
+        <div class="row row-cols-1 row-cols-md-2 justify-content-around justify-content-sm-between d-flex mb-2">
+            <h2 class="col w-auto my-auto py-3">履歴一覧</h2>
+
+            <div class="col row w-auto py-3">
                 <button class="col-auto learn-more my-2">
                     <span class="circle" aria-hidden="true">
-                    <span class="icon arrow"></span>
+                        <span class="icon arrow"></span>
                     </span>
                     <span class="col-auto button-text ps-2">
                         <a class="nav-link" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧</a>
                     </span>
                 </button>
-                <button class="col-auto learn-more my-2">
+
+                <!-- <button class="col-auto learn-more my-2">
                     <span class="circle" aria-hidden="true">
-                    <span class="icon arrow"></span>
+                        <span class="icon arrow"></span>
                     </span>
                     <span class="col-auto button-text ps-2 text-danger">
                         <a class="nav-link" href="{% url 'toolkeeper_app:history_list2' %}">異常な履歴</a>
                     </span>
-                </button>
+                </button> -->
             </div>
         </div>
         

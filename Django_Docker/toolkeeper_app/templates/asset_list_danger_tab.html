@@ -1,61 +1,81 @@
-{% if image_list %}
-    <div>
-        <p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">
-            管理項目をクリックすると詳細へ移ります
-        </p>
-    </div>
-{% endif %}
-
-<div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-{% for image in page_obj %}
-    <div class="col mb-5">
-        <div class="card">
-            <a class="btn" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">
-                <!--badge-->
-                <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.8rem; font-size: 15px;">{{ image.asset.group.group_name }}</div>
-                <!-- Product image-->
-                {% if image.image %}
-                    <img class="card-img-top" src="{{ image.image.url }}" alt="..." />
-                {% endif %}
-                <!-- Product details-->
-                <div class="card-body px-2">
-                    <div class="text-center">
-                        <!-- Product name-->
-                        <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>
-                        <!-- Product reviews-->
-                        <div class="d-flex justify-content-center small text-warning mb-2">
-                            <!--何か入れたければ入れる-->
-                        </div>
+<!-- <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+    {% for image in image_list %}
+        {% if image.asset in latest_result_class_zero_assets %}
+            <div class="col mb-3">
+                <div class="card" style="padding: 5px;">
+                    <div class="badge text-black position-absolute" style="top: 0.2rem; right: 0.1rem; font-size: 15px;">{{ image.asset.history_set.last.checked_at|date:"m月d日 H:i" }}</div>
+                    <h5 class="fw-bolder mt-4">{{ image.asset.asset_name }}</h5>
+                    <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap;">
+                        {% for item in image.asset.history_set.last.result_set.all %}
+                            {% if item.result_class != 9 and item.result_class != 1 %}
+                                <strong><h6 style="display: inline;"><font color="#ff6347">{{ item.item.item_name }}</font>,</h6></strong>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
-            </a>
-        </div>
-    </div>
-    {% empty %}
-    <p>管理項目がありません</p>
-{% endfor %}
-</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div> -->
 
-<!-- ページネーションリンクの表示 -->
-{% if page_obj.paginator.count > 0 %}
-    <div class="d-flex justify-content-center mt-4">
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page=1&group={{ request.GET.group }}">最初</a></li>
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}">前へ</a></li>
+{% if not latest_result_class_zero_assets %}
+    <p class="pt-3">現在、管理項目に異常はありません</p>
+{% endif %}
+
+{% if latest_result_class_zero_assets %}
+    <h4 class="text-center mb-4 py-2">
+        <i class="bi bi-exclamation-circle text-danger pe-1"></i>
+        {{ latest_result_class_zero_assets|length }} つの管理項目で異常がありました！
+    </h4>
+    
+    {% if image_list %}
+        <p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">
+            項目をクリックすると詳細へ移ります
+        </p>
+    {% endif %}
+
+    <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+        <!-- 「無し（0）」の result_class を持つ履歴を表示 -->
+        {% for image in image_list %}
+            {% if image.asset in latest_result_class_zero_assets %}
+                <div class="col mb-5">
+                    <div class="card">
+                        <a class="btn px-0 py-2" href="{% url 'toolkeeper_app:history_detail' image.asset.history_set.last.pk %}">
+                            <!--badge-->
+                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ image.group.group_name }}</div>
+                            <div class="badge bg-dark text-danger position-absolute" style="top: 0.5rem; left: 0.5rem; font-size: 20px;"><i class="bi bi-exclamation-circle"></i></div>
+                            <!-- Product details-->
+                            <div class="card-body px-0">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <p class="h5 pt-4 pb-1 text-danger">{{ image.asset.asset_name }}</p>
+                                    <!-- Product reviews-->
+                                    <div class="justify-content-center small mb-2">
+                                        確認日時：{{ image.asset.history_set.last.checked_at }}
+                                        <br>
+                                        <!-- 更新日時: {{ history.updated_at }}
+                                        <br> -->
+                                        ユーザー：{{ image.asset.history_set.last.user }}
+                                        <br>
+
+                                        <div class="px-4">
+                                            <hr>
+
+                                            <div class="text-nowrap pb-2" style="overflow: auto;">
+                                                {% for result in image.asset.history_set.last.result_set.all %}
+                                                    {% if result.result_class == 0 %}
+                                                        <h6 style="display: inline;"><font color="#ff6347">{{ result.item.item_name }}</font>｜</h6>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             {% endif %}
-            <!-- ページ番号のセレクトボックス -->
-            <li class="page-item">
-                <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group=' + '{{ request.GET.group }}';">
-                    {% for page_num in page_obj.paginator.page_range %}
-                        <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
-                    {% endfor %}
-                </select>
-            </li>
-            {% if page_obj.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}">次へ</a></li>
-                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}">最後</a></li>
-            {% endif %}
-        </ul>
+        {% endfor %}
     </div>
 {% endif %}
