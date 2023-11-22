@@ -110,12 +110,34 @@
     const txt = document.getElementById("text").textContent; // テキスト取得
 
     btn.addEventListener("click", () => { // ボタンをクリックしたら
-        navigator.clipboard
-            .writeText(txt) // テキストをクリップボードに書き込み
-            .then(
-            (success) => console.log('テキストのコピーに成功'),
-            (error) => console.log('テキストのコピーに失敗')
+        // navigator.clipboard有効分岐
+        if (navigator.clipboard) {
+            // テキストをクリップボードに書き込み
+            navigator.clipboard.writeText(txt).then(
+                (success) => console.log('テキストのコピーに成功'),
+                (error) => console.log('テキストのコピーに失敗')
             );
+
+        } else {
+            const isIos = navigator.userAgent.match(/ipad|iphone/i);
+            const textarea = document.createElement('textarea');
+            textarea.value = txt;
+            document.body.appendChild(textarea);
+
+            if (isIos) {
+                const range = document.createRange();
+                range.selectNodeContents(textarea);
+                const selection = window.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                textarea.setSelectionRange(0, 999999);
+            } else {
+                textarea.select();
+            }
+            const result = document.execCommand('copy');// テキストをクリップボードに書き込み
+
+            document.body.removeChild(textarea);
+        }
 
         btn.innerHTML = '<i class="bi bi-check2"></i>'; // ボタンの文字変更
         setTimeout(() => (btn.innerHTML = 
