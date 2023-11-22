@@ -89,10 +89,12 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
         
         # 最新の履歴を取得
+        assets = Asset.objects.filter(models.Q(group__in=Group.objects.filter(user=self.request.user))|models.Q(user=self.request.user))
+        
         # ユーザーが所属するグループの最新の履歴を取得
         user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
         latest_history_ids = Result.objects.filter(history__group__in=user_groups).values('history__asset').annotate(latest=models.Max('history__checked_at')).values_list('latest', flat=True)
-        latest_result_class_zero_assets = Asset.objects.filter(history__checked_at__in=latest_history_ids, history__result__result_class=0).distinct()
+        latest_result_class_zero_assets = assets.filter(history__checked_at__in=latest_history_ids, history__result__result_class=0).distinct()
 
         context['latest_result_class_zero_assets'] = latest_result_class_zero_assets
 
@@ -618,13 +620,6 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 result.save()
 
                 if int(form.data[f'form-{i}-result_class']):
-                    # print()
-                    # print()
-                    # print(type(float(form.data[f'form-{i}-box_x_min'])))
-                    # # print(type(form.data[f'form-{i}-box_x_min']))
-                    # print(type(outer_edged.box_x_min))
-                    # print()
-                    # print()
                     labelList.append(chengeLabel(
                             w_size=history.image.image.width,
                             h_size=history.image.image.height,
@@ -651,38 +646,38 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             for i in range(len(labelList)):
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
 
-            creds = ServiceAccountCredentials.from_json_keyfile_name(
-                # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
-                settings.SERVICE_ACCOUNT_KEY_ROOT,
-                settings.GOOGLE_DRIVE_API_SCOPES
-            )
-            drive_service = build('drive', 'v3', credentials=creds)
+            # creds = ServiceAccountCredentials.from_json_keyfile_name(
+            #     # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+            #     settings.SERVICE_ACCOUNT_KEY_ROOT,
+            #     settings.GOOGLE_DRIVE_API_SCOPES
+            # )
+            # drive_service = build('drive', 'v3', credentials=creds)
 
-            asset = Asset.objects.get(id=history.asset.id)
+            # asset = Asset.objects.get(id=history.asset.id)
 
-            if not asset.drive_folder_id:
-                folder_metadata = {
-                    'name': str(asset.asset_name),
-                    'mimeType': 'application/vnd.google-apps.folder',
-                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
-                }
+            # if not asset.drive_folder_id:
+            #     folder_metadata = {
+            #         'name': str(asset.asset_name),
+            #         'mimeType': 'application/vnd.google-apps.folder',
+            #         'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
+            #     }
 
-                folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-                asset.drive_folder_id = folder['id']
-                asset.save()
+            #     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+            #     asset.drive_folder_id = folder['id']
+            #     asset.save()
 
-            for file_path in [history.image.movie.path, history.coordinate.path]:
-                file_metadata = {
-                    'name': os.path.basename(file_path),
-                    'parents': [str(asset.drive_folder_id)],
-                }
-                media = MediaFileUpload(file_path, resumable=True)
+            # for file_path in [history.image.movie.path, history.coordinate.path]:
+            #     file_metadata = {
+            #         'name': os.path.basename(file_path),
+            #         'parents': [str(asset.drive_folder_id)],
+            #     }
+            #     media = MediaFileUpload(file_path, resumable=True)
 
-                uploaded_file = drive_service.files().create(
-                    body=file_metadata,
-                    media_body=media,
-                    fields='id'
-                ).execute()
+            #     uploaded_file = drive_service.files().create(
+            #         body=file_metadata,
+            #         media_body=media,
+            #         fields='id'
+            #     ).execute()
 
             messages.success(self.request, '履歴を追加しました.')
             return redirect(self.success_url)
@@ -707,6 +702,9 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         user = self.request.user
         user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
         history_list = History.objects.filter(group__in=user_groups)
+        
+        assets = Asset.objects.filter(models.Q(group__in=Group.objects.filter(user=self.request.user))|models.Q(user=self.request.user))
+        history_list = history_list.filter(asset__in=assets)
 
         # search_query = self.request.GET.get('search_query')
         checked_at = self.request.GET.get('checked_at')
