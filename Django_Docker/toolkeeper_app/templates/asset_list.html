@@ -121,7 +121,7 @@
                         {% if image.asset in latest_result_class_zero_assets %}
                             <div class="col mb-3">
                                 <div class="card" style="padding: 5px;">
-                                    <div class="badge text-black position-absolute" style="top: 0.2rem; right: 0.1rem; font-size: 15px;">{{ image.asset.history_set.last.checked_at|date:"m月d日 H:i:s" }}</div>
+                                    <div class="badge text-black position-absolute" style="top: 0.2rem; right: 0.1rem; font-size: 15px;">{{ image.asset.history_set.last.checked_at|date:"m月d日 H:i" }}</div>
                                     <h5 class="fw-bolder mt-4">{{ image.asset.asset_name }}</h5>
                                     <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap;">
                                         {% for item in image.asset.history_set.last.result_set.all %}
