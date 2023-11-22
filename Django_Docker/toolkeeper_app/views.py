@@ -87,6 +87,14 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
         # フォームをユーザー情報とともにインスタンス化
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
+        
+        # 最新の履歴を取得
+        # ユーザーが所属するグループの最新の履歴を取得
+        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
+        latest_history_ids = Result.objects.filter(history__group__in=user_groups).values('history__asset').annotate(latest=models.Max('history__checked_at')).values_list('latest', flat=True)
+        latest_result_class_zero_assets = Asset.objects.filter(history__checked_at__in=latest_history_ids, history__result__result_class=0).distinct()
+
+        context['latest_result_class_zero_assets'] = latest_result_class_zero_assets
 
         return context
 
