@@ -125,7 +125,7 @@
                                     <h5 class="fw-bolder mt-4">{{ image.asset.asset_name }}</h5>
                                     <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap;">
                                         {% for item in image.asset.history_set.last.result_set.all %}
-                                            {% if item.result_class != 9 and item.result_class != 1 %}
+                                            {% if item.result_class != 9 and item.result_class != 1 and item.result_class != 2 %}
                                                 <strong><h6 style="display: inline;"><font color="#ff6347">{{ item.item.item_name }}</font>,</h6></strong>
                                             {% endif %}
                                         {% endfor %}
