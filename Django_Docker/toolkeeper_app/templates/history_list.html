@@ -39,39 +39,52 @@
             <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">履歴をクリックすると詳細へ移ります</p></div>
         {% endif %}
 
-        <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-            
-            {% for history in history_list %}
-                <div class="col mb-5">
-                    <div class="card">
-                        <a class="btn px-0 py-2" href="{% url 'toolkeeper_app:history_detail' history.pk %}">
-                            <!--badge-->
-                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ history.group.group_name }}</div>
+        <style>
+            th, td {
+                border: 2px double #dee2e6;
+            }
+        
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+        
+            /* 必要に応じて他のスタイルを追加 */
+        </style>
+        
+        <!-- tableタグの追加 -->
+        <table class="table">
+            <thead>
+                <tr class="text-center" style="background-color: aliceblue;">
+                    <th scope="col">確認日時</th>
+                    <th scope="col">管理項目名</th>
+                    <th scope="col">グループ名</th>
+                    <th scope="col">ユーザー</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for history in history_list %}
+                    <tr>
+                        <td>{{ history.checked_at }}</td>
+                        <td>
+                            {{ history.asset.asset_name }}
                             {% if history in abnormal_history_list %}
-                            <div class="badge bg-dark text-danger position-absolute" style="top: 0.5rem; left: 0.5rem; font-size: 20px;"><i class="bi bi-exclamation-circle"></i></div>
+                                <i class="bi bi-exclamation-circle text-danger"></i>
                             {% endif %}
-                            <!-- Product details-->
-                            <div class="card-body px-0">
-                                <div class="text-center">
-                                    <!-- Product name-->
-                                    <p class="h5 pt-4 pb-1 {% if history in abnormal_history_list %}text-danger{% else %}text-success{% endif %}">{{ history.asset.asset_name }}</p>
-                                    <!-- Product reviews-->
-                                    <div class="d-flex justify-content-center small">
-                                        確認日時：{{ history.checked_at }}
-                                        <br>
-                                        <!-- 更新日時: {{ history.updated_at }}
-                                        <br> -->
-                                        ユーザー：{{ history.user }}
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
+                        </td>
+                        <td>{{ history.group.group_name }}</td>
+                        <td>{{ history.user }}</td>
+                        <td><a href="{% url 'toolkeeper_app:history_detail' history.pk %}">詳細</a></td>
+                    </tr>
                 {% empty %}
-                <p>履歴が存在しません</p>
-            {% endfor %}
-        </div>
+                    <tr>
+                        <td colspan="5">履歴が存在しません</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
 
 
         <!-- ページネーションリンクの表示 -->
