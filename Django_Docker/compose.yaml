@@ -12,6 +12,7 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: toolkeeper.settings_dev
       SECRET_KEY: django-insecure-mh0=-w7^c3y5+mm86zb%gsbodtvldp1_(g-gr8f@8-1qs1y_ju
+      # ローカル環境の場合、以下の１行をコメントアウトする
       # ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
