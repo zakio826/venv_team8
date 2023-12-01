@@ -8,29 +8,38 @@
 
 
 
-const BREAKPOINT = {
-    "xxl": 1400,
-    "xl" : 1200,
-    "lg" : 992,
-    "md" : 768,
-    "sm" : 576,
-};
-
-let class_width = window.innerWidth;
-
 // bootstrapでのデフォルトのブレークポイントで発火
-window.onresize = () => {
-    let window_w = window.innerWidth;
+const breakPoint = {
+    class: {
+        "xs" : 0,
+        "sm" : 576,
+        "md" : 768,
+        "lg" : 992,
+        "xl" : 1200,
+        "xxl": 1400,
+    },
+    width: null,
+    last: null,
+    check: function () {
+        this.width = window.innerWidth;
 
-    if      (class_width != BREAKPOINT["xxl"] && window_w >= BREAKPOINT["xxl"])                                class_width = BREAKPOINT["xxl"];
-    else if (class_width != BREAKPOINT["xl"]  && window_w >= BREAKPOINT["xl"] && window_w < BREAKPOINT["xxl"]) class_width = BREAKPOINT["xl"];
-    else if (class_width != BREAKPOINT["lg"]  && window_w >= BREAKPOINT["lg"] && window_w < BREAKPOINT["xl"])  class_width = BREAKPOINT["lg"];
-    else if (class_width != BREAKPOINT["md"]  && window_w >= BREAKPOINT["md"] && window_w < BREAKPOINT["lg"])  class_width = BREAKPOINT["md"];
-    else if (class_width != BREAKPOINT["sm"]  && window_w <  BREAKPOINT["md"])                                 class_width = BREAKPOINT["sm"];
-    else return;
+        let pt = Object.values(this.class);
+        let n = null;
+        if      (this.width >= pt[5]) n = 5;
+        else if (this.width >= pt[4]) n = 4;
+        else if (this.width >= pt[3]) n = 3;
+        else if (this.width >= pt[2]) n = 2;
+        else if (this.width >= pt[1]) n = 1;
+        else n = 0;
 
-    console.log("\ntransition_class: " + Object.keys(BREAKPOINT).find((key) => BREAKPOINT[key] == class_width));
+        if (n == this.last) return false;
+        this.last = n;
 
-    // let block_js = document.getElementById("block_js");
-    // if (block_js.innerHTML) transition_class();
-};
+        console.log(`\nthis.width: ${this.width} px`);
+        console.log("transition_class: " + Object.keys(this.class)[this.last]);
+        console.log(`this.last :  ${this.last}`);
+        return true;
+    }
+}
+
+breakPoint.check();
