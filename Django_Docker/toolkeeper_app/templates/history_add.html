@@ -86,10 +86,24 @@
 
 {% block js %}
 
+<script>const data_json = JSON.parse('{{ data|safe }}');</script>
+
 {% if create == 0 %}
 <script src="{% static 'js/history_add_check.js' %}"></script>
 {% else %}
 <script src="{% static 'js/history_add_create.js' %}"></script>
 {% endif %}
 
+<!-- <script>
+    const data = JSON.parse('{{ data|safe }}');
+    fetch("/data")
+    .then(response => response.json())
+    .then(data => {
+      console.log(data.model_check)  // [1, 2, 3]
+    })
+    
+    console.log(data.model_check);
+    console.log(data.item);
+    console.log(data.box);
+</script> -->
 {% endblock %}

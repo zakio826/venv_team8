@@ -4,12 +4,12 @@ from django.forms.models import BaseModelForm
 from django.shortcuts import redirect
 from django.conf import settings
 
-from django.http import HttpResponse, QueryDict, JsonResponse
+from django.http import HttpRequest, HttpResponse, QueryDict, JsonResponse
 import logging
 
 from django.urls import reverse_lazy
 from django.views import generic
-from django import forms
+from django import forms, http
 
 from django.core.paginator import Paginator
 from django.http import Http404
@@ -486,19 +486,29 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(save=False, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=self.warning_conf)
+        results1 = model.predict(
+            save = False,
+            source = os.path.join(settings.MEDIA_ROOT, image.image.name),
+            conf = self.warning_conf,
+            classes = [x+1 for x in range(len(self.data.item))]
+        )
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
 
         for i in range(len(results1[0].boxes.cls)):
             if round(classNums[i]) and self.box[round(classNums[i])]['conf'] < confs[i]:
+                for j in range(4):
+                    self.data["box"][round(classNums[i-1])][j] = boxes[i][j]
+                self.data["box"][round(classNums[i-1])][4] = confs[i]
+                
                 self.box[round(classNums[i])]['box_x_min'] = boxes[i][0]
                 self.box[round(classNums[i])]['box_y_min'] = boxes[i][1]
                 self.box[round(classNums[i])]['box_x_max'] = boxes[i][2]
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
                 print(i, self.box[round(classNums[i])])
+
 
     # get_context_dataをオーバーライド
     def get_context_data(self, **kwargs):
@@ -593,6 +603,59 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         }
         context.update(extra)
         return context
+    
+    def render_to_response(self, context: dict[str, Any], **response_kwargs: Any) -> HttpResponse:
+        historys = History.objects.prefetch_related('group').prefetch_related('asset').prefetch_related('image').order_by('-updated_at')
+        history = historys.get(id=self.kwargs["id"])
+        result = Result.objects.prefetch_related('history').filter(history=history).get(result_class=9)
+        items = Item.objects.filter(asset=history.asset, outer_edge=False)
+        self.data = {
+            "model_check": False,
+            "outer_edge": [
+                result.box_x_min,
+                result.box_y_min,
+                result.box_x_max,
+                result.box_y_max,
+            ],
+            "item": [x.item_name for x in items],
+            "box": [],
+        }
+
+        if history.asset.drive_folder_id:
+            result_history = historys.get(id=result.history.id)
+            box_x_fix = (result.box_x_max - result.box_x_min) / result_history.image.image.width
+            box_y_fix = (result.box_y_max - result.box_y_min) / result_history.image.image.height
+
+            results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])
+
+            item_x_fix = (results[0].box_x_max - results[0].box_x_min) / result_history.image.image.width
+            item_y_fix = (results[0].box_y_max - results[0].box_y_min) / result_history.image.image.height
+
+            for i, item in enumerate(items):
+                print(item)
+                if item.id == results[i+1].item.id:
+                    item_x_fit = box_x_fix / item_x_fix
+                    item_y_fit = box_y_fix / item_y_fix
+                    self.data["box"].append([
+                        results[i+1].box_x_min * item_x_fit,
+                        results[i+1].box_y_min * item_y_fit,
+                        results[i+1].box_x_max * item_x_fit,
+                        results[i+1].box_y_max * item_y_fit,
+                        self.warning_conf,
+                    ])
+                else:
+                    self.data["box"].append([0,0,0,0,0])
+            
+            if history.asset.learning_model:
+                self.data["model_check"] = True
+                self.model_check(history.asset, history.image)
+                messages.success(self.request, 'AI自動判定は有効です。')
+            else:
+                messages.warning(self.request, 'AI自動判定は無効です。')
+
+        context = self.get_context_data()
+        context.update({'data': json.dumps(self.data)})
+        return super().render_to_response(context, **response_kwargs)
     
     # フォームが有効な場合の処理
     def form_valid(self, form):

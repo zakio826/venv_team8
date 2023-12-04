@@ -8,21 +8,20 @@ const box_in = document.getElementsByName("box");
 const finish = document.getElementById("finish");
 const submit = document.getElementById("submit");
 const box_list = document.getElementById("box_list");
+const create = document.getElementById("create").innerText;
 
 const check_list = document.getElementById("check_list");
 const switch_width = document.getElementById("switch_width");
 
-const data = data_json;
+const box_x_min = Number(document.getElementById("box_x_min").innerText);
+const box_y_min = Number(document.getElementById("box_y_min").innerText);
+const box_x_max = Number(document.getElementById("box_x_max").innerText);
+const box_y_max = Number(document.getElementById("box_y_max").innerText);
 
-// const box_x_min = Number(document.getElementById("box_x_min").innerText);
-// const box_y_min = Number(document.getElementById("box_y_min").innerText);
-// const box_x_max = Number(document.getElementById("box_x_max").innerText);
-// const box_y_max = Number(document.getElementById("box_y_max").innerText);
-
-// const item_box = Number(document.getElementById("item_box").innerText);
+const item_box = Number(document.getElementById("item_box").innerText);
 const confirmation = document.getElementById("confirmation");
 
-const model_check = data.model_check;
+const model_check = document.getElementById("model_check").innerText;
 
 const check = document.getElementsByName("check");
 const checked = document.getElementsByName("checked");
@@ -33,8 +32,8 @@ const all_check_out = document.getElementById("all_check_out");
 
 
 // キャンバスサイズを初期化
-const x_fix = data.outer_edge[2] - data.outer_edge[0];
-const y_fix = data.outer_edge[3] - data.outer_edge[1];
+const x_fix = box_x_max - box_x_min;
+const y_fix = box_y_max - box_y_min;
 
 canvas.width = x_fix;
 canvas.height = y_fix;
@@ -48,28 +47,28 @@ let startX, startY, width, height;
 let x_min, x_max, y_min, y_max;
 
 // アイテム名とバウンディングボックスの座標を初期化
-let item_name = data.item;
-let box_li = data.box;
+let item_name = [];
+let box_li = [];
 for (let i = 0; i < set.length; i++) {
-    // item_name[i] = document.getElementById(`item_${i}_name`).innerText;
+    item_name[i] = document.getElementById(`item_${i}_name`).innerText;
 
     // アイテムの座標がある場所
-    if (box_li[i][4] > 0) {
-        // box_li[i] = [
-        //     Number(document.getElementById(`item_${i+1}_x_min`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_y_min`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_x_max`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_y_max`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_conf`).innerText),
-        // ];
+    if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
+        box_li[i] = [
+            Number(document.getElementById(`item_${i+1}_x_min`).innerText),
+            Number(document.getElementById(`item_${i+1}_y_min`).innerText),
+            Number(document.getElementById(`item_${i+1}_x_max`).innerText),
+            Number(document.getElementById(`item_${i+1}_y_max`).innerText),
+            Number(document.getElementById(`item_${i+1}_conf`).innerText),
+        ];
 
         document.getElementById(`id_form-${i}-result_class`).value = 0;
 
-        if (!model_check) box_li[i][4] = threshold_conf;
+        if (model_check == "False") box_li[i][4] = threshold_conf;
 
         if (box_li[i][4] > threshold_conf) {
             document.getElementById(`id_form-${i}-result_class`).value = 2;
-        } else {
+        } else if (box_li[i][4] > 0) {
             document.getElementById(`id_form-${i}-result_class`).value = 1;
         }
 
@@ -78,7 +77,7 @@ for (let i = 0; i < set.length; i++) {
         box_in[i].checked = true;
 
     } else {
-        // box_li[i] = [0,0,0,0,0];
+        box_li[i] = [0,0,0,0,0];
         document.getElementById(`id_form-${i}-result_class`).value = 0;
     }
 }
@@ -513,7 +512,7 @@ function del_box(i) {
 
 all_check.onclick = () => {
     var check_conf = threshold_conf;
-    if (!model_check) check_conf = 0;
+    if (model_check == "False") check_conf = 0;
     for (let i = 0; i < set.length; i++) {
         if (box_li[i][4] > check_conf) {
             auto_set_box(i);
