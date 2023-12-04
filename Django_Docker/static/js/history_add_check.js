@@ -20,8 +20,8 @@ const check = document.getElementsByName("check");
 const checked = document.getElementsByName("checked");
 
 const check_ctrl = document.getElementById("check_ctrl");
-const all_check = document.getElementById("all_check");
-const all_check_out = document.getElementById("all_check_out");
+// const all_check = document.getElementById("all_check");
+// const all_check_out = document.getElementById("all_check_out");
 
 
 // キャンバスサイズを初期化
@@ -189,12 +189,13 @@ function auto_fit() {
 
     // console.log(`customBreak.last : ${customBreak.last}`);
 
+    let max_h = null;
     if (customBreak.last >= 2) {
-        var max_h = canvas.height - check_ctrl.getBoundingClientRect().height - 16;;
+        max_h = canvas.height;
         switch_width.style.width = "auto";
         check_list.style.marginTop = "auto";
     } else {
-        var max_h = 200;
+        max_h = 200;
         switch_width.style.width = 200 * set.length;
         check_list.style.marginTop = "20px";
     }
@@ -454,35 +455,35 @@ function del_box(i) {
     out_box(i);
 };
 
-all_check.onclick = () => {
-    var check_conf = threshold_conf;
-    if (!model_check) check_conf = 0;
-    for (let i = 0; i < set.length; i++) {
-        if (box_li[i][4] > check_conf) {
-            auto_set_box(i);
-            check[i].checked = true;
-            checked[i].innerText = "チェック済み";
-        }
-    }
-    draw_box(-2);
-    finish_check();
-};
+// all_check.onclick = () => {
+//     var check_conf = threshold_conf;
+//     if (!model_check) check_conf = 0;
+//     for (let i = 0; i < set.length; i++) {
+//         if (box_li[i][4] > check_conf) {
+//             auto_set_box(i);
+//             check[i].checked = true;
+//             checked[i].innerText = "チェック済み";
+//         }
+//     }
+//     draw_box(-2);
+//     finish_check();
+// };
 
-all_check_out.onclick = () => {
-    for (let i = 0; i < set.length; i++) {
-        if (check[i].checked) {
-            document.getElementById(`id_form-${i}-box_x_min`).value = null;
-            document.getElementById(`id_form-${i}-box_y_min`).value = null;
-            document.getElementById(`id_form-${i}-box_x_max`).value = null;
-            document.getElementById(`id_form-${i}-box_y_max`).value = null;
+// all_check_out.onclick = () => {
+//     for (let i = 0; i < set.length; i++) {
+//         if (check[i].checked) {
+//             document.getElementById(`id_form-${i}-box_x_min`).value = null;
+//             document.getElementById(`id_form-${i}-box_y_min`).value = null;
+//             document.getElementById(`id_form-${i}-box_x_max`).value = null;
+//             document.getElementById(`id_form-${i}-box_y_max`).value = null;
             
-            check[i].checked = false;
-            checked[i].innerText = "チェック";
-        }
-    }
-    draw_box();
-    finish_check();
-};
+//             check[i].checked = false;
+//             checked[i].innerText = "チェック";
+//         }
+//     }
+//     draw_box();
+//     finish_check();
+// };
 
 submit.onclick = () => {
     for (let i = 0; i < set.length; i++) {

@@ -52,19 +52,42 @@
                     {% endif %}
                 </div>
             </div>
-            {% if create == 0 %}
-            <div id="check_ctrl">
-                <hr>
-                <div class="row row-cols-2 row-cols-md-1 row-cols-lg-2">
-                    <div class="col"><button class="btn my-btn-common my-btn-green w-100" type="button" id="all_check">一括チェック</button></div>
-                    <div class="col mt-0 mt-md-3 mt-lg-0"><button class="btn my-btn-common my-check-green w-100 px-2" type="button" id="all_check_out">一括チェック解除</button></div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 
     <hr>
+
+    {% if create == 0 %}
+    <div id="check_ctrl">
+        <div class="d-flex justify-content-between">
+            <div class="">0%</div>
+            <div class="">10%</div>
+            <div class="">20%</div>
+            <div class="">30%</div>
+            <div class="">40%</div>
+            <div class="">50%</div>
+            <div class="">60%</div>
+            <div class="">70%</div>
+            <div class="">80%</div>
+            <div class="">90%</div>
+            <div class="">100%</div>
+        </div>
+        <div class="row">
+            <label class="col-auto" for="slide_down">
+                <button class="btn my-btn-common my-btn-green" id="slide_down">＜</button>
+            </label>
+            <label class="col" for="all_check">
+                <input class="h-100 w-100" type="range" id="all_check" min="0" max="100" step="10">
+            </label>
+            <label class="col-auto" for="slide_up">
+                <button class="btn my-btn-common my-btn-green" id="slide_up">＞</button>
+            </label>
+
+            <!-- <div class="col mt-0 mt-md-3 mt-lg-0"><button class="btn my-btn-common my-check-green w-100 px-2" type="button" id="all_check_out">一括チェック解除</button></div> -->
+        </div>
+    </div>
+    <hr>
+    {% endif %}
 
     <div class="h5 text-sm-center px-5" id="confirmation"></div>
     <div class="d-flex w-100 justify-content-center">
