@@ -14,15 +14,7 @@ const switch_width = document.getElementById("switch_width");
 
 const data = data_json;
 
-// const box_x_min = Number(document.getElementById("box_x_min").innerText);
-// const box_y_min = Number(document.getElementById("box_y_min").innerText);
-// const box_x_max = Number(document.getElementById("box_x_max").innerText);
-// const box_y_max = Number(document.getElementById("box_y_max").innerText);
-
-// const item_box = Number(document.getElementById("item_box").innerText);
 const confirmation = document.getElementById("confirmation");
-
-const model_check = data.model_check;
 
 const check = document.getElementsByName("check");
 const checked = document.getElementsByName("checked");
@@ -50,18 +42,12 @@ let x_min, x_max, y_min, y_max;
 // アイテム名とバウンディングボックスの座標を初期化
 let item_name = data.item;
 let box_li = data.box;
+const model_check = data.model_check;
+
 for (let i = 0; i < set.length; i++) {
-    // item_name[i] = document.getElementById(`item_${i}_name`).innerText;
 
     // アイテムの座標がある場所
     if (box_li[i][4] > 0) {
-        // box_li[i] = [
-        //     Number(document.getElementById(`item_${i+1}_x_min`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_y_min`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_x_max`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_y_max`).innerText),
-        //     Number(document.getElementById(`item_${i+1}_conf`).innerText),
-        // ];
 
         document.getElementById(`id_form-${i}-result_class`).value = 0;
 
@@ -216,10 +202,6 @@ function auto_fit() {
 
     draw_box();
 
-    // console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
-    // console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
-    // console.log(`canvas.width:  ${canvas.width} px`);
-    // console.log(`canvas.height: ${canvas.height} px`);
 };
 
 
@@ -409,42 +391,6 @@ canvas.addEventListener("mousemove", (e) => {
 // マウスアップイベントのリスナーを追加
 canvas.addEventListener("mouseup", () => {
     move_end();
-    // isDrawing = false;
-    // if (!mouseEvent) return;
-
-    // // 描画した矩形の座標を表示
-    // x_min = startX;
-    // x_max = startX + width;
-    // if (width < 0) {
-    //     x_min += width;
-    //     x_max -= width;
-    // }
-
-    // y_min = startY;
-    // y_max = startY + height;
-    // if (height < 0) {
-    //     y_min += height;
-    //     y_max -= height;
-    // }
-
-    // for (let i = 0; i < set.length; i++) {
-    //     if (set[i].checked) {
-    //         box_li[i] = [x_min, y_min, x_max, y_max, 1];
-
-    //         document.getElementById(`id_form-${i}-result_class`).value = 1;
-    //         auto_set_box(i);
-
-    //         check[i].disabled = false;
-    //         check[i].checked = true;
-    //         box_in[i].disabled = false;
-    //         box_in[i].checked = true;
-    //         checked[i].innerText = "チェック済み";
-
-    //         draw_box(i);
-    //     }
-    //     console.log(box_li[i]);
-    // }
-    // finish_check();
 });
 
 // マウスアウトイベントのリスナーを追加
@@ -473,9 +419,6 @@ function check_box(i) {
         submit.disabled = true;
     } else {
         checked[i].innerText = "チェック済み";
-
-        // box_li[i][4] = 1;
-        // document.getElementById(`id_form-${i}-result_class`).value = 1;
 
         auto_set_box(i);
         finish_check(i);
