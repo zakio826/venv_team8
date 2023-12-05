@@ -22,6 +22,7 @@ SECRET_KEY = 'django-insecure-mh0=-w7^c3y5+mm86zb%gsbodtvldp1_(g-gr8f@8-1qs1y_ju
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# 以下に compose.yaml で指定した環境変数 ALLOWED_HOSTS を追加する（ローカル環境を除く）
 ALLOWED_HOSTS = []
 
 

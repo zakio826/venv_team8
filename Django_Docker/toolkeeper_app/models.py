@@ -41,6 +41,7 @@ class Asset(models.Model):
     """管理項目モデル"""
     
     group = models.ForeignKey(Group, verbose_name='グループ', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, verbose_name='管理登録ユーザー', on_delete=models.CASCADE)
     asset_name = models.CharField(verbose_name='管理名', max_length=12)
 
     drive_folder_id = models.CharField(verbose_name='フォルダID', blank=True, null=True)
@@ -68,7 +69,7 @@ class Item(models.Model):
     
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
 
-    item_name = models.CharField(verbose_name='アイテム名', max_length=40)
+    item_name = models.CharField(verbose_name='アイテム名', max_length=16)
     outer_edge = models.BooleanField(verbose_name='外枠', default=False)
     
     def save(self, *args, **kwargs):

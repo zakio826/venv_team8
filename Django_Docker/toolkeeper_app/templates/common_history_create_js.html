@@ -19,8 +19,6 @@
     const box_y_max = Number(document.getElementById("box_y_max").innerText);
     
     const item_box = Number(document.getElementById("item_box").innerText);
-
-    const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
     
     const preview = document.getElementById("preview");
     
@@ -33,14 +31,11 @@
     const x_fix = box_x_max - box_x_min;
     const y_fix = box_y_max - box_y_min;
 
-    // canvas.width = x_fix;
-    // canvas.height = y_fix;
+    canvas.width = x_fix;
+    canvas.height = y_fix;
 
-    // let x_fit = canvas.width / x_fix;
-    // let y_fit = canvas.height / y_fix;
-
-    // let x_min_fit = box_x_min;
-    // let y_min_fit = box_y_min;
+    let x_fit = canvas.width / x_fix;
+    let y_fit = canvas.height / y_fix;
 
 
     // バウンディングボックスの座標を初期化
@@ -71,49 +66,36 @@
         if (window.innerWidth >= 768) {
             var max_h = canvas.height;
             switch_width.style.width = "auto";
-            for (let i = 0; i < set.length; i++) {
-                document.getElementById(`ctrl_${i}`).style.margin = "auto";
-            }
-        }
-        else {
+            check_list.style.marginTop = "auto";
+        } else {
             var max_h = 145;
-            switch_width.style.width = "850px";
-            for (let i = 0; i < set.length; i++) {
-                document.getElementById(`ctrl_${i}`).style.margin = "0 2px";
-            }
+            switch_width.style.width = 200 * set.length;
+            check_list.style.marginTop = "20px";
         }
         check_list.style.height = max_h;
 
         for (let i = 0; i < set.length; i++) {
-            // console.log(window.innerWidth);
-            // console.log(document.getElementById(`ctrl_${i}`).style.width);
         }
     };
 
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
-            console.log("tttt");
+
+            x_fit = preview.getBoundingClientRect().width.toFixed() / canvas.width;
+            y_fit = preview.getBoundingClientRect().height.toFixed() / canvas.height;
 
             for (let i = 0; i < set.length; i++) {
-                box_li[i][0] *= preview.getBoundingClientRect().width / canvas.width;
-                box_li[i][1] *= preview.getBoundingClientRect().height / canvas.height;
-                box_li[i][2] *= preview.getBoundingClientRect().width / canvas.width;
-                box_li[i][3] *= preview.getBoundingClientRect().height / canvas.height;
-                console.log(box_li[i]);
+                box_li[i][0] *= x_fit;
+                box_li[i][1] *= y_fit;
+                box_li[i][2] *= x_fit;
+                box_li[i][3] *= y_fit;
+                console.log(`box_li[${i}]: ` + box_li[i]);
             }
 
             canvas.width = preview.getBoundingClientRect().width.toFixed();
             canvas.height = canvas.width * (y_fix / x_fix);
 
-            // x_fit = canvas.width / x_fix;
-            // y_fit = canvas.height / y_fix;
-
-            // x_min_fit = box_x_min * x_fit;
-            // y_min_fit = box_y_min * y_fit;
-            
-            
-            // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
             ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
         }
         
@@ -123,10 +105,6 @@
         console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
         console.log(`canvas.width  : ${canvas.width} px`);
         console.log(`canvas.height : ${canvas.height} px`);
-        // console.log(`x_min_fit     : ${x_min_fit.toFixed()} px`);
-        // console.log(`y_min_fit     : ${y_min_fit.toFixed()} px`);
-        // console.log(`x_max_fit     : ${(x_min_fit + canvas.width).toFixed()} px`);
-        // console.log(`y_max_fit     : ${(y_min_fit + canvas.height).toFixed()} px`);
         console.log(`image.width   : ${(image.width).toFixed()} px`);
         console.log(`image.height  : ${(image.height).toFixed()} px`);
     };
@@ -172,19 +150,12 @@
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
-        // ctx.drawImage(image, 0, 0);
-        // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         
         for (let i = 0; i < set.length; i++) {
             if (i == order) ctx.lineWidth = 5;
             else ctx.lineWidth = 1;
             
-            // 緑色の線で描画
-            ctx.strokeStyle = `rgb(
-                0,
-                220,
-                50
-            )`;
+            ctx.strokeStyle = `rgb(0, 220, 50)`; // 緑色の線で描画
             if (order == -2) ctx.lineWidth = 3;
 
             ctx.strokeRect(
@@ -199,29 +170,127 @@
 
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
-
-        // const x_fix = image.width;
-        // const y_fix = image.height;
-
-        // canvas.width = preview.getBoundingClientRect().width.toFixed();
-        // canvas.height = canvas.width * (y_fix / x_fix);
         canvas.width = image.width;
         canvas.height = image.height;
 
-        // let x_fit = canvas.width / x_fix;
-        // let y_fit = canvas.height / y_fix;
-
-        // let x_min_fit = box_x_min * x_fit;
-        // let y_min_fit = box_y_min * y_fit;
-
         auto_fit();
-
         draw_box();
     };
 
 
+    const main = document.querySelector("main");
+
+    let mouseEvent = true;
+    let main_x, main_y;
+    let seeked_x, seeked_y;
+
+    function mobile_move (touchObject) {
+
+        // 要素の位置を取得
+        const rect = canvas.getBoundingClientRect();
+        const rect_main = main.getBoundingClientRect();
+
+        // 要素内におけるタッチ位置を計算
+        const x = touchObject.pageX - rect.left + rect_main.left;
+        const y = touchObject.pageY - rect.top + rect_main.top;
+
+        return [x, y];
+    };
+    
+    // スクロールを禁止にする関数
+    function disableScroll(event) { event.preventDefault(); };
+
+    canvas.addEventListener('touchstart', (e) => {
+        auto_fit();
+
+        mouseEvent = false;
+        isDrawing = true;
+
+        const touchObject = e.touches[0];
+
+        const coordinate = mobile_move(touchObject);
+
+        startX = coordinate[0];
+        startY = coordinate[1];
+
+        seeked_x = 0.5;
+        seeked_y = 0.5;
+        
+        canvas.addEventListener('touchmove', disableScroll, { passive: false }); // スクロール禁止
+    });
+
+    function mobile_end() {
+        mouseEvent = true;
+        isDrawing = false;
+
+        canvas.removeEventListener('touchmove', disableScroll, { passive: false }); // スクロール解除
+
+        // 描画した矩形の座標を表示
+        x_min = startX;
+        x_max = startX + width;
+        if (width < 0) {
+            x_min += width;
+            x_max -= width;
+        }
+
+        y_min = startY;
+        y_max = startY + height;
+        if (height < 0) {
+            y_min += height;
+            y_max -= height;
+        }
+
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) {
+                box_li[i] = [x_min, y_min, x_max, y_max, 1];
+
+                document.getElementById(`id_form-${i}-result_class`).value = 1;
+                auto_set_box(i);
+
+                box_in[i].disabled = false;
+                box_in[i].checked = true;
+
+                draw_box(order=i);
+            }
+            console.log(box_li[i]);
+        }
+        finish_check();
+    };
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (!isDrawing) return;
+
+        const touchObject = e.changedTouches[0];
+        const coordinate = mobile_move(touchObject);
+        
+        width = coordinate[0] - startX;
+        height = coordinate[1] - startY;
+
+        draw_box(); // バウンディングボックスの描画
+
+        // 矩形を青い線で描画
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(startX, startY, width, height);
+
+        seeked_x = parseFloat((x/canvas_fix.width).toFixed(6));
+        seeked_y = parseFloat((y/canvas_fix.height).toFixed(6));
+
+        if (seeked_x <= 0 || seeked_x >= 1 || seeked_y <= 0 || seeked_y >= 1) mobile_end();
+    });
+    
+    canvas.addEventListener('touchend', () => {
+        mobile_end()
+    });
+    
+    canvas.addEventListener("touchcancel", () => {
+        mobile_end()
+    });
+
+
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
+        if (!mouseEvent) return;
         auto_fit();
         isDrawing = true;
         startX = e.clientX - canvas.getBoundingClientRect().left;
@@ -230,7 +299,7 @@
 
     // マウスムーブイベントのリスナーを追加
     canvas.addEventListener("mousemove", (e) => {
-        if (!isDrawing) return;
+        if (!mouseEvent || !isDrawing) return;
 
         const x = e.clientX - canvas.getBoundingClientRect().left;
         const y = e.clientY - canvas.getBoundingClientRect().top;
@@ -242,7 +311,7 @@
 
         // 矩形を青い線で描画
         ctx.strokeStyle = "blue";
-        ctx.lineWidth = 7;
+        ctx.lineWidth = 5;
         ctx.strokeRect(startX, startY, width, height);
     });
 
@@ -268,6 +337,7 @@
     // マウスアップイベントのリスナーを追加
     canvas.addEventListener("mouseup", () => {
         isDrawing = false;
+        if (!mouseEvent) return;
 
         // 描画した矩形の座標を表示
         x_min = startX;

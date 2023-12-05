@@ -39,10 +39,8 @@
                                     <span class="col-auto me-sm-0 ps-0">：
                                         {% if result.result_class == 0 %}
                                             <u><font color="#ff6347">無し</font></u>
-                                        {% elif result.result_class == 1 or result.result_class == 2 %}
+                                        {% elif result.result_class != 9 %}
                                             <u><font color="#99CC33">有り</font></u>
-                                        {% else %}
-                                            {{ result.result_class }}
                                         {% endif %}
                                     </span>
                                 </div>
@@ -71,7 +69,7 @@
 
             <div class="row">
                 <div class="col-3 col-lg-2">
-                    <strong>ユーザー</strong>
+                    <strong>確認ユーザー</strong>
                 </div>
                 <div class="col-9 col-lg-10">
                     {{ history.user.username }}
@@ -111,10 +109,14 @@
             </div>
             <hr> -->
 
-            <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
-            {% if history in abnormal_history_list %}
-                <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:asset_detail' history.asset.id %}">管理項目詳細へ</a>
-            {% endif %}
+            <div class="row row-cols-1 row-cols-sm-2 justify-content-center justify-content-md-start">
+                <div class="col-10 col-sm col-md-4 col-lg-3 py-4 py-sm-3">
+                    <a class="btn btn-3 float-right w-100 py-2" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧に戻る</a>
+                </div>
+                <div class="col-10 col-sm col-md-4 col-lg-3 py-2 py-sm-3">
+                    <a class="btn btn-3 float-right w-100 py-2" href="{% url 'toolkeeper_app:history_list' %}">履歴一覧に戻る</a>
+                </div>
+            </div>
         </div>
     </div>
 </section>

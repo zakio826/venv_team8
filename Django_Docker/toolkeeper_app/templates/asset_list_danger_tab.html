@@ -1,0 +1,61 @@
+{% if not latest_result_class_zero_assets %}
+    <p class="pt-3">現在、管理項目に異常はありません</p>
+{% endif %}
+
+{% if latest_result_class_zero_assets %}
+    <h4 class="text-center mb-4 py-2">
+        <i class="bi bi-exclamation-circle text-danger pe-1"></i>
+        {{ latest_result_class_zero_assets|length }} つの管理項目に異常があります
+    </h4>
+    
+    {% if image_list %}
+        <p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">
+            項目をクリックすると詳細へ移ります
+        </p>
+    {% endif %}
+
+    <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
+        <!-- 「無し（0）」の result_class を持つ履歴を表示 -->
+        {% for image in image_list %}
+            {% if image.asset in latest_result_class_zero_assets %}
+                <div class="col mb-5">
+                    <div class="card">
+                        <a class="btn px-0 py-2" href="{% url 'toolkeeper_app:history_detail' image.asset.history_set.last.pk %}">
+                            <!--badge-->
+                            <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.5rem; font-size: 13px;">{{ image.group.group_name }}</div>
+                            <div class="badge bg-dark text-danger position-absolute" style="top: 0.5rem; left: 0.5rem; font-size: 20px;"><i class="bi bi-exclamation-circle"></i></div>
+                            <!-- Product details-->
+                            <div class="card-body px-0">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <p class="h5 pt-4 pb-1 text-danger">{{ image.asset.asset_name }}</p>
+                                    <!-- Product reviews-->
+                                    <div class="justify-content-center small mb-2">
+                                        確認日時：{{ image.asset.history_set.last.checked_at }}
+                                        <br>
+                                        <!-- 更新日時: {{ history.updated_at }}
+                                        <br> -->
+                                        ユーザー：{{ image.asset.history_set.last.user }}
+                                        <br>
+
+                                        <div class="px-4">
+                                            <hr>
+
+                                            <div class="text-nowrap pb-2" style="overflow: auto;">
+                                                {% for result in image.asset.history_set.last.result_set.all %}
+                                                    {% if result.result_class == 0 %}
+                                                        <h6 style="display: inline;"><font color="#ff6347">{{ result.item.item_name }}</font>｜</h6>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}

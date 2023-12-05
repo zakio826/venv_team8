@@ -81,8 +81,8 @@ class GroupFilterForm(forms.Form):
 
 class SortForm(forms.Form):
     choices = [
-        ('desc', '降順'),
         ('asc', '昇順'),
+        ('desc', '降順'),
     ]
     sort_order = forms.ChoiceField(widget=forms.Select(attrs={'class': 'filter-form'}), choices=choices, required=False, label='ソート（確認日時）')
 
@@ -194,6 +194,7 @@ class ItemAddForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['item_name'].widget.attrs['maxlength'] = 16
 
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'

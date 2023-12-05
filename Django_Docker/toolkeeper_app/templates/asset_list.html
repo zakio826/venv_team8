@@ -13,7 +13,7 @@
     <div class="container px-4 px-lg-5 mt-3">
         <div class="row row-cols-1 row-cols-md-2 justify-content-center justify-content-md-between d-flex mb-4">
             <h2 class="col w-auto mb-4 my-md-auto">管理項目一覧</h2>
-            <div class="col row justify-content-center w-auto mx-auto mx-md-0 ms-md-auto">
+            <div class="col row justify-content-center w-auto mx-auto mx-md-0 ms-md-auto px-md-0">
                 <button class="col-auto learn-more my-2">
                     <span class="circle" aria-hidden="true">
                       <span class="icon arrow"></span>
@@ -33,165 +33,97 @@
             </div>
         </div>
         <form method="get">
-            <div class="row row-cols-1 row-cols-md-3">
-                {{ group_filter_form.as_p }}
+            <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 justify-content-between">
+                <div class="col col-md-6 col-lg-8">{{ group_filter_form.as_p }}</div>
+                <div class="col col-md-6 col-lg-4 text-md-center my-md-4">
+                    <button class="btn btn-3 px-5" type="submit">絞り込み</button>
+                </div>
             </div>
             
-            <button class="btn btn-3" type="submit">絞り込み</button>
         </form>
-        <script>
-          // フォームが「すべてのグループ」を選択中である場合、選択状態にする
-          var groupFilterForm = document.querySelector('#id_group');
-          if (groupFilterForm.value === 'all') {
-            groupFilterForm.selectedIndex = 0;
-          }
-        </script>
+
         <hr>
         
-        <div class="tab1">
-            <div class="tab1__item on"><span class="tab1__link" data-tab-body="1">管理項目</span></div>
-            <div class="tab1__item"><span class="tab1__link" data-tab-body="2">
-                {% if latest_result_class_zero_assets %}異常<i class="bi bi-exclamation-circle text-danger"></i>{% else %}現在異常な管理項目は見つかりません{% endif %}</span>
-            </div>
+        <div class="row row-cols-2 g-0 my-tab-bar">
+            <label for="tab1" class="col">
+                <button id="tab1" class="w-100 my-tab-link" type="button">管理項目</button>
+            </label>
+
+            <label for="tab2" class="col">
+                <button id="tab2" class="w-100 my-tab-link" type="button">
+                    {% if latest_result_class_zero_assets %}
+                    <i class="d-inline-block my-auto bi bi-exclamation-circle text-danger"></i>
+                    {% endif %}
+                    <span class="d-inline-block px-1">異常のある管理項目</span>
+                </button>
+            </label>
         </div>
-        <div class="tab1-body">
-            <div class="tab1-body__item tab1-body__item--1 on">
-                {% if image_list %}
-                    <div><p class="d-grid lead fw-normal text-muted text-center mb-3" style="font-size: 15px;">管理項目をクリックすると詳細へ移ります</p></div>
-                {% endif %}
-                <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-                    {% for image in page_obj %}
-                        <div class="col mb-5">
-                            <div class="card">
-                                <a class="btn" href="{% url 'toolkeeper_app:asset_detail' image.asset.id %}">
-                                    <!--badge-->
-                                    <div class="badge bg-dark text-white position-absolute" style="top: 0.5rem; right: 0.8rem; font-size: 15px;">{{ image.asset.group.group_name }}</div>
-                                    <!-- Product image-->
-                                    {% if image.image %}
-                                        <img class="card-img-top" src="{{ image.image.url }}" alt="..." />
-                                    {% endif %}
-                                    <!-- Product details-->
-                                    <div class="card-body px-2">
-                                        <div class="text-center">
-                                            <!-- Product name-->
-                                            <h5 class="fw-bolder">{{ image.asset.asset_name }}</h5>
-                                            <!-- Product reviews-->
-                                            <div class="d-flex justify-content-center small text-warning mb-2">
-                                                <!--何か入れたければ入れる-->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                        {% empty %}
-                        <p>管理項目がありません</p>
-                    {% endfor %}
-                </div>
-
-                <!-- ページネーションリンクの表示 -->
-                {% if page_obj.paginator.count > 0 %}
-                    <div class="d-flex justify-content-center mt-4">
-                        <ul class="pagination">
-                            {% if page_obj.has_previous %}
-                            <li class="page-item"><a class="page-link" href="?page=1&group={{ request.GET.group }}">最初</a></li>
-                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&group={{ request.GET.group }}">前へ</a></li>
-                            {% endif %}
-                            <!-- ページ番号のセレクトボックス -->
-                            <li class="page-item">
-                                <select class="form-select" onchange="window.location.href = '?page=' + this.value + '&group=' + '{{ request.GET.group }}';">
-                                    {% for page_num in page_obj.paginator.page_range %}
-                                        <option value="{{ page_num }}" {% if page_num == page_obj.number %}selected{% endif %}>{{ page_num }}</option>
-                                    {% endfor %}
-                                </select>
-                            </li>
-                            {% if page_obj.has_next %}
-                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&group={{ request.GET.group }}">次へ</a></li>
-                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&group={{ request.GET.group }}">最後</a></li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                {% endif %}
-            </div>
-
-
-            <div class="tab1-body__item tab1-body__item--2">
-                <div class="row gx-6 gx-lg-5 row-cols-1 row-cols-md-2 row-cols-lg-3">
-                    {% for image in image_list %}
-                        {% if image.asset in latest_result_class_zero_assets %}
-                            <div class="col mb-3">
-                                <div class="card" style="padding: 5px;">
-                                    <div class="badge text-black position-absolute" style="top: 0.2rem; right: 0.1rem; font-size: 15px;">{{ image.asset.history_set.last.checked_at|date:"m月d日 H:i" }}</div>
-                                    <h5 class="fw-bolder mt-4">{{ image.asset.asset_name }}</h5>
-                                    <div style="overflow-x: auto; overflow-y: hidden; white-space: nowrap;">
-                                        {% for item in image.asset.history_set.last.result_set.all %}
-                                            {% if item.result_class != 9 and item.result_class != 1 and item.result_class != 2 %}
-                                                <strong><h6 style="display: inline;"><font color="#ff6347">{{ item.item.item_name }}</font>,</h6></strong>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
         
+        <div class="mt-4">
+            <div id="tab1_body">{% include 'asset_list_tab.html' %}</div>
+            <div id="tab2_body">{% include 'asset_list_danger_tab.html' %}</div>
+        </div>
+
     </div>
 </section>
-
-<style>
-    .tab1 {
-        display: flex;
-        flex-direction: row;
-        text-align: center;
-        background-color: #fff !important;
-        margin: 0 !important;
-    }
-    .tab1__item {
-        flex: 1;
-        flex-basis: 120px;
-    }
-    .tab1__link {
-        display: block;
-        text-decoration: none;
-        color: #fff;
-        background-color: #212529;
-        cursor: pointer;
-        border-top-right-radius: 15px;
-        border-top-left-radius: 15px;
-    }
-    .tab1__link.on {
-        background-color: #666666;
-    }
-    .tab1-body__item {
-        margin: 30px 15px;
-        display: none;
-        text-align: center;
-    }
-    .tab1-body__item.on {
-        display: block;
-    }
-</style>
 {% endblock %}
 
 {% block js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var $tab__link = $('.tab1__link')
-        var $tab_body_item = $('.tab1-body__item')
-        $tab__link.on('click', function (e) {
-            var target = $(e.currentTarget)
-            // タブの表示非表示
-            $tab__link.removeClass('on')
-            target.addClass('on')
-            // タブの中身の表示非表示
-            var num = target.data('tab-body')
-            $tab_body_item.removeClass('on')
-            $('.tab1-body__item--' + num).addClass('on')
-        })
-    })
+    // フォームが「すべてのグループ」を選択中である場合、選択状態にする
+    var groupFilterForm = document.querySelector('#id_group');
+    if (groupFilterForm.value === 'all') {
+        groupFilterForm.selectedIndex = 0;
+    }
+</script>
+
+<script>
+    const tab1 = document.getElementById("tab1");
+    const tab2 = document.getElementById("tab2");
+
+    const tab1_color = document.getElementById("tab1_color");
+    const tab2_color = document.getElementById("tab2_color");
+    const tab_color_on = 212529;
+    const tab_color_off = 666666;
+
+    tab1.style.backgroundColor = tab_color_on;
+    tab2.style.backgroundColor = tab_color_off;
+
+    const tab_body_on = "block";
+    const tab_body_off = "none";
+    const tab1_body = document.getElementById("tab1_body");
+    const tab2_body = document.getElementById("tab2_body");
+
+    tab1_body.style.display = tab_body_on;
+    tab2_body.style.display = tab_body_off;
+
+    let tab1_active = true;
+
+
+    tab1.onclick = () => {
+        if (tab1_active) return;
+        tab1_active = true;
+        console.log("tab1_active: "+tab1_active);
+
+        tab1.style.backgroundColor = tab_color_on;
+        tab2.style.backgroundColor = tab_color_off;
+
+        tab1_body.style.display = tab_body_on;
+        tab2_body.style.display = tab_body_off;
+    };
+
+    tab2.onclick = () => {
+        if (!tab1_active) return;
+        tab1_active = false;
+        console.log("tab1_active: "+tab1_active);
+
+        tab1.style.backgroundColor = tab_color_off;
+        tab2.style.backgroundColor = tab_color_on;
+
+        tab1_body.style.display = tab_body_off;
+        tab2_body.style.display = tab_body_on;
+    };
+
+
 </script>
 {% endblock %}

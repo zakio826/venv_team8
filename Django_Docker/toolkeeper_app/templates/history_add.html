@@ -8,8 +8,8 @@
 {% block contents %}
 <div class="container my-5">
     <div class="row justify-content-around mt-4" style="text-align: center;">
-        <h3 class="col-12 col-md-8 col-lg-6" style="text-align: center; margin-top: 0.5rem;">登録したアイテムを全て囲ってください。</h3>
-        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" onclick="auto_fit(); draw_box()">画像読込</button>
+        <h3 class="col-12 col-md-8" style="text-align: center; margin-top: 0.5rem;">登録したアイテムを<span class="d-inline-block d-md-inline">全て囲ってください。</span></h3>
+        <button class="col-6 col-md-2 btn btn-3 my-2 my-md-auto" type="button" id="load">画像読込</button>
     </div>
     
     <hr>
@@ -38,9 +38,11 @@
                     {% endif %}
                 {% endfor %}
                 <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
+                <span id="warning_conf" style="display: none;">{{ warning_conf }}</span>
             </div>
         </div>
         <div class="col-11 col-md-4">
+            <hr class="d-block d-md-none">
             <div class="position-relative" id="check_list" style="overflow: auto;">
                 <div class="position-absolute d-flex d-md-block" id="switch_width" style="height: 100%;">
                     {% if create == 0 %}
@@ -64,7 +66,7 @@
 
     <hr>
 
-    <div class="h5 text-sm-center px-5 px-lg-2" id="confirmation"></div>
+    <div class="h5 text-sm-center px-5" id="confirmation"></div>
     <div class="d-flex w-100 justify-content-center">
         <label class="w-auto my-4" for="finish">
             <input class="form-check-input" type="checkbox" id="finish" onclick="submit_check(finish.checked);"> すべてのアイテムをチェックしました。
@@ -85,9 +87,9 @@
 {% block js %}
 
 {% if create == 0 %}
-    {% include 'common_history_add_js.html' %}
+<script src="{% static 'js/history_add_check.js' %}"></script>
 {% else %}
-    {% include 'common_history_create_js.html' %}
+<script src="{% static 'js/history_add_create.js' %}"></script>
 {% endif %}
 
 {% endblock %}

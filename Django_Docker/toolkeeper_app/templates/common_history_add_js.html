@@ -24,15 +24,16 @@
     const model_check = document.getElementById("model_check").innerText;
 
     const threshold_conf = Number(document.getElementById("threshold_conf").innerText);
+    const warning_conf = Number(document.getElementById("warning_conf").innerText);
     
     const preview = document.getElementById("preview");
     const check_ctrl = document.getElementById("check_ctrl");
     const all_check = document.getElementById("all_check");
     const all_check_out = document.getElementById("all_check_out");
-    
 
     const confirmation = document.getElementById("confirmation");
 
+    
     // 描画状態を管理するフラグと座標を初期化
     let isDrawing = false;
     let startX, startY, width, height;
@@ -43,11 +44,8 @@
     canvas.width = x_fix;
     canvas.height = y_fix;
 
-    // let x_fit = canvas.width / x_fix;
-    // let y_fit = canvas.height / y_fix;
-
-    // let x_min_fit = box_x_min;
-    // let y_min_fit = box_y_min;
+    let x_fit = canvas.width / x_fix;
+    let y_fit = canvas.height / y_fix;
 
 
     // バウンディングボックスの座標を初期化
@@ -72,7 +70,7 @@
 
             if (box_li[i][4] > threshold_conf) {
                 document.getElementById(`id_form-${i}-result_class`).value = 2;
-            } else if (box_li[i][4] > 0) {
+            } else if (box_li[i][4] > warning_conf) {
                 document.getElementById(`id_form-${i}-result_class`).value = 1;
             }
             check[i].disabled = false;
@@ -83,7 +81,7 @@
             document.getElementById(`id_form-${i}-result_class`).value = 0;
         }
     }
-    console.log(item_name);
+    // console.log(item_name);
 
 
     function auto_set_box(i) {
@@ -102,82 +100,42 @@
 
     function switch_scroll() {
         if (window.innerWidth >= 768) {
-            var max_h = canvas.height - check_ctrl.getBoundingClientRect().height - 16;
+            var max_h = canvas.height - check_ctrl.getBoundingClientRect().height - 16;;
             switch_width.style.width = "auto";
             check_list.style.marginTop = "auto";
-            // for (let i = 0; i < set.length; i++) {
-            //     document.getElementById(`ctrl_${i}`).style.margin = "auto";
-            // }
-        }
-        else {
+        } else {
             var max_h = 200;
-            switch_width.style.width = 210 * set.length;
-            check_list.style.marginTop = "30px";
-            // for (let i = 0; i < set.length; i++) {
-            //     document.getElementById(`ctrl_${i}`).style.margin = "auto";
-            // }
+            switch_width.style.width = 200 * set.length;
+            check_list.style.marginTop = "20px";
         }
         check_list.style.height = max_h;
-
-        // for (let i = 0; i < set.length; i++) {
-        //     console.log(window.innerWidth);
-        //     console.log(document.getElementById(`ctrl_${i}`).style.width);
-        // }
     };
 
     function auto_fit() {
         if (canvas.width != preview.getBoundingClientRect().width.toFixed()) {
-            console.log("tttt");
-            
-            // console.log(`preview.width :  ${preview.getBoundingClientRect().width} px`);
-            // console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
-            // console.log(`canvas.width  :  ${canvas.width} px`);
-            // console.log(`canvas.height : ${canvas.height} px`);
-            // console.log(`x_min_fit: ${x_min_fit.toFixed()} px`);
-            // console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
-            // console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
-            // console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
-            // console.log(`width         :  ${(preview.getBoundingClientRect().width / canvas.width)} px`);
-            // console.log(`height        : ${(preview.getBoundingClientRect().height / canvas.height)} px`);
+
+            x_fit = preview.getBoundingClientRect().width.toFixed() / canvas.width;
+            y_fit = preview.getBoundingClientRect().height.toFixed() / canvas.height;
 
             for (let i = 0; i < set.length; i++) {
-                // console.log("b "+box_li[i]);
-                // box_li[i][0] = ((box_li[i][0]) * (preview.getBoundingClientRect().width / canvas.width))-50;
-                // box_li[i][1] = ((box_li[i][1]) * (preview.getBoundingClientRect().height / canvas.height))-50;
-                // box_li[i][2] = ((box_li[i][2] + box_x_min) * (preview.getBoundingClientRect().width / canvas.width))-50;
-                // box_li[i][3] = ((box_li[i][3] + box_y_min) * (preview.getBoundingClientRect().height / canvas.height))-50;
-                box_li[i][0] *= (preview.getBoundingClientRect().width / canvas.width);
-                box_li[i][1] *= (preview.getBoundingClientRect().height / canvas.height);
-                box_li[i][2] *= (preview.getBoundingClientRect().width / canvas.width);
-                box_li[i][3] *= (preview.getBoundingClientRect().height / canvas.height);
-                // console.log("a "+box_li[i]);
+                box_li[i][0] *= x_fit;
+                box_li[i][1] *= y_fit;
+                box_li[i][2] *= x_fit;
+                box_li[i][3] *= y_fit;
             }
-
+            
             canvas.width = preview.getBoundingClientRect().width.toFixed();
             canvas.height = canvas.width * (y_fix / x_fix);
 
-            x_fit = canvas.width / x_fix;
-            y_fit = canvas.height / y_fix;
-
-            // x_min_fit = box_x_min * x_fit;
-            // y_min_fit = box_y_min * y_fit;
-            
-            // check_list.style = `overflow-y: scroll; height: ${canvas.height - all_check.getBoundingClientRect().height - 16};`;
-            // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, x_min_fit, y_min_fit, canvas.width, canvas.height,);
             ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
         }
 
         switch_scroll();
 
-        console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
-        console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
-        console.log(`canvas.width:  ${canvas.width} px`);
-        console.log(`canvas.height: ${canvas.height} px`);
-        // console.log(`x_min_fit: ${x_min_fit.toFixed()} px`);
-        // console.log(`y_min_fit: ${y_min_fit.toFixed()} px`);
-        // console.log(`x_max_fit: ${(x_min_fit + canvas.width).toFixed()} px`);
-        // console.log(`y_max_fit: ${(y_min_fit + canvas.height).toFixed()} px`);
-        
+        // console.log(`preview.width:  ${preview.getBoundingClientRect().width} px`);
+        // console.log(`preview.height: ${preview.getBoundingClientRect().height} px`);
+        // console.log(`canvas.width:  ${canvas.width} px`);
+        // console.log(`canvas.height: ${canvas.height} px`);
     };
 
 
@@ -194,7 +152,7 @@
                 }
                 var tag = document.createElement('span');
                 if (box_li[i][4] > threshold_conf) tag.setAttribute('style', 'color: blue;');
-                else if (box_li[i][4] > 0) tag.setAttribute('style', 'color: orange;');
+                else if (box_li[i][4] > warning_conf) tag.setAttribute('style', 'color: orange;');
                 else tag.setAttribute('style', 'color: red;');
                 tag.innerText = `${item_name[i]}`;
 
@@ -218,28 +176,22 @@
 
     
     // 選択済みのバウンディングボックスを描画
-    function draw_box(order) {
+    function draw_box(order=-1) {
 
         // キャンバスをクリアして画像を再描画
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
-        // ctx.drawImage(image, box_x_min, box_y_min, x_fix, y_fix, 0, 0, canvas.width, canvas.height,);
         
         for (let i = 0; i < set.length; i++) {
             if (i == order) ctx.lineWidth = 5;
             else ctx.lineWidth = 1;
             
             if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
-            else if (box_li[i][4] > 0) ctx.strokeStyle = "orange"; // オレンジ色の線で描画
+            else if (box_li[i][4] > warning_conf) ctx.strokeStyle = "orange"; // オレンジ色の線で描画
             else ctx.strokeStyle = "red"; // 赤い線で描画
 
             if (checked[i].innerText == "チェック済み") {
-                 // 緑色の線で描画
-                ctx.strokeStyle = `rgb(
-                    0,
-                    220,
-                    50
-                )`;
+                ctx.strokeStyle = `rgb(0, 220, 50)`; // 緑色の線で描画
                 if (order == -2) ctx.lineWidth = 3;
             }
 
@@ -256,38 +208,164 @@
     // 画像の読み込みが完了したらキャンバスに描画
     image.onload = () => {
 
-        // const x_fix = box_x_max - box_x_min;
-        // const y_fix = box_y_max - box_y_min;
-
         canvas.width = image.width;
         canvas.height = image.height;
 
-        let x_fit = canvas.width / x_fix;
-        let y_fit = canvas.height / y_fix;
-
-        // let x_min_fit = box_x_min * x_fit;
-        // let y_min_fit = box_y_min * y_fit;
-
-        // check_list.style = `overflow-y: scroll; height: ${canvas.height - all_check.getBoundingClientRect().height - 16};`;
+        x_fit = canvas.width / x_fix;
+        y_fit = canvas.height / y_fix;
 
         for (let i = 0; i < set.length; i++) {
             if (item_box >= 2 && document.getElementById(`item_${i+1}_x_min`).innerText != "None") {
-                console.log(box_li[i]);
-
                 box_li[i][0] *= x_fit;
                 box_li[i][1] *= y_fit;
                 box_li[i][2] *= x_fit;
                 box_li[i][3] *= y_fit;
             }
+            console.log(`box_li[${i}]: [${box_li[i][0].toFixed(2)}, ${box_li[i][1].toFixed(2)}, ${box_li[i][2].toFixed(2)}, ${box_li[i][3].toFixed(2)}, ${box_li[i][4].toFixed(2)}]`);
         }
-        switch_scroll();
+        auto_fit();
 
         draw_box(-1);
     };
 
+    
+    function submit_check(fin) {
+        if (fin) {
+            submit.disabled = false;
+            draw_box(-2);
+        } else {
+            submit.disabled = true;
+        }
+    }
+
+    function finish_check(index=-1) {
+        finish.checked = true;
+        for (let i = 0; i < set.length; i++) {
+            if (i != index && !check[i].checked) {
+                finish.checked = false;
+            }
+        }
+        submit_check(finish.checked);
+    }
+
+
+    const main = document.querySelector("main");
+
+    let mouseEvent = true;
+    let main_x, main_y;
+    let seeked_x, seeked_y;
+
+    function mobile_move (touchObject) {
+
+        // 要素の位置を取得
+        const rect = canvas.getBoundingClientRect();
+        const rect_main = main.getBoundingClientRect();
+
+        // 要素内におけるタッチ位置を計算
+        const x = touchObject.pageX - rect.left + rect_main.left;
+        const y = touchObject.pageY - rect.top + rect_main.top;
+
+        return [x, y];
+    };
+    
+    // スクロールを禁止にする関数
+    function disableScroll(event) { event.preventDefault(); };
+
+    canvas.addEventListener('touchstart', (e) => {
+        auto_fit();
+
+        mouseEvent = false;
+        isDrawing = true;
+
+        const touchObject = e.touches[0];
+
+        const coordinate = mobile_move(touchObject);
+
+        startX = coordinate[0];
+        startY = coordinate[1];
+
+        seeked_x = 0.5;
+        seeked_y = 0.5;
+        
+        canvas.addEventListener('touchmove', disableScroll, { passive: false }); // スクロール禁止
+    });
+
+    function mobile_end() {
+        mouseEvent = true;
+        isDrawing = false;
+
+        canvas.removeEventListener('touchmove', disableScroll, { passive: false }); // スクロール解除
+
+        // 描画した矩形の座標を表示
+        x_min = startX;
+        x_max = startX + width;
+        if (width < 0) {
+            x_min += width;
+            x_max -= width;
+        }
+
+        y_min = startY;
+        y_max = startY + height;
+        if (height < 0) {
+            y_min += height;
+            y_max -= height;
+        }
+
+        for (let i = 0; i < set.length; i++) {
+            if (set[i].checked) {
+                box_li[i] = [x_min, y_min, x_max, y_max, 1];
+
+                document.getElementById(`id_form-${i}-result_class`).value = 1;
+                auto_set_box(i);
+
+                check[i].disabled = false;
+                check[i].checked = true;
+                box_in[i].disabled = false;
+                box_in[i].checked = true;
+                checked[i].innerText = "チェック済み";
+
+                draw_box(i);
+            }
+            console.log(box_li[i]);
+        }
+        finish_check();
+    };
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (!isDrawing) return;
+
+        const touchObject = e.changedTouches[0];
+        const coordinate = mobile_move(touchObject);
+        
+        width = coordinate[0] - startX;
+        height = coordinate[1] - startY;
+
+        draw_box(-1); // バウンディングボックスの描画
+
+        // 矩形を青い線で描画
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(startX, startY, width, height);
+
+        seeked_x = parseFloat((x/canvas_fix.width).toFixed(6));
+        seeked_y = parseFloat((y/canvas_fix.height).toFixed(6));
+
+        if (seeked_x <= 0 || seeked_x >= 1 || seeked_y <= 0 || seeked_y >= 1) mobile_end();
+    });
+    
+    canvas.addEventListener('touchend', () => {
+        mobile_end()
+    });
+
+    canvas.addEventListener("touchcancel", () => {
+        mobile_end()
+    });
+
+
 
     // マウスダウンイベントのリスナーを追加
     canvas.addEventListener("mousedown", (e) => {
+        if (!mouseEvent) return;
         auto_fit();
         isDrawing = true;
         startX = e.clientX - canvas.getBoundingClientRect().left;
@@ -308,32 +386,14 @@
 
         // 矩形を青い線で描画
         ctx.strokeStyle = "blue";
-        ctx.lineWidth = 7;
+        ctx.lineWidth = 5;
         ctx.strokeRect(startX, startY, width, height);
     });
-
-    function submit_check(fin) {
-        if (fin) {
-            submit.disabled = false;
-            draw_box(-2);
-        } else {
-            submit.disabled = true;
-        }
-    }
-
-    function finish_check(index=-1) {
-        finish.checked = true;
-        for (let i = 0; i < set.length; i++) {
-            if (i != index && !check[i].checked) {
-                finish.checked = false;
-            }
-        }
-        submit_check(finish.checked);
-    }
 
     // マウスアップイベントのリスナーを追加
     canvas.addEventListener("mouseup", () => {
         isDrawing = false;
+        if (!mouseEvent) return;
 
         // 描画した矩形の座標を表示
         x_min = startX;
@@ -398,11 +458,18 @@
         } else {
             checked[i].innerText = "チェック済み";
 
-            box_li[i][4] = 1;
-            document.getElementById(`id_form-${i}-result_class`).value = 1;
+            // box_li[i][4] = 1;
+            // document.getElementById(`id_form-${i}-result_class`).value = 1;
 
             auto_set_box(i);
             finish_check(i);
+        
+            console.log(`${i}. ${item_name[i]}`);
+            console.log(` x_min: ${box_li[i][0].toFixed(4)} px`);
+            console.log(` y_min: ${box_li[i][1].toFixed(4)} px`);
+            console.log(` x_max: ${box_li[i][2].toFixed(4)} px`);
+            console.log(` y_max: ${box_li[i][3].toFixed(4)} px`);
+            console.log(` conf : ${box_li[i][4].toFixed(4) * 100} %`);
         }
         out_box(i);
     };
@@ -429,8 +496,10 @@
     };
 
     all_check.onclick = () => {
+        var check_conf = threshold_conf;
+        if (model_check == "False") check_conf = 0;
         for (let i = 0; i < set.length; i++) {
-            if (box_li[i][4] > 0) {
+            if (box_li[i][4] > check_conf) {
                 auto_set_box(i);
                 check[i].checked = true;
                 checked[i].innerText = "チェック済み";

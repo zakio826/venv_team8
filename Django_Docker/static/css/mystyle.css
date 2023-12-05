@@ -137,7 +137,33 @@ footer {
     background-color: var(--my-green-active) !important;
 }
 
+.my-tab-bar {
+    height: 4.0rem;
+}
+.my-tab-bar .col {
+    padding-top: 1.0rem;
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+}
+.my-tab-bar .col:hover, .my-tab-bar .col:active {
+    padding-top: 0;
+}
 
+.my-tab-link {
+    display: block;
+    text-decoration: none;
+    color: #fff;
+    border-top-right-radius: 15px;
+    border-top-left-radius: 15px;
+    height: 3.0rem;
+    transition: 
+        height 0.45s cubic-bezier(0.65, 0, 0.076, 1),
+        padding-bottom 0.45s cubic-bezier(0.65, 0, 0.076, 1),
+        background-color 0s;
+}
+.my-tab-link:hover, .my-tab-link:active {
+    height: 4.0rem;
+    padding-bottom: 1.0rem;
+}
 
 
 

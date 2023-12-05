@@ -56,7 +56,7 @@ class InquiryView(generic.FormView):
         logger.info('Inquiry sent by {}'.format(form.cleaned_data['name']))
         return super().form_valid(form)
 
-from django.db.models import Max
+
 class AssetListView(LoginRequiredMixin, generic.ListView):
     model = Asset
     template_name = 'asset_list.html'
@@ -64,16 +64,19 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
     def get_queryset(self):
         group = self.request.GET.get('group')  # フォームから選択されたグループ
-
+        
         belong = GroupMember.objects.prefetch_related('group').filter(user=self.request.user)
         images = Image.objects.prefetch_related('group').prefetch_related('asset').filter(front=True)
+
+        assets = Asset.objects.filter(models.Q(group__in=Group.objects.filter(user=self.request.user))|models.Q(user=self.request.user))
+        images = images.filter(asset__in=assets)
         
         if group and group != 'all':  # 特定のグループが選択された場合
             images = images.filter(group=group)
         elif len(belong) >= 1:
             user_groups = [group.group for group in belong]
             images = images.filter(group__in=user_groups)
-
+        
         return images
 
     def get_context_data(self, **kwargs):
@@ -84,12 +87,14 @@ class AssetListView(LoginRequiredMixin, generic.ListView):
 
         # フォームをユーザー情報とともにインスタンス化
         context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
-
+        
         # 最新の履歴を取得
+        assets = Asset.objects.filter(models.Q(group__in=Group.objects.filter(user=self.request.user))|models.Q(user=self.request.user))
+        
         # ユーザーが所属するグループの最新の履歴を取得
         user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
-        latest_history_ids = Result.objects.filter(history__group__in=user_groups).values('history__asset').annotate(latest=Max('history__checked_at')).values_list('latest', flat=True)
-        latest_result_class_zero_assets = Asset.objects.filter(history__checked_at__in=latest_history_ids, history__result__result_class=0).distinct()
+        latest_history_ids = Result.objects.filter(history__group__in=user_groups).values('history__asset').annotate(latest=models.Max('history__checked_at')).values_list('latest', flat=True)
+        latest_result_class_zero_assets = assets.filter(history__checked_at__in=latest_history_ids, history__result__result_class=0).distinct()
 
         context['latest_result_class_zero_assets'] = latest_result_class_zero_assets
 
@@ -234,6 +239,7 @@ class AssetCreateView(LoginRequiredMixin, generic.CreateView):
     # フォームが有効な場合の処理
     def form_valid(self, form):
         asset = form.save(commit=False)
+        asset.user = self.request.user
         asset.save()
 
         # 成功時のリダイレクトURLを設定
@@ -468,6 +474,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     fields = ()
     success_url = reverse_lazy('toolkeeper_app:asset_list')
+    threshold_conf = 0.79
+    warning_conf = 0.25
 
     # 物体検出を行うヘルパーメソッド
     def model_check(self, asset, image):
@@ -477,7 +485,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         model = YOLO(os.path.join(settings.MEDIA_ROOT, asset.learning_model.name))
 
         # 物体検出を実行し、結果を解析
-        results1 = model.predict(save=True, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=0.25)
+        results1 = model.predict(save=False, source=os.path.join(settings.MEDIA_ROOT, image.image.name), conf=self.warning_conf)
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
@@ -532,21 +540,27 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
 
             results = Result.objects.filter(history=History.objects.filter(asset=history.asset).order_by('checked_at')[0])
 
-            for i, r in enumerate(results):
-                result_history = historys.get(id=r.history.id)
-                if not i:
-                    item_x_fix = (r.box_x_max - r.box_x_min) / result_history.image.image.width
-                    item_y_fix = (r.box_y_max - r.box_y_min) / result_history.image.image.height
-                    item_x_min = r.box_x_min
-                    item_y_min = r.box_y_min
-                else:
+            item_x_fix = (results[0].box_x_max - results[0].box_x_min) / result_history.image.image.width
+            item_y_fix = (results[0].box_y_max - results[0].box_y_min) / result_history.image.image.height
+
+            for i, item in enumerate(items):
+                print(item)
+                if item.id == results[i+1].item.id:
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
                     self.box.append({
-                        "box_x_min": ((r.box_x_min - item_x_min) * item_x_fit),
-                        "box_y_min": ((r.box_y_min - item_y_min) * item_y_fit),
-                        "box_x_max": ((r.box_x_max - item_x_min) * item_x_fit),
-                        "box_y_max": ((r.box_y_max - item_y_min) * item_y_fit),
+                        "box_x_min": (results[i+1].box_x_min * item_x_fit),
+                        "box_y_min": (results[i+1].box_y_min * item_y_fit),
+                        "box_x_max": (results[i+1].box_x_max * item_x_fit),
+                        "box_y_max": (results[i+1].box_y_max * item_y_fit),
+                        "conf": self.warning_conf,
+                    })
+                else:
+                    self.box.append({
+                        "box_x_min": 0,
+                        "box_y_min": 0,
+                        "box_x_max": 0,
+                        "box_y_max": 0,
                         "conf": 0,
                     })
             
@@ -563,7 +577,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "items": items.order_by('-id'),
             "results": self.box,
             # "model_check": model_checked,
-            "threshold_conf": 0.79,
+            "threshold_conf": self.threshold_conf,
+            "warning_conf": self.warning_conf,
             "result_add_form": result_add_form(
                 initial = [
                     {
@@ -605,13 +620,6 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                 result.save()
 
                 if int(form.data[f'form-{i}-result_class']):
-                    # print()
-                    # print()
-                    # print(type(float(form.data[f'form-{i}-box_x_min'])))
-                    # # print(type(form.data[f'form-{i}-box_x_min']))
-                    # print(type(outer_edged.box_x_min))
-                    # print()
-                    # print()
                     labelList.append(chengeLabel(
                             w_size=history.image.image.width,
                             h_size=history.image.image.height,
@@ -638,38 +646,38 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             for i in range(len(labelList)):
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
 
-            creds = ServiceAccountCredentials.from_json_keyfile_name(
-                # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
-                settings.SERVICE_ACCOUNT_KEY_ROOT,
-                settings.GOOGLE_DRIVE_API_SCOPES
-            )
-            drive_service = build('drive', 'v3', credentials=creds)
+            # creds = ServiceAccountCredentials.from_json_keyfile_name(
+            #     # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+            #     settings.SERVICE_ACCOUNT_KEY_ROOT,
+            #     settings.GOOGLE_DRIVE_API_SCOPES
+            # )
+            # drive_service = build('drive', 'v3', credentials=creds)
 
-            asset = Asset.objects.get(id=history.asset.id)
+            # asset = Asset.objects.get(id=history.asset.id)
 
-            if not asset.drive_folder_id:
-                folder_metadata = {
-                    'name': str(asset.asset_name),
-                    'mimeType': 'application/vnd.google-apps.folder',
-                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
-                }
+            # if not asset.drive_folder_id:
+            #     folder_metadata = {
+            #         'name': str(asset.asset_name),
+            #         'mimeType': 'application/vnd.google-apps.folder',
+            #         'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
+            #     }
 
-                folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-                asset.drive_folder_id = folder['id']
-                asset.save()
+            #     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+            #     asset.drive_folder_id = folder['id']
+            #     asset.save()
 
-            for file_path in [history.image.movie.path, history.coordinate.path]:
-                file_metadata = {
-                    'name': os.path.basename(file_path),
-                    'parents': [str(asset.drive_folder_id)],
-                }
-                media = MediaFileUpload(file_path, resumable=True)
+            # for file_path in [history.image.movie.path, history.coordinate.path]:
+            #     file_metadata = {
+            #         'name': os.path.basename(file_path),
+            #         'parents': [str(asset.drive_folder_id)],
+            #     }
+            #     media = MediaFileUpload(file_path, resumable=True)
 
-                uploaded_file = drive_service.files().create(
-                    body=file_metadata,
-                    media_body=media,
-                    fields='id'
-                ).execute()
+            #     uploaded_file = drive_service.files().create(
+            #         body=file_metadata,
+            #         media_body=media,
+            #         fields='id'
+            #     ).execute()
 
             messages.success(self.request, '履歴を追加しました.')
             return redirect(self.success_url)
@@ -688,12 +696,15 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
     model = History
     template_name = 'history_list.html'
     context_object_name = 'history_list'
-    paginate_by = 15
+    paginate_by = 9
 
     def get_queryset(self):
         user = self.request.user
         user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
         history_list = History.objects.filter(group__in=user_groups)
+        
+        assets = Asset.objects.filter(models.Q(group__in=Group.objects.filter(user=self.request.user))|models.Q(user=self.request.user))
+        history_list = history_list.filter(asset__in=assets)
 
         # search_query = self.request.GET.get('search_query')
         checked_at = self.request.GET.get('checked_at')
@@ -752,7 +763,84 @@ class HistoryListView(LoginRequiredMixin, generic.ListView):
         
         return context
 
- 
+    
+class HistoryListdangerView(LoginRequiredMixin, generic.ListView):
+    model = History
+    template_name = 'history_list2.html'
+    context_object_name = 'history_list'
+    paginate_by = 9
+
+    def get_queryset(self):
+        user = self.request.user
+        user_groups = GroupMember.objects.filter(user=user).values_list('group', flat=True)
+        all_history_list = History.objects.filter(group__in=user_groups)
+
+        checked_at = self.request.GET.get('checked_at')
+            
+        if checked_at:
+            all_history_list = all_history_list.filter(checked_at__date=checked_at)
+        
+        selected_group = self.request.GET.get('group')
+        if selected_group:
+            all_history_list = all_history_list.filter(group=selected_group)
+
+        selected_user = self.request.GET.get('user')
+        if selected_user:
+            all_history_list = all_history_list.filter(user=selected_user)
+
+        selected_asset = self.request.GET.get('asset')
+        if selected_asset:
+            all_history_list = all_history_list.filter(asset=selected_asset)
+
+        # ソート条件を取得
+        sort_order = self.request.GET.get('sort_order','desc')
+        if sort_order == 'asc':
+            all_history_list = all_history_list.order_by('checked_at')
+        elif sort_order == 'desc':
+            all_history_list = all_history_list.order_by('-checked_at')
+
+        # 「無し（0）」の result_class を持つ履歴とそれ以外の履歴を分ける
+        zero_result_class_history = all_history_list.filter(result__result_class=0).distinct()
+
+         # 同じ管理項目の最新の履歴が「普通の履歴」だった場合、その管理項目の異常な履歴を削除
+        for asset in Asset.objects.all():
+            # 最新の「普通の履歴」を取得
+            latest_normal_history = all_history_list.filter(
+                asset=asset,
+                result__result_class__gt=0
+            ).order_by('-checked_at').first()
+
+            # 最新の「普通の履歴」が存在する場合
+            if latest_normal_history:
+                # その日時よりも古い「異常な履歴」を削除
+                zero_result_class_history = zero_result_class_history.exclude(
+                    asset=asset,
+                    checked_at__lt=latest_normal_history.checked_at
+                )
+
+        other_result_class_history = all_history_list.exclude(result__result_class=0)
+
+        return zero_result_class_history, other_result_class_history
+    
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_groups = GroupMember.objects.filter(user=self.request.user).values_list('group', flat=True)
+        context['sort_form'] = SortForm(data=self.request.GET)
+        
+        context['search_form'] = SearchForm(data=self.request.GET)
+        context['group_filter_form'] = GroupFilterForm(user=self.request.user, data=self.request.GET)
+        context['user_filter_form'] = UserFilterForm(user=self.request.user, data=self.request.GET)
+        context['asset_filter_form'] = AssetFilterForm(user=self.request.user, data=self.request.GET)
+
+        # コンテキストに「無し（0）」の result_class を持つ履歴とそれ以外の履歴を追加
+        context['zero_result_class_history'] = context['history_list'][0]
+        context['other_result_class_history'] = context['history_list'][1]
+
+        return context
+
+
+
 class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
     model = History
     template_name = 'history_detail.html'
@@ -775,7 +863,6 @@ class HistoryDetailView(LoginRequiredMixin, generic.DetailView):
 
         context['abnormal_history_list'] = abnormal_history_list
         return context
-
 
 
 
