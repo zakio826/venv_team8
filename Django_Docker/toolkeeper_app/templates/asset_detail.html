@@ -53,7 +53,10 @@
 
         <hr>
 
-        <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧に戻る</a>    
+        <a class="btn btn-3 float-right" href="{% url 'toolkeeper_app:asset_list' %}">管理項目一覧に戻る</a>
+        {% if asset.group.user == request.user %}
+            <a class="btn btn-danger float-right mx-2" href="{% url 'toolkeeper_app:asset_delete' asset_id%}">管理項目削除</a>
+        {% endif %}    
     </div>
 </section>
 {% endblock %}

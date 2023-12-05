@@ -9,6 +9,7 @@ urlpatterns = [
     path('inquiry/', views.InquiryView.as_view(), name="inquiry"),
     path('asset-list/', views.AssetListView.as_view(), name="asset_list"),
     path('asset-detail/<int:id>/', views.AssetDetailView.as_view(), name="asset_detail"),
+    path('asset/<int:asset_id>/delete/', views.AssetDeleteConfirmView.as_view(), name='asset_delete'),
 
     path('asset-create/', views.AssetCreateView.as_view(), name="asset_create"),
     path('asset-create/image-add/<int:id>/', views.ImageAddView.as_view(), name="image_add"),

@@ -5,6 +5,8 @@ from django.shortcuts import redirect
 from django.conf import settings
 
 from django.http import HttpResponse, QueryDict, JsonResponse
+from django.urls import reverse
+from django.http import HttpResponseRedirect
 import logging
 
 from django.urls import reverse_lazy
@@ -197,6 +199,24 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         }
         context.update(extra)
         return context
+    
+class AssetDeleteConfirmView(LoginRequiredMixin, generic.DeleteView):
+    def get(self, request, asset_id):
+        asset = get_object_or_404(Asset, id=asset_id)
+        return render(request, 'asset_delete.html', {'asset': asset})
+
+    def post(self, request, asset_id):
+        asset = get_object_or_404(Asset, id=asset_id)
+
+        if 'confirm_delete' in request.POST:
+            asset.delete()
+            messages.success(request, '管理項目が削除されました。')
+            return HttpResponseRedirect(reverse('toolkeeper_app:asset_list'))
+        elif 'cancel_delete' in request.POST:
+            return HttpResponseRedirect(reverse('toolkeeper_app:asset_detail', kwargs={'id': asset_id}))
+
+        return render(request, 'asset_delete.html', {'asset': asset})
+
 
 
 class AssetCreateView(LoginRequiredMixin, generic.CreateView):
