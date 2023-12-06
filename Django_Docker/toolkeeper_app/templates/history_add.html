@@ -37,8 +37,8 @@
                         <span id="item_{{ forloop.counter0 }}_conf" style="display: none;">{{ result.conf }}</span>
                     {% endif %}
                 {% endfor %}
-                <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
-                <span id="warning_conf" style="display: none;">{{ warning_conf }}</span>
+                <!-- <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span> -->
+                <!-- <span id="warning_conf" style="display: none;">{{ warning_conf }}</span> -->
             </div>
         </div>
 
@@ -68,7 +68,7 @@
                 </label>
 
                 <div class="col" id="range_ctrl">
-                    <input class="ms-2 ms-md-auto" type="range" id="all_check" min="0" max="100" step="10">
+                    <input class="ms-2 ms-md-auto" type="range" id="all_check" min="0" max="10" step="1">
 
                     <div class="row row-cols-1 row-cols-md-auto g-0 justify-content-between w-100 ms-3 ms-md-auto" id="per_list">
                         <span class="col h-auto px-0 position-relative" type="button" name="range_per">

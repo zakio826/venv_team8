@@ -51,22 +51,25 @@ const model_check = data.model_check;
 for (let i = 0; i < set.length; i++) {
 
     // アイテムの座標がある場所
-    if (box_li[i][4] > 0) {
+    if (box_li[i][4] > 0 || !model_check) {
 
-        document.getElementById(`id_form-${i}-result_class`).value = 0;
+        // if (!model_check) box_li[i][4] = threshold_conf;
 
-        if (!model_check) box_li[i][4] = threshold_conf;
-
-        if (box_li[i][4] > threshold_conf) {
+        if (box_li[i][4] >= data.threshold_conf) {
+            document.getElementById(`id_form-${i}-result_class`).value = 3;
+        } else if (box_li[i][4] >= data.warning_conf) {
             document.getElementById(`id_form-${i}-result_class`).value = 2;
-        } else {
+        } else if (box_li[i][4] > 0) {
             document.getElementById(`id_form-${i}-result_class`).value = 1;
+        } else {
+            document.getElementById(`id_form-${i}-result_class`).value = 0;
         }
 
         check[i].disabled = false;
         box_in[i].disabled = false;
         box_in[i].checked = true;
 
+        all_check.value = data.threshold_conf * 10;
     } else {
         // box_li[i] = [0,0,0,0,0];
         document.getElementById(`id_form-${i}-result_class`).value = 0;
@@ -105,8 +108,9 @@ function set_confirmation() {
                 confirmation.appendChild(div);
             }
             var tag = document.createElement('span');
-            if (box_li[i][4] > threshold_conf) tag.setAttribute('style', 'color: blue;');
-            else if (box_li[i][4] > 0) tag.setAttribute('style', 'color: orange;');
+            if (box_li[i][4] >= data.threshold_conf) tag.setAttribute('style', 'color: blue;');
+            else if (box_li[i][4] >= data.threshold_conf) tag.setAttribute('style', 'color: orange;');
+            else if (box_li[i][4] > 0) tag.setAttribute('style', 'color: orangered;');
             else tag.setAttribute('style', 'color: red;');
             tag.innerText = `${item_name[i]}`;
 
@@ -142,8 +146,9 @@ function draw_box(order=-1) {
         if (i == order) ctx.lineWidth = 5;
         else ctx.lineWidth = 1;
         
-        if (box_li[i][4] > threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
-        else if (box_li[i][4] > 0) ctx.strokeStyle = "orange"; // オレンジ色の線で描画
+        if (box_li[i][4] >= data.threshold_conf) ctx.strokeStyle = "blue"; // 青い線で描画
+        else if (box_li[i][4] >= data.threshold_conf) ctx.strokeStyle = "orange"; // 黄色の線で描画
+        else if (box_li[i][4] > 0) ctx.strokeStyle = "orangered"; // オレンジ色の線で描画
         else ctx.strokeStyle = "red"; // 赤い線で描画
 
         if (checked[i].innerText == "チェック済み") {
@@ -234,7 +239,7 @@ function auto_fit() {
         range_ctrl.style.top = slide_down.getBoundingClientRect().height + 6;
         range_ctrl.style.paddingBottom = slide_up.getBoundingClientRect().height * 2 + 16;
 
-        all_check.style.width = null;
+        all_check.style.width = range_ctrl.getBoundingClientRect().height - (slide_up.getBoundingClientRect().height * 2) - 16;
         all_check.style.transform = "rotate(0.25turn)";
         all_check.style.transformOrigin = "0% 50%";
 
@@ -506,34 +511,60 @@ function del_box(i) {
     out_box(i);
 };
 
+
+
+function all_check_slider() {
+    for (let i = 0; i < set.length; i++) {
+        if (box_li[i][4]*10 >= all_check.value) {
+            auto_set_box(i);
+            check[i].checked = true;
+            checked[i].innerText = "チェック済み";
+        } else {
+            document.getElementById(`id_form-${i}-box_x_min`).value = null;
+            document.getElementById(`id_form-${i}-box_y_min`).value = null;
+            document.getElementById(`id_form-${i}-box_x_max`).value = null;
+            document.getElementById(`id_form-${i}-box_y_max`).value = null;
+            document.getElementById(`id_form-${i}-result_class`).value = 0;
+            check[i].checked = false;
+            checked[i].innerText = "チェック";
+        }
+    }
+    draw_box(-2);
+    finish_check();
+};
+
 all_check.onchange = () => {
-    console.log(`all_check: ${all_check.value}`);
+    console.log(`all_check: ${all_check.value} (oncange)`);
+    all_check_slider();
     // var check_conf = threshold_conf;
     // if (!model_check) check_conf = 0;
+
     // for (let i = 0; i < set.length; i++) {
-    //     if (box_li[i][4] > check_conf) {
+    //     if (box_li[i][4] >= all_check.value) {
     //         auto_set_box(i);
     //         check[i].checked = true;
     //         checked[i].innerText = "チェック済み";
     //     }
     // }
-    draw_box(-2);
-    finish_check();
+    // draw_box(-2);
+    // finish_check();
 };
 
 slide_down.onclick = () => {
-    all_check.value = Number(all_check.value) - 10;
+    all_check.value = Number(all_check.value)--;
     console.log(`all_check: ${all_check.value} (slide_down)`);
+    all_check_slider();
 };
 slide_up.onclick = () => {
-    all_check.value = Number(all_check.value) + 10;
+    all_check.value = Number(all_check.value)++;
     console.log(`all_check: ${all_check.value} (slide_up)`);
+    all_check_slider();
 };
 
 function slide_per(n) {
-    n *= 10;
     all_check.value = n;
-    console.log(`all_check: ${all_check.value} (range_per: ${n}%)`);
+    console.log(`all_check: ${all_check.value} (range_per: ${n*10}%)`);
+    all_check_slider();
 };
 for (let num = 0; num < range_per.length; num++) {
     range_per[num].onclick = () => {

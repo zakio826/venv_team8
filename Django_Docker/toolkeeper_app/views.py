@@ -167,12 +167,14 @@ class AssetDetailView(LoginRequiredMixin, generic.DetailView):
         context = super().get_context_data(**kwargs)
         # Assetモデルのインスタンスを取得し、関連するデータを取得
         self.asset = get_object_or_404(Asset, id=self.object.id)
-        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('updated_at')
+        self.historys = History.objects.prefetch_related('image').filter(asset=self.asset).order_by('-updated_at')
         self.pt_file_name = os.path.splitext(self.historys[0].image.movie.name[6:])[0] + '.pt'
-        print(self.pt_file_name)
+        print(f"learning/{self.pt_file_name}")
+        print(self.asset.learning_model.name)
         
         # Google Driveからファイルをダウンロードするためのセットアップ
-        if self.asset.drive_folder_id:
+        if self.asset.drive_folder_id and os.path.join('learning/', self.pt_file_name) != self.asset.learning_model.name:
+            print("true")
             service_account_key_path = settings.SERVICE_ACCOUNT_KEY_ROOT
             creds = service_account.Credentials.from_service_account_file(
                 service_account_key_path,
@@ -475,8 +477,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     fields = ()
     success_url = reverse_lazy('toolkeeper_app:asset_list')
-    threshold_conf = 0.79
-    warning_conf = 0.25
+    threshold_conf = 0.80
+    warning_conf = 0.40
 
     # 物体検出を行うヘルパーメソッド
     def model_check(self, asset, image):
@@ -489,7 +491,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
         results1 = model.predict(
             save = False,
             source = os.path.join(settings.MEDIA_ROOT, image.image.name),
-            conf = self.warning_conf,
+            conf = 0.10,
             classes = [x+1 for x in range(len(self.data.item))]
         )
         classNums = results1[0].boxes.cls.__array__().tolist()
@@ -619,6 +621,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             ],
             "item": [x.item_name for x in items],
             "box": [],
+            "threshold_conf": self.threshold_conf,
+            "warning_conf": self.warning_conf,
         }
 
         if history.asset.drive_folder_id:
@@ -641,7 +645,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
                         results[i+1].box_y_min * item_y_fit,
                         results[i+1].box_x_max * item_x_fit,
                         results[i+1].box_y_max * item_y_fit,
-                        self.warning_conf,
+                        0,
                     ])
                 else:
                     self.data["box"].append([0,0,0,0,0])
@@ -710,38 +714,38 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             for i in range(len(labelList)):
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
 
-            # creds = ServiceAccountCredentials.from_json_keyfile_name(
-            #     # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
-            #     settings.SERVICE_ACCOUNT_KEY_ROOT,
-            #     settings.GOOGLE_DRIVE_API_SCOPES
-            # )
-            # drive_service = build('drive', 'v3', credentials=creds)
+            creds = ServiceAccountCredentials.from_json_keyfile_name(
+                # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+                settings.SERVICE_ACCOUNT_KEY_ROOT,
+                settings.GOOGLE_DRIVE_API_SCOPES
+            )
+            drive_service = build('drive', 'v3', credentials=creds)
 
-            # asset = Asset.objects.get(id=history.asset.id)
+            asset = Asset.objects.get(id=history.asset.id)
 
-            # if not asset.drive_folder_id:
-            #     folder_metadata = {
-            #         'name': str(asset.asset_name),
-            #         'mimeType': 'application/vnd.google-apps.folder',
-            #         'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
-            #     }
+            if not asset.drive_folder_id:
+                folder_metadata = {
+                    'name': str(asset.asset_name),
+                    'mimeType': 'application/vnd.google-apps.folder',
+                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
+                }
 
-            #     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-            #     asset.drive_folder_id = folder['id']
-            #     asset.save()
+                folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+                asset.drive_folder_id = folder['id']
+                asset.save()
 
-            # for file_path in [history.image.movie.path, history.coordinate.path]:
-            #     file_metadata = {
-            #         'name': os.path.basename(file_path),
-            #         'parents': [str(asset.drive_folder_id)],
-            #     }
-            #     media = MediaFileUpload(file_path, resumable=True)
+            for file_path in [history.image.movie.path, history.coordinate.path]:
+                file_metadata = {
+                    'name': os.path.basename(file_path),
+                    'parents': [str(asset.drive_folder_id)],
+                }
+                media = MediaFileUpload(file_path, resumable=True)
 
-            #     uploaded_file = drive_service.files().create(
-            #         body=file_metadata,
-            #         media_body=media,
-            #         fields='id'
-            #     ).execute()
+                uploaded_file = drive_service.files().create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields='id'
+                ).execute()
 
             messages.success(self.request, '履歴を追加しました.')
             return redirect(self.success_url)
