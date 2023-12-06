@@ -14,8 +14,8 @@
     
     <hr>
 
-    <div class="row justify-content-around">
-        <div class="col-11 col-md-8" style="position: relative;">
+    <div class="row g-0 position-relative {% if create == 1 %}justify-content-around{% else %}ms-2 ms-sm-2 ms-md-0{% endif %}">
+        <div class="{% if create == 1 %}col-11{% else %}col-9 col-sm-10{% endif %} col-md-8 position-relative pe-0 pe-md-3">
             <div id="preview" style="width: 100%; height: auto;">
                 <canvas id="canvas" style="width: 100%; height: auto;"></canvas>
                 <img id="image" src="{{ image.url }}" width="{{ image.width }}" height="{{ image.height }}" style="display: none;"/>
@@ -37,11 +37,13 @@
                         <span id="item_{{ forloop.counter0 }}_conf" style="display: none;">{{ result.conf }}</span>
                     {% endif %}
                 {% endfor %}
-                <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span>
-                <span id="warning_conf" style="display: none;">{{ warning_conf }}</span>
+                <!-- <span id="threshold_conf" style="display: none;">{{ threshold_conf }}</span> -->
+                <!-- <span id="warning_conf" style="display: none;">{{ warning_conf }}</span> -->
             </div>
         </div>
-        <div class="col-11 col-md-4">
+
+
+        <div class="{% if create == 1 %}col-11{% else %}col-9 col-sm-10{% endif %} col-md-4">
             <hr class="d-block d-md-none">
             <div class="position-relative" id="check_list" style="overflow: auto;">
                 <div class="position-absolute d-flex d-md-block" id="switch_width" style="height: 100%;">
@@ -52,16 +54,76 @@
                     {% endif %}
                 </div>
             </div>
-            {% if create == 0 %}
-            <div id="check_ctrl">
-                <hr>
-                <div class="row row-cols-2 row-cols-md-1 row-cols-lg-2">
-                    <div class="col"><button class="btn my-btn-common my-btn-green w-100" type="button" id="all_check">一括チェック</button></div>
-                    <div class="col mt-0 mt-md-3 mt-lg-0"><button class="btn my-btn-common my-check-green w-100 px-2" type="button" id="all_check_out">一括チェック解除</button></div>
-                </div>
-            </div>
-            {% endif %}
         </div>
+
+        {% if create == 0 %}
+        <div class="d-none d-md-block">
+            <hr>
+        </div>
+
+        <div class="col-2 col-sm-1 col-md offset-9 offset-sm-10 offset-md-0 ps-3 ps-md-0" id="check_ctrl">
+            <div class="row h-100">
+                <label class="col-auto mb-auto" for="slide_down">
+                    <button class="btn my-btn-common my-btn-green" id="slide_down">◀</button>
+                </label>
+
+                <div class="col" id="range_ctrl">
+                    <input class="ms-2 ms-md-auto" type="range" id="all_check" min="0" max="10" step="1">
+
+                    <div class="row row-cols-1 row-cols-md-auto g-0 justify-content-between w-100 ms-3 ms-md-auto" id="per_list">
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">0%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">10%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">20%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">30%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">40%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">50%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">60%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">70%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">80%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                            <span class="w-auto position-absolute" type="button" name="range_per">90%　</span>
+                        </span>
+                        <span class="col h-auto px-0 position-relative d-none d-md-inline" type="button" name="range_per">
+                            <button class="w-100 d-none d-md-inline">｜</button>
+                        </span>
+                    </div>
+                    <span class="w-100 h-auto ms-3 mt-1 d-block d-md-none" type="button" name="range_per">100%　</span>
+                </div>
+
+                <label class="col-auto mt-auto mt-md-0" for="slide_up">
+                    <button class="btn my-btn-common my-btn-green" id="slide_up">▶</button>
+                </label>    
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     <hr>
@@ -86,10 +148,24 @@
 
 {% block js %}
 
+<script>const data_json = JSON.parse('{{ data|safe }}');</script>
+
 {% if create == 0 %}
 <script src="{% static 'js/history_add_check.js' %}"></script>
 {% else %}
 <script src="{% static 'js/history_add_create.js' %}"></script>
 {% endif %}
 
+<!-- <script>
+    const data = JSON.parse('{{ data|safe }}');
+    fetch("/data")
+    .then(response => response.json())
+    .then(data => {
+      console.log(data.model_check)  // [1, 2, 3]
+    })
+    
+    console.log(data.model_check);
+    console.log(data.item);
+    console.log(data.box);
+</script> -->
 {% endblock %}

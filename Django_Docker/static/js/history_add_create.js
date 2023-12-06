@@ -13,18 +13,20 @@ const create = document.getElementById("create").innerText;
 const check_list = document.getElementById("check_list");
 const switch_width = document.getElementById("switch_width");
 
-const box_x_min = Number(document.getElementById("box_x_min").innerText);
-const box_y_min = Number(document.getElementById("box_y_min").innerText);
-const box_x_max = Number(document.getElementById("box_x_max").innerText);
-const box_y_max = Number(document.getElementById("box_y_max").innerText);
+const data = data_json;
 
-const item_box = Number(document.getElementById("item_box").innerText);
+// const box_x_min = Number(document.getElementById("box_x_min").innerText);
+// const box_y_min = Number(document.getElementById("box_y_min").innerText);
+// const box_x_max = Number(document.getElementById("box_x_max").innerText);
+// const box_y_max = Number(document.getElementById("box_y_max").innerText);
+
+// const item_box = Number(document.getElementById("item_box").innerText);
 const confirmation = document.getElementById("confirmation");
 
 
 // キャンバスサイズを初期化
-const x_fix = box_x_max - box_x_min;
-const y_fix = box_y_max - box_y_min;
+const x_fix = data.outer_edge[2] - data.outer_edge[0];
+const y_fix = data.outer_edge[3] - data.outer_edge[1];
 
 canvas.width = x_fix;
 canvas.height = y_fix;
@@ -32,18 +34,17 @@ canvas.height = y_fix;
 let x_fit = canvas.width / x_fix;
 let y_fit = canvas.height / y_fix;
 
-
 // 描画状態を管理するフラグと座標を初期化
 let isDrawing = false;
 let startX, startY, width, height;
 let x_min, x_max, y_min, y_max;
 
-
-// バウンディングボックスの座標を初期化
-let item_name = [];
+// アイテム名とバウンディングボックスの座標を初期化
+let item_name = data.item;
+// let box_li = data.box;
 let box_li = [];
 for (let i = 0; i < set.length; i++) {
-    item_name[i] = document.getElementById(`item_${i}_name`).innerText;
+    // item_name[i] = document.getElementById(`item_${i}_name`).innerText;
     box_li[i] = [0,0,0,0,0];
 }
 
