@@ -20,8 +20,12 @@ const check = document.getElementsByName("check");
 const checked = document.getElementsByName("checked");
 
 const check_ctrl = document.getElementById("check_ctrl");
-// const all_check = document.getElementById("all_check");
-// const all_check_out = document.getElementById("all_check_out");
+const range_ctrl = document.getElementById("range_ctrl");
+const all_check = document.getElementById("all_check");
+const per_list = document.getElementById("per_list");
+const slide_down = document.getElementById("slide_down");
+const slide_up = document.getElementById("slide_up");
+const range_per = document.getElementsByName("range_per");
 
 
 // キャンバスサイズを初期化
@@ -67,6 +71,7 @@ for (let i = 0; i < set.length; i++) {
         // box_li[i] = [0,0,0,0,0];
         document.getElementById(`id_form-${i}-result_class`).value = 0;
     }
+    console.log(box_li[i]);
 }
 console.log(item_name);
 
@@ -193,17 +198,63 @@ function auto_fit() {
     if (customBreak.last >= 2) {
         max_h = canvas.height;
         switch_width.style.width = "auto";
+
         check_list.style.marginTop = "auto";
+        check_ctrl.style.position = null;
+        check_ctrl.style.height = null;
+        check_ctrl.style.paddingLeft = null;
+
+        range_ctrl.style.position = null;
+        range_ctrl.style.height = null;
+        range_ctrl.style.top = null;
+        range_ctrl.style.paddingBottom = null;
+
+        all_check.style.width = "100%";
+        all_check.style.transform = null;
+        all_check.style.transformOrigin = null;
+
+        per_list.style.height = "auto";
+        per_list.style.marginTop = null;
+        per_list.style.marginBottom = null;
+
+        slide_down.innerHTML = "◀";
+        slide_up.innerHTML = "▶";
+
     } else {
         max_h = 200;
         switch_width.style.width = 200 * set.length;
+
         check_list.style.marginTop = "20px";
+        check_ctrl.style.position = "absolute";
+        check_ctrl.style.height = "100%";
+        check_ctrl.style.paddingLeft = 0;
+        
+        range_ctrl.style.position = "absolute";
+        range_ctrl.style.height = "97%";
+        range_ctrl.style.top = slide_down.getBoundingClientRect().height + 6;
+        range_ctrl.style.paddingBottom = slide_up.getBoundingClientRect().height * 2 + 16;
+
+        all_check.style.width = null;
+        all_check.style.transform = "rotate(0.25turn)";
+        all_check.style.transformOrigin = "0% 50%";
+
+        per_list.style.height = "96.5%";
+        per_list.style.marginTop = "-0.8rem";
+        per_list.style.marginBottom = "-0.45rem";
+
+        slide_down.innerHTML = "▲";
+        slide_up.innerHTML = "▼";
     }
     check_list.style.height = max_h;
 
     draw_box();
 
 };
+
+new ResizeObserver(entries => {
+    const height = entries[0].contentRect.height;
+    if (customBreak.last < 2) all_check.style.width = height;
+}).observe(range_ctrl);
 
 
 // 画像の読み込みが完了したらキャンバスに描画
@@ -429,7 +480,7 @@ function check_box(i) {
         console.log(` y_min: ${box_li[i][1].toFixed(4)} px`);
         console.log(` x_max: ${box_li[i][2].toFixed(4)} px`);
         console.log(` y_max: ${box_li[i][3].toFixed(4)} px`);
-        console.log(` conf : ${box_li[i][4].toFixed(4) * 100} %`);
+        console.log(` conf : ${(box_li[i][4]*100).toFixed(2)} %`);
     }
     out_box(i);
 };
@@ -455,19 +506,46 @@ function del_box(i) {
     out_box(i);
 };
 
-// all_check.onclick = () => {
-//     var check_conf = threshold_conf;
-//     if (!model_check) check_conf = 0;
-//     for (let i = 0; i < set.length; i++) {
-//         if (box_li[i][4] > check_conf) {
-//             auto_set_box(i);
-//             check[i].checked = true;
-//             checked[i].innerText = "チェック済み";
-//         }
-//     }
-//     draw_box(-2);
-//     finish_check();
-// };
+all_check.onchange = () => {
+    console.log(`all_check: ${all_check.value}`);
+    // var check_conf = threshold_conf;
+    // if (!model_check) check_conf = 0;
+    // for (let i = 0; i < set.length; i++) {
+    //     if (box_li[i][4] > check_conf) {
+    //         auto_set_box(i);
+    //         check[i].checked = true;
+    //         checked[i].innerText = "チェック済み";
+    //     }
+    // }
+    draw_box(-2);
+    finish_check();
+};
+
+slide_down.onclick = () => {
+    all_check.value = Number(all_check.value) - 10;
+    console.log(`all_check: ${all_check.value} (slide_down)`);
+};
+slide_up.onclick = () => {
+    all_check.value = Number(all_check.value) + 10;
+    console.log(`all_check: ${all_check.value} (slide_up)`);
+};
+
+function slide_per(n) {
+    n *= 10;
+    all_check.value = n;
+    console.log(`all_check: ${all_check.value} (range_per: ${n}%)`);
+};
+for (let num = 0; num < range_per.length; num++) {
+    range_per[num].onclick = () => {
+        console.log(`range_per[${num}]`);
+        slide_per(((num+1)/2).toFixed()-1);
+        // console.log(`range_per: ${(num/2).toFixed()*10}%`);
+    }
+    // range_per[num].onclick = slide_per((num/2).toFixed());
+}
+
+
+
 
 // all_check_out.onclick = () => {
 //     for (let i = 0; i < set.length; i++) {
