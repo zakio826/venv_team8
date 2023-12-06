@@ -151,7 +151,7 @@ function auto_fit() {
         check_list.style.marginTop = "auto";
     } else {
         var max_h = 145;
-        switch_width.style.width = 200 * set.length;
+        switch_width.style.width = 210 * set.length;
         check_list.style.marginTop = "20px";
     }
     check_list.style.height = max_h;

@@ -1,5 +1,5 @@
 {% if not forloop.first %}<span class="col-12 d-none d-md-block ps-md-0"><hr class="mt-0"></span>{% endif %}
-<strong class="col col-lg-8 pe-0 d-flex align-items-center ps-md-0" id="item_{{ forloop.counter0 }}_name" style="max-width: 200px;">{{ item.item_name }}</strong>
+<strong class="col col-lg-8 pe-0 d-flex align-items-center ps-md-0" id="item_{{ forloop.counter0 }}_name" style="width: 9rem;">{{ item.item_name }}</strong>
 <div class="col-auto col-lg-4 d-flex align-items-center my-check">
     {% if forloop.first %}
         <input class="btn-check" type="radio" id="set_{{ forloop.counter0 }}" name="set" checked>
