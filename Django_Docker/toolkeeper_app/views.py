@@ -666,38 +666,38 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             for i in range(len(labelList)):
                 print(chengeBox(w_size=history.image.image.width, h_size=history.image.image.height, label=labelList[i]))
 
-            # creds = ServiceAccountCredentials.from_json_keyfile_name(
-            #     # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
-            #     settings.SERVICE_ACCOUNT_KEY_ROOT,
-            #     settings.GOOGLE_DRIVE_API_SCOPES
-            # )
-            # drive_service = build('drive', 'v3', credentials=creds)
+            creds = ServiceAccountCredentials.from_json_keyfile_name(
+                # os.path.join(settings.MEDIA_ROOT, settings.SERVICE_ACCOUNT_KEY_NAME),
+                settings.SERVICE_ACCOUNT_KEY_ROOT,
+                settings.GOOGLE_DRIVE_API_SCOPES
+            )
+            drive_service = build('drive', 'v3', credentials=creds)
 
-            # asset = Asset.objects.get(id=history.asset.id)
+            asset = Asset.objects.get(id=history.asset.id)
 
-            # if not asset.drive_folder_id:
-            #     folder_metadata = {
-            #         'name': str(asset.asset_name),
-            #         'mimeType': 'application/vnd.google-apps.folder',
-            #         'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
-            #     }
+            if not asset.drive_folder_id:
+                folder_metadata = {
+                    'name': str(asset.asset_name),
+                    'mimeType': 'application/vnd.google-apps.folder',
+                    'parents': [settings.GOOGLE_DRIVE_FOLDER_ID],
+                }
 
-            #     folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
-            #     asset.drive_folder_id = folder['id']
-            #     asset.save()
+                folder = drive_service.files().create(body=folder_metadata, fields='id').execute()
+                asset.drive_folder_id = folder['id']
+                asset.save()
 
-            # for file_path in [history.image.movie.path, history.coordinate.path]:
-            #     file_metadata = {
-            #         'name': os.path.basename(file_path),
-            #         'parents': [str(asset.drive_folder_id)],
-            #     }
-            #     media = MediaFileUpload(file_path, resumable=True)
+            for file_path in [history.image.movie.path, history.coordinate.path]:
+                file_metadata = {
+                    'name': os.path.basename(file_path),
+                    'parents': [str(asset.drive_folder_id)],
+                }
+                media = MediaFileUpload(file_path, resumable=True)
 
-            #     uploaded_file = drive_service.files().create(
-            #         body=file_metadata,
-            #         media_body=media,
-            #         fields='id'
-            #     ).execute()
+                uploaded_file = drive_service.files().create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields='id'
+                ).execute()
 
             messages.success(self.request, '履歴を追加しました.')
             return redirect(self.success_url)
