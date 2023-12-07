@@ -69,7 +69,7 @@ class Item(models.Model):
     
     asset = models.ForeignKey(Asset, verbose_name='管理項目', on_delete=models.CASCADE)
 
-    item_name = models.CharField(verbose_name='アイテム名', max_length=16)
+    item_name = models.CharField(verbose_name='アイテム名', max_length=15)
     outer_edge = models.BooleanField(verbose_name='外枠', default=False)
     
     def save(self, *args, **kwargs):
