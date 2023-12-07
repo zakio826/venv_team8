@@ -145,6 +145,7 @@ function auto_fit() {
 
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
     
+    customBreak.check();
     if (customBreak.last >= 2) {
         var max_h = canvas.height;
         switch_width.style.width = "auto";
@@ -175,12 +176,10 @@ image.onload = () => {
     x_fit = canvas.width / x_fix;
     y_fit = canvas.height / y_fix;
 
-    customBreak.check();
     auto_fit();
 };
 
 document.getElementById("load").onclick = () => {
-    customBreak.check();
     auto_fit();
 };
 
@@ -227,7 +226,6 @@ function mobile_move (touchObject) {
 function disableScroll(event) { event.preventDefault(); };
 
 canvas.addEventListener('touchstart', (e) => {
-    customBreak.check();
     auto_fit();
 
     mouseEvent = false;
@@ -320,7 +318,6 @@ canvas.addEventListener("touchcancel", () => {
 canvas.addEventListener("mousedown", (e) => {
     if (!mouseEvent) return;
 
-    customBreak.check();
     auto_fit();
     
     isDrawing = true;
@@ -419,6 +416,5 @@ function del_box(i) {
 
 
 window.onresize = () => {
-    customBreak.check();
     auto_fit();
 };

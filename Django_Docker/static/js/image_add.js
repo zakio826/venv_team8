@@ -74,8 +74,8 @@ function auto_fit() {
 
         image.width = canvas.width;
         image.height = canvas.height;
-        
     }
+    customBreak.check();
     if (!set) {
         ctx.drawImage(movie, 0, 0, canvas.width, canvas.height);
         image.src = canvas.toDataURL('image/jpeg');
@@ -87,7 +87,6 @@ function auto_fit() {
 };
 
 document.getElementById("load").onclick = () => {
-    customBreak.check();
     auto_fit();
 };
 
@@ -154,7 +153,6 @@ function mobile_move (touchObject) {
 function disableScroll(event) { event.preventDefault(); };
 
 canvas.addEventListener('touchstart', (e) => {
-    customBreak.check();
     auto_fit();
 
     mouseEvent = false;
@@ -247,7 +245,6 @@ canvas.addEventListener("touchcancel", () => {
 canvas.addEventListener("mousedown", (e) => {
     if (!mouseEvent) return;
 
-    customBreak.check();
     auto_fit();
 
     isDrawing = true;
@@ -344,6 +341,5 @@ function del_box() {
 
 
 window.onresize = () => {
-    customBreak.check();
     auto_fit();
 };

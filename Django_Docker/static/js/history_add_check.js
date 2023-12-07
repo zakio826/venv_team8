@@ -205,6 +205,7 @@ function auto_fit() {
 
     ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, canvas.width, canvas.height);
 
+    customBreak.check();
     // console.log(`customBreak.last : ${customBreak.last}`);
 
     let max_h = null;
@@ -246,7 +247,7 @@ function auto_fit() {
         range_ctrl.style.top = slide_down.getBoundingClientRect().height + 16;
         range_ctrl.style.paddingBottom = slide_up.getBoundingClientRect().height * 2 + 32;
 
-        all_check.style.width = range_ctrl.getBoundingClientRect().height - (slide_up.getBoundingClientRect().height * 2) - 16;
+        all_check.style.width = range_ctrl.getBoundingClientRect().height - (slide_up.getBoundingClientRect().height * 2) - 38;
         all_check.style.transform = "rotate(0.25turn)";
         all_check.style.transformOrigin = "0% 50%";
 
@@ -276,12 +277,10 @@ image.onload = () => {
     x_fit = canvas.width / x_fix;
     y_fit = canvas.height / y_fix;
 
-    customBreak.check();
     auto_fit();
 };
 
 document.getElementById("load").onclick = () => {
-    customBreak.check();
     auto_fit();
 };
 
@@ -329,7 +328,6 @@ function mobile_move (touchObject) {
 function disableScroll(event) { event.preventDefault(); };
 
 canvas.addEventListener('touchstart', (e) => {
-    customBreak.check();
     auto_fit();
 
     mouseEvent = false;
@@ -426,7 +424,6 @@ canvas.addEventListener("touchcancel", () => {
 canvas.addEventListener("mousedown", (e) => {
     if (!mouseEvent) return;
     
-    customBreak.check();
     auto_fit();
     
     isDrawing = true;
@@ -613,6 +610,5 @@ submit.onclick = () => {
 
 
 window.onresize = () => {
-    customBreak.check();
     auto_fit();
 };
