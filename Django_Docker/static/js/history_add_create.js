@@ -227,6 +227,7 @@ function mobile_move (touchObject) {
 function disableScroll(event) { event.preventDefault(); };
 
 canvas.addEventListener('touchstart', (e) => {
+    customBreak.check();
     auto_fit();
 
     mouseEvent = false;
@@ -318,7 +319,10 @@ canvas.addEventListener("touchcancel", () => {
 // マウスダウンイベントのリスナーを追加
 canvas.addEventListener("mousedown", (e) => {
     if (!mouseEvent) return;
+
+    customBreak.check();
     auto_fit();
+    
     isDrawing = true;
     startX = e.clientX - canvas.getBoundingClientRect().left;
     startY = e.clientY - canvas.getBoundingClientRect().top;
@@ -415,5 +419,6 @@ function del_box(i) {
 
 
 window.onresize = () => {
-    if (customBreak.check()) auto_fit();
+    customBreak.check();
+    auto_fit();
 };

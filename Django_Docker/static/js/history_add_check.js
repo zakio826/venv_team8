@@ -52,15 +52,12 @@ all_check.value = (data.threshold_conf * 10).toFixed();
 
 for (let i = 0; i < set.length; i++) {
 
+    check[i].disabled = false;
+    box_in[i].disabled = false;
+    box_in[i].checked = true;
+
     // アイテムの座標がある場所
     if (box_li[i][4] > 0 || !model_check) {
-
-        // if (!model_check) box_li[i][4] = threshold_conf;
-        
-        check[i].disabled = false;
-        box_in[i].disabled = false;
-        box_in[i].checked = true;
-
         if (box_li[i][4] >= data.threshold_conf) {
             document.getElementById(`id_form-${i}-result_class`).value = 3;
             check[i].checked = true;
@@ -72,9 +69,7 @@ for (let i = 0; i < set.length; i++) {
         } else {
             document.getElementById(`id_form-${i}-result_class`).value = 0;
         }
-
     } else {
-        // box_li[i] = [0,0,0,0,0];
         document.getElementById(`id_form-${i}-result_class`).value = 0;
     }
     console.log(`${(("  ")+i).slice(-2)}: ${(box_li[i][4]*100).toFixed(2)}%  (${item_name[i]})`);
@@ -335,7 +330,8 @@ function mobile_move (touchObject) {
 function disableScroll(event) { event.preventDefault(); };
 
 canvas.addEventListener('touchstart', (e) => {
-    if (customBreak.check()) auto_fit();
+    customBreak.check();
+    auto_fit();
 
     mouseEvent = false;
     isDrawing = true;
@@ -430,8 +426,10 @@ canvas.addEventListener("touchcancel", () => {
 // マウスダウンイベントのリスナーを追加
 canvas.addEventListener("mousedown", (e) => {
     if (!mouseEvent) return;
-
-    if (customBreak.check()) auto_fit();
+    
+    customBreak.check();
+    auto_fit();
+    
     isDrawing = true;
     startX = e.clientX - canvas.getBoundingClientRect().left;
     startY = e.clientY - canvas.getBoundingClientRect().top;
@@ -616,5 +614,6 @@ submit.onclick = () => {
 
 
 window.onresize = () => {
-    if (customBreak.check()) auto_fit();
+    customBreak.check();
+    auto_fit();
 };
