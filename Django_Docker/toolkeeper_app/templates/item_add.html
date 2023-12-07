@@ -114,14 +114,17 @@
 
         for (let i = 0; i < nameset.length; i++) {
             var text_form = document.createElement('input');
-            if (i <= 0) text_form.setAttribute('type', 'text');
+            if (i <= 0) {
+                text_form.setAttribute('type', 'text');
+                text_form.setAttribute('required', 'true');
+            }
             else text_form.setAttribute('type', 'hidden');
 
             text_form.setAttribute('name', `form-${num}-${nameset[i]}`);
             text_form.setAttribute('class', 'form-control');
             text_form.setAttribute('maxlength', '16');
 
-            if (i - 1 >= nameset.length) text_form.setAttribute('value', 'False');
+            // if (i-1 >= nameset.length) text_form.setAttribute('value', 'False');
             tag.appendChild(text_form);
         }
 

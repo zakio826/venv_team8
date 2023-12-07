@@ -497,8 +497,8 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
     pk_url_kwarg = 'id'
     fields = ()
     success_url = reverse_lazy('toolkeeper_app:asset_list')
-    threshold_conf = 0.80
-    warning_conf = 0.40
+    threshold_conf = 0.8
+    warning_conf = 0.5
 
     # 物体検出を行うヘルパーメソッド
     def model_check(self, asset, image):
@@ -512,24 +512,26 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             save = False,
             source = os.path.join(settings.MEDIA_ROOT, image.image.name),
             conf = 0.10,
-            classes = [x+1 for x in range(len(self.data.item))]
+            classes = [x+1 for x in range(len(self.data["item"]))]
         )
         classNums = results1[0].boxes.cls.__array__().tolist()
         confs = results1[0].boxes.conf.__array__().tolist()
         boxes = results1[0].boxes.xyxy.__array__().tolist()
 
         for i in range(len(results1[0].boxes.cls)):
-            if round(classNums[i]) and self.box[round(classNums[i])]['conf'] < confs[i]:
+            if round(classNums[i]) and self.data["box"][round(classNums[i]-1)][4] < confs[i]:
                 for j in range(4):
-                    self.data["box"][round(classNums[i-1])][j] = boxes[i][j]
-                self.data["box"][round(classNums[i-1])][4] = confs[i]
+                    self.data["box"][round(classNums[i])-1][j] = boxes[i][j]
+                self.data["box"][round(classNums[i])-1][4] = confs[i]
                 
                 self.box[round(classNums[i])]['box_x_min'] = boxes[i][0]
                 self.box[round(classNums[i])]['box_y_min'] = boxes[i][1]
                 self.box[round(classNums[i])]['box_x_max'] = boxes[i][2]
                 self.box[round(classNums[i])]['box_y_max'] = boxes[i][3]
                 self.box[round(classNums[i])]['conf'] = confs[i]
-                print(i, self.box[round(classNums[i])])
+
+                # print(i, self.data["box"][round(classNums[i])-1][4])
+            print(round(classNums[i])-1, confs[i])
 
 
     # get_context_dataをオーバーライド
@@ -577,7 +579,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             item_y_fix = (results[0].box_y_max - results[0].box_y_min) / result_history.image.image.height
 
             for i, item in enumerate(items):
-                print(item)
+                # print(item)
                 if item.id == results[i+1].item.id:
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
@@ -599,7 +601,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             
             if history.asset.learning_model:
                 self.box[0]['model_check'] = True
-                self.model_check(history.asset, history.image)
+                # self.model_check(history.asset, history.image)
                 # model_checked = True
         else:
             result_class = 1
@@ -644,6 +646,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             "threshold_conf": self.threshold_conf,
             "warning_conf": self.warning_conf,
         }
+        print(self.data["item"])
 
         if history.asset.drive_folder_id:
             result_history = historys.get(id=result.history.id)
@@ -656,7 +659,7 @@ class HistoryAddView(LoginRequiredMixin, generic.CreateView):
             item_y_fix = (results[0].box_y_max - results[0].box_y_min) / result_history.image.image.height
 
             for i, item in enumerate(items):
-                print(item)
+                # print(item)
                 if item.id == results[i+1].item.id:
                     item_x_fit = box_x_fix / item_x_fix
                     item_y_fit = box_y_fix / item_y_fix
