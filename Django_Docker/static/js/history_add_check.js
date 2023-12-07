@@ -214,8 +214,8 @@ function auto_fit() {
 
         check_list.style.marginTop = "auto";
         check_ctrl.style.position = null;
+        check_ctrl.style.width = null;
         check_ctrl.style.height = null;
-        check_ctrl.style.paddingLeft = null;
 
         range_ctrl.style.position = null;
         range_ctrl.style.height = null;
@@ -232,15 +232,14 @@ function auto_fit() {
 
         slide_down.innerHTML = "◀";
         slide_up.innerHTML = "▶";
-
     } else {
         max_h = 200;
         switch_width.style.width = 210 * set.length;
 
         check_list.style.marginTop = "20px";
         check_ctrl.style.position = "absolute";
+        check_ctrl.style.width = "auto";
         check_ctrl.style.height = "100%";
-        check_ctrl.style.paddingLeft = 0;
         
         range_ctrl.style.position = "absolute";
         range_ctrl.style.height = "97%";
